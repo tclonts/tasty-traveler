@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B8E4AF661AB1469B5814402 /* Pods_TastyTraveler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */; };
+		2A784E522049BFFC00A47C16 /* GoogleService-Info-Dev.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A784E512049BFFC00A47C16 /* GoogleService-Info-Dev.plist */; };
+		2A784E542049C00500A47C16 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A784E532049C00500A47C16 /* GoogleService-Info.plist */; };
 		2A805AE42049BF45004BEEF3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A805AE32049BF45004BEEF3 /* AppDelegate.swift */; };
 		2A805AE62049BF45004BEEF3 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A805AE52049BF45004BEEF3 /* ViewController.swift */; };
 		2A805AE92049BF45004BEEF3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A805AE72049BF45004BEEF3 /* Main.storyboard */; };
@@ -15,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2A784E512049BFFC00A47C16 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
+		2A784E532049C00500A47C16 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2A805AE02049BF45004BEEF3 /* TastyTraveler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TastyTraveler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A805AE32049BF45004BEEF3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A805AE52049BF45004BEEF3 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -22,6 +27,9 @@
 		2A805AEA2049BF45004BEEF3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2A805AED2049BF45004BEEF3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2A805AEF2049BF45004BEEF3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.debug.xcconfig"; sourceTree = "<group>"; };
+		7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TastyTraveler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.release.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B8E4AF661AB1469B5814402 /* Pods_TastyTraveler.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,6 +49,8 @@
 			children = (
 				2A805AE22049BF45004BEEF3 /* TastyTraveler */,
 				2A805AE12049BF45004BEEF3 /* Products */,
+				8E5F7A210CD6F22053105C2A /* Pods */,
+				DF5C646230B0DCD57A853355 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,8 +71,27 @@
 				2A805AEA2049BF45004BEEF3 /* Assets.xcassets */,
 				2A805AEC2049BF45004BEEF3 /* LaunchScreen.storyboard */,
 				2A805AEF2049BF45004BEEF3 /* Info.plist */,
+				2A784E532049C00500A47C16 /* GoogleService-Info.plist */,
+				2A784E512049BFFC00A47C16 /* GoogleService-Info-Dev.plist */,
 			);
 			path = TastyTraveler;
+			sourceTree = "<group>";
+		};
+		8E5F7A210CD6F22053105C2A /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */,
+				F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		DF5C646230B0DCD57A853355 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -71,9 +101,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2A805AF22049BF45004BEEF3 /* Build configuration list for PBXNativeTarget "TastyTraveler" */;
 			buildPhases = (
+				78E7D204FA1624F39825476C /* [CP] Check Pods Manifest.lock */,
 				2A805ADC2049BF45004BEEF3 /* Sources */,
 				2A805ADD2049BF45004BEEF3 /* Frameworks */,
 				2A805ADE2049BF45004BEEF3 /* Resources */,
+				A3C75D633A29689EEBF04C36 /* [CP] Embed Pods Frameworks */,
+				ABFBDF8C60D2282ED95E0B08 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -124,12 +157,70 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A805AEE2049BF45004BEEF3 /* LaunchScreen.storyboard in Resources */,
+				2A784E522049BFFC00A47C16 /* GoogleService-Info-Dev.plist in Resources */,
+				2A784E542049C00500A47C16 /* GoogleService-Info.plist in Resources */,
 				2A805AEB2049BF45004BEEF3 /* Assets.xcassets in Resources */,
 				2A805AE92049BF45004BEEF3 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		78E7D204FA1624F39825476C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-TastyTraveler-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A3C75D633A29689EEBF04C36 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ABFBDF8C60D2282ED95E0B08 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		2A805ADC2049BF45004BEEF3 /* Sources */ = {
@@ -272,31 +363,35 @@
 		};
 		2A805AF32049BF45004BEEF3 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 88M8AT4J5D;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		2A805AF42049BF45004BEEF3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 88M8AT4J5D;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
