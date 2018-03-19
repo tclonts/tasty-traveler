@@ -8,12 +8,17 @@
 
 import UIKit
 import Firebase
+import FacebookCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
-    
+//    var fontModifier: CGFloat = 0
+//    let ScreenHeight = Int(UIScreen.main.bounds.size.height)
+//    let iPhoneSEHeight = 568
+//    let iPhone8Height = 667
+//    let iPhone8PlusHeight = 736
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         #if DEBUG
@@ -28,8 +33,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         FirebaseApp.configure(options: options)
         
+        window = UIWindow()
+//        setFontModifier()
+        
+//        do {
+//            try Auth.auth().signOut()
+//            
+//        } catch let signOutError as NSError {
+//            print("Error signing out: \(signOutError)")
+//        }
+        
+        if Auth.auth().currentUser == nil {
+            window?.rootViewController = AccountAccessVC()
+        } else {
+            window?.rootViewController = MainTabBarController()
+        }
+        
         return true
     }
+    
+//    func setFontModifier() {
+//        switch ScreenHeight {
+//        case iPhoneSEHeight:
+//            fontModifier = 2
+//        default:
+//            fontModifier = 0
+//        }
+//    }
     
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -52,6 +82,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-    
     
 }

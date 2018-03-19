@@ -6,6 +6,22 @@ target 'TastyTraveler' do
   use_frameworks!
 
   # Pods for TastyTraveler
+  # Firebase
   pod 'Firebase/Core'
+  pod 'Firebase/Database'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Storage'
+  pod 'Firebase/Messaging'
+  
+  # Facebook
+  pod 'FacebookCore'
+  pod 'FacebookLogin'
+  pod 'FacebookShare'
+  
+  # Programmatic Constraints
+  pod 'SteviaLayout'
+  
+  # Transitions
+  pod 'Hero'
 
 end
