@@ -7,3 +7,16 @@
 //
 
 import Foundation
+
+struct User {
+    var uid: String
+//    var avatarURL: String?
+//    var country: String?
+    var username: String
+    
+//    var cookedRecipes: [String]?   // recipe IDs
+//    var favoriteRecipes: [String]? // recipe IDs
+//    var uploadedRecipes: [String]? // recipe IDs
+//    var ratedRecipes: [String]?    // recipe IDs
+//    var conversations: [String]?   // conversation IDs
+}

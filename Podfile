@@ -23,5 +23,8 @@ target 'TastyTraveler' do
   
   # Transitions
   pod 'Hero'
+  
+  # Encoding and Decoding models for Firebase
+  pod 'CodableFirebase'
 
 end

@@ -41,7 +41,7 @@ class HomeHeaderView: BaseCell {
         textField.textColor = Color.darkText
         textField.layer.cornerRadius = 5
         textField.layer.masksToBounds = false
-        textField.layer.shadowRadius = 30
+        textField.layer.shadowRadius = adaptConstant(30)
         textField.layer.shadowOffset = CGSize(width: 0, height: 0)
         textField.layer.shadowOpacity = 0.1
         textField.height(adaptConstant(38))

@@ -21,4 +21,5 @@ struct Color {
     static let darkText = UIColor(hexString: "4D4D4D")
     static let darkGrayText = UIColor(hexString: "717171")
     static let primaryOrange = UIColor(hexString: "FF8200")
+    static let lightGray = UIColor(hexString: "CECECE")
 }
