@@ -24,39 +24,45 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         return view
     }()
     
-    let recipes: [Recipe] = [
-        Recipe(creator: User(uid: "jfo3iwfj23fj92", username: "Michael Bart"), dictionary: ["name": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a",
-                                                                                            "ratings": [1,2,3,4,2,5,4,3,4,5],
-                                                                                            "photoURL": "https://pasteboard.co/HcFS7r4.png",
-                                                                                            "country": "Puerto Rico",
-                                                                                            "countryCode": "PR"]),
-        Recipe(creator: User(uid: "jfo3iwfj23fj92", username: "Michael Bart"), dictionary: ["name": "Arroz con pollo",
-                                                                                            "photoURL": "https://pasteboard.co/HcFS7r4.png",
-                                                                                            "country": "Puerto Rico",
-                                                                                            "countryCode": "PR"]),
+    let activityIndicator:  UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.activityIndicatorViewStyle = .whiteLarge
+        activityIndicator.color = Color.primaryOrange
+        activityIndicator.startAnimating()
+        return activityIndicator
+    }()
+    
+    lazy var loadingRecipesView: UIStackView = {
+        let containerView = UIStackView()
+        let label = UILabel()
         
-        Recipe(creator: User(uid: "jfo3iwfj23fj92", username: "Michael Bart"), dictionary: ["name": "Arroz con pollo",
-                                                                                            "ratings": [1,2,3,4,2,5,4,3,4,5],
-                                                                                            "photoURL": "https://pasteboard.co/HcFS7r4.png",
-                                                                                            "country": "Puerto Rico",
-                                                                                            "countryCode": "PR"]),
-        Recipe(creator: User(uid: "jfo3iwfj23fj92", username: "Michael Bart"), dictionary: ["name": "Arroz con pollo",
-                                                                                            "ratings": [1,2,3,4,2,5,4,3,4,5],
-                                                                                            "photoURL": "https://pasteboard.co/HcFS7r4.png",
-                                                                                            "country": "Puerto Rico",
-                                                                                            "countryCode": "PR"]),
-        Recipe(creator: User(uid: "jfo3iwfj23fj92", username: "Michael Bart"), dictionary: ["name": "Arroz con pollo",
-                                                                                            "ratings": [1,2,3,4,2,5,4,3,4,5],
-                                                                                            "photoURL": "https://pasteboard.co/HcFS7r4.png",
-                                                                                            "country": "Puerto Rico",
-                                                                                            "countryCode": "PR"])
-    ]
+        label.text = "Loading recipes"
+        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))
+        
+        containerView.addArrangedSubview(activityIndicator)
+        containerView.addArrangedSubview(label)
+        containerView.axis = .vertical
+        containerView.alignment = .center
+        containerView.spacing = adaptConstant(8)
+        containerView.isHidden = true
+        
+        return containerView
+    }()
+    
+    lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        return refreshControl
+    }()
+    
+    var recipes = [Recipe]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         self.collectionView!.register(RecipeCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.collectionView?.register(HomeHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "header")
+        self.collectionView?.refreshControl = refreshControl
         
         self.navigationController?.navigationBar.isHidden = true
         
@@ -66,6 +72,19 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+        
+//        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
+        self.view.sv(loadingRecipesView)
+        loadingRecipesView.left(0).right(0)
+        loadingRecipesView.centerVertically()
+        
+        fetchAllRecipes()
+    }
+    
+    @objc func handleRefresh() {
+        print("Handling refresh..")
+        recipes.removeAll()
+        fetchAllRecipes()
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -81,16 +100,17 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if let recipe = self.recipes[indexPath.row] as? Recipe {
+        if !recipes.isEmpty {
+            let recipe = self.recipes[indexPath.row]
             let approximateWidthOfRecipeNameLabel = view.frame.width - adaptConstant(18) - adaptConstant(18) - adaptConstant(20)
             let size = CGSize(width: approximateWidthOfRecipeNameLabel, height: 1000)
             let attributes = [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(22))!]
             let estimatedFrame = NSString(string: recipe.name).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
 
             return CGSize(width: view.frame.width - adaptConstant(36), height: estimatedFrame.height + adaptConstant(265)) // 270
+        } else {
+            return CGSize(width: view.frame.width - adaptConstant(36), height: 300)
         }
-        
-        return CGSize(width: view.frame.width - adaptConstant(36), height: 300)
     }
     
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
@@ -109,13 +129,14 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+
         return recipes.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecipeCell
         
-        let recipe = recipes[indexPath.row]
+        let recipe = recipes[indexPath.item]
         
         cell.recipe = recipe
         return cell
@@ -140,6 +161,41 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     @objc func handleTap() {
         view.endEditing(true)
+    }
+}
+
+extension HomeVC {
+    func fetchAllRecipes() {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        loadingRecipesView.isHidden = (self.collectionView?.refreshControl?.isRefreshing)!
+        
+        FirebaseController.shared.ref.child("recipes").observeSingleEvent(of: .value) { (snapshot) in
+            
+            // Stop refreshing & loading indicators
+            self.collectionView?.refreshControl?.endRefreshing()
+            
+            guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
+            
+            recipeIDsDictionary.forEach({ (key, value) in
+                guard let recipeDictionary = value as? [String:Any] else { return }
+                guard let creatorID = recipeDictionary["creatorID"] as? String else { return }
+                
+                FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
+                    var recipe = Recipe(creator: creator, dictionary: recipeDictionary)
+                    recipe.uid = key
+                    
+                    self.recipes.append(recipe)
+                    self.recipes.sort(by: { (r1, r2) -> Bool in
+                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                    })
+                    self.collectionView?.reloadData()
+                    UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                    self.loadingRecipesView.isHidden = true
+                })
+                
+                
+            })
+        }
     }
 }
 

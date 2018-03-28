@@ -19,4 +19,8 @@ struct User {
 //    var uploadedRecipes: [String]? // recipe IDs
 //    var ratedRecipes: [String]?    // recipe IDs
 //    var conversations: [String]?   // conversation IDs
+    init(uid: String, dictionary: [String:Any]) {
+        self.uid = uid
+        self.username = dictionary["username"] as? String ?? ""
+    }
 }

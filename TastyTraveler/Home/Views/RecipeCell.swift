@@ -13,8 +13,8 @@ class RecipeCell: BaseCell {
     
     var recipe: Recipe? {
         didSet {
-//            guard let photoURL = recipe?.photoURL else { return }
-//            photoImageView.loadImage(urlString: photoURL)
+            guard let photoURL = recipe?.photoURL else { return }
+            photoImageView.loadImage(urlString: photoURL)
             countryLabel.text = recipe?.country
             if let countryCode = recipe?.countryCode { countryFlag.image = UIImage(named: countryCode) }
 

@@ -315,6 +315,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                     } else {
                         // FirebaseController.shared.storeUsername(username, uid: uid)
                         let mainTabBarController = MainTabBarController()
+                        mainTabBarController.newUser = true
                         self.hero_replaceViewController(with: mainTabBarController)
                     }
                 })

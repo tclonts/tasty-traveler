@@ -9,9 +9,10 @@
 import UIKit
 import Firebase
 import FacebookCore
+import UserNotifications
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
     
     var window: UIWindow?
 //    var fontModifier: CGFloat = 0
@@ -21,24 +22,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //    let iPhone8PlusHeight = 736
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        #if DEBUG
-        let firebaseConfig = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")
-        #else
+//        #if DEBUG
+//        let firebaseConfig = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")
+//        #else
         let firebaseConfig = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist")
-        #endif
+//        #endif
         
         guard let options = FirebaseOptions(contentsOfFile: firebaseConfig!) else {
             fatalError("Invalid Firebase configuration file.")
         }
         
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(options: authOptions, completionHandler: {_, _ in })
+        application.registerForRemoteNotifications()
+        
         FirebaseApp.configure(options: options)
+        
+        let token = Messaging.messaging().fcmToken
+        print("FCM token: \(token ?? "")")
         
         window = UIWindow()
 //        setFontModifier()
         
 //        do {
 //            try Auth.auth().signOut()
-//            
+//
 //        } catch let signOutError as NSError {
 //            print("Error signing out: \(signOutError)")
 //        }
@@ -60,6 +68,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            fontModifier = 0
 //        }
 //    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+    }
     
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

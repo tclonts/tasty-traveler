@@ -107,3 +107,15 @@ extension Double {
         return numberToRound.rounded() / n
     }
 }
+
+extension UIAlertController {
+    @objc func textDidChangeInAlert() {
+        if let username = textFields?[0].text,
+            let action = actions.last {
+            FirebaseController.shared.verifyUniqueUsername(username) { (isUnique) in
+                action.isEnabled = isUnique
+            }
+        }
+    }
+}
+

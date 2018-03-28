@@ -17,7 +17,7 @@ struct Recipe {
     
     var name: String
     var creator: User
-    var timestamp: Double
+    var creationDate: Date
     
     var overallRating: Double?
     var ratings: [Int]?
@@ -40,8 +40,9 @@ struct Recipe {
         self.creator = creator
         self.country = dictionary["country"] as? String
         self.countryCode = dictionary["countryCode"] as? String
-        self.name = dictionary["name"] as? String ?? ""
-        self.timestamp = dictionary["timestamp"] as? Double ?? 0
+        self.name = dictionary["recipeName"] as? String ?? ""
+        let timestamp = dictionary["timestamp"] as? Double ?? 0
+        self.creationDate = Date(timeIntervalSince1970: timestamp)
         self.ratings = dictionary["ratings"] as? [Int]
         
         if let ratings = self.ratings {
