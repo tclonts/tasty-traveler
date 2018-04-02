@@ -23,9 +23,6 @@ class CreateRecipeForm: UIView {
     let photoImageView: CustomImageView = {
         let imageView = CustomImageView()
         imageView.isHidden = true
-        imageView.layer.cornerRadius = 10
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -312,7 +309,8 @@ class CreateRecipeForm: UIView {
         )
         
         // Photo
-        photoImageView.top(adaptConstant(35)).left(margin).right(margin).height(adaptConstant(245))
+        photoImageView.top(0).left(0).right(0)
+        photoImageView.Height == photoImageView.Width * 0.75
         
         // Recipe name and camera button
         containerView.addConstraint(recipeNameConstraintNoImage)
@@ -388,7 +386,7 @@ class CreateRecipeForm: UIView {
             bottomView.sv(cancelButton, doneButton)
         )
         
-        scrollViewContainer.top(20).left(0).right(0)
+        scrollViewContainer.top(0).left(0).right(0)
         scrollViewContainer.Bottom == bottomView.Top
         
         scrollView.top(0).left(0).right(0).bottom(0)
@@ -576,12 +574,12 @@ extension CreateRecipeForm: UITextViewDelegate {
 
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView == recipeNameTextInputView.textView && recipeNameTextInputView.textView.text == "" {
-            textView.textColor = Color.gray
+            textView.textColor = Color.lightGray
             textView.text = "Name this recipe"
         }
         
         if textView == descriptionTextInputView.textView && descriptionTextInputView.textView.text == "" {
-            textView.textColor = Color.gray
+            textView.textColor = Color.lightGray
             textView.text = "Give your recipe a description..."
         }
     }

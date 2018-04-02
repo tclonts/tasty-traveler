@@ -26,5 +26,8 @@ target 'TastyTraveler' do
   
   # Encoding and Decoding models for Firebase
   pod 'CodableFirebase'
+  
+  # Image Crop
+  pod 'RSKImageCropper'
 
 end

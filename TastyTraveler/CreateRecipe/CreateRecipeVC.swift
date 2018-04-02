@@ -10,6 +10,7 @@ import UIKit
 import Stevia
 import MobileCoreServices
 import Firebase
+import RSKImageCropper
 
 class CreateRecipeVC: UIViewController {
     
@@ -18,6 +19,8 @@ class CreateRecipeVC: UIViewController {
     let ingredientsDataSource = IngredientsDataSource()
     let stepsDataSource = StepsDataSource()
     let tagsDataSource = TagsDataSource()
+    
+    let photoImagePicker = UIImagePickerController()
     
     lazy var formView: CreateRecipeForm = {
         let form = CreateRecipeForm()
@@ -40,11 +43,34 @@ class CreateRecipeVC: UIViewController {
         formView.tagsCollectionView.dataSource = tagsDataSource
         formView.tagsCollectionView.delegate = tagsDataSource
         
+        photoImagePicker.delegate = self
+        
         self.view = formView
         
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+    }
+    
+    var viewIsDark = Bool()
+    
+    func makeViewDark() {
+        viewIsDark = true
+        setNeedsStatusBarAppearanceUpdate()
+    }
+    
+    func makeViewLight() {
+        viewIsDark = false
+        setNeedsStatusBarAppearanceUpdate()
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        
+        if viewIsDark {
+            return .lightContent
+        } else {
+            return .default
+        }
     }
     
     func submitRecipe() {
@@ -78,12 +104,16 @@ class CreateRecipeVC: UIViewController {
     }
 }
 
-extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControllerDelegate, RSKImageCropViewControllerDelegate, RSKImageCropViewControllerDataSource  {
+    
+    
+    func imageCropViewControllerCustomMaskPath(_ controller: RSKImageCropViewController) -> UIBezierPath {
+        let path = UIBezierPath(rect: controller.maskRect)
+        return path
+    }
+    
     func choosePhoto() {
-        let picker = UIImagePickerController()
-        picker.allowsEditing = true
-        picker.delegate = self
-        present(picker, animated: true)
+        present(photoImagePicker, animated: true)
     }
     
     func chooseVideo() {
@@ -94,23 +124,53 @@ extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControlle
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        guard let image = info[UIImagePickerControllerEditedImage] as? UIImage else { return }
+        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else { return }
         
 //        let videoUrl = info[UIImagePickerControllerMediaURL] as! NSURL?
 //        let pathString = videoUrl?.relativePath
         
 //        let imageUID = UUID().uuidString
         
-        formView.photoImageView.image = image
-        formView.photoImageView.isHidden = false
+//        formView.photoImageView.image = image
+//        formView.photoImageView.isHidden = false
+//        formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
+//        formView.containerView.addConstraint(formView.recipeNameConstraint)
         
-        formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
-        formView.containerView.addConstraint(formView.recipeNameConstraint)
+        let imageCropViewController = RSKImageCropViewController(image: image)
+        imageCropViewController.delegate = self
+        imageCropViewController.dataSource = self
+        imageCropViewController.cropMode = .custom
+        
+        photoImagePicker.pushViewController(imageCropViewController, animated: true)
         
 //        if let jpegData = UIImageJPEGRepresentation(image, 80) {
 //        }
         
-        dismiss(animated: true)
+//        dismiss(animated: true)
+    }
+    
+    func imageCropViewControllerDidCancelCrop(_ controller: RSKImageCropViewController) {
+        self.photoImagePicker.popViewController(animated: true)
+    }
+    
+    func imageCropViewController(_ controller: RSKImageCropViewController, didCropImage croppedImage: UIImage, usingCropRect cropRect: CGRect, rotationAngle: CGFloat) {
+        formView.photoImageView.image = croppedImage
+        formView.photoImageView.isHidden = false
+        formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
+        formView.containerView.addConstraint(formView.recipeNameConstraint)
+        self.makeViewDark()
+        
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func imageCropViewControllerCustomMaskRect(_ controller: RSKImageCropViewController) -> CGRect {
+        let maskSize = CGSize(width: self.view.frame.width, height: self.view.frame.width * 0.75)
+        let maskRect = CGRect(x: 0, y: (self.view.frame.height * 0.5) - maskSize.height * 0.5, width: maskSize.width, height: maskSize.height)
+        return maskRect
+    }
+    
+    func imageCropViewControllerCustomMovementRect(_ controller: RSKImageCropViewController) -> CGRect {
+        return controller.maskRect
     }
 }
 

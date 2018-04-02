@@ -8,6 +8,7 @@
 
 import UIKit
 import Stevia
+import Hero
 
 private let reuseIdentifier = "recipeCell"
 
@@ -100,6 +101,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = view.frame.width - adaptConstant(36) // margins
         if !recipes.isEmpty {
             let recipe = self.recipes[indexPath.row]
             let approximateWidthOfRecipeNameLabel = view.frame.width - adaptConstant(18) - adaptConstant(18) - adaptConstant(20)
@@ -107,9 +109,10 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             let attributes = [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(22))!]
             let estimatedFrame = NSString(string: recipe.name).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
 
-            return CGSize(width: view.frame.width - adaptConstant(36), height: estimatedFrame.height + adaptConstant(265)) // 270
+            
+            return CGSize(width: width, height: estimatedFrame.height + (width * 0.75) + adaptConstant(80))
         } else {
-            return CGSize(width: view.frame.width - adaptConstant(36), height: 300)
+            return CGSize(width: width, height: width)
         }
     }
     
@@ -140,6 +143,24 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         
         cell.recipe = recipe
         return cell
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as! RecipeCell
+        
+        cell.recipeHeaderView.heroID = "recipeHeaderView"
+        
+        guard let recipe = cell.recipe else { return }
+        
+        let recipeDetailVC = RecipeDetailVC()
+        recipeDetailVC.recipe = recipe
+        recipeDetailVC.recipeHeaderView.photoImageView.image = cell.recipeHeaderView.photoImageView.image
+        // matching IDs for: Photo, favoriteButton, flagImageView, countryLabel, creatorLabel, ratingsStars, numberOfRatingsLabel
+        
+        let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
+        recipeNavigationController.isHeroEnabled = true
+        recipeNavigationController.navigationBar.isHidden = true
+        self.present(recipeNavigationController, animated: true, completion: nil)
     }
     
     @objc func adjustForKeyboard(notification: Notification) {
