@@ -43,6 +43,7 @@
 		2AA252092062A7C300BA9775 /* CreateRecipeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA252082062A7C300BA9775 /* CreateRecipeVC.swift */; };
 		2AA2520D2062BC9500BA9775 /* CreateRecipeForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2520C2062BC9500BA9775 /* CreateRecipeForm.swift */; };
 		2AA2521120647F6F00BA9775 /* TextInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2521020647F6F00BA9775 /* TextInputView.swift */; };
+		2AC67E2B2086A2F700C0E828 /* FiltersLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC67E2A2086A2F700C0E828 /* FiltersLauncher.swift */; };
 		2AD34F0D204F0AB3004F2EF3 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD34F0C204F0AB3004F2EF3 /* User.swift */; };
 		2AD34F10204F0AE7004F2EF3 /* AccountAccessVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD34F0F204F0AE7004F2EF3 /* AccountAccessVC.swift */; };
 		2ADA49B720570EF70024C8EE /* SignUpVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49B620570EF70024C8EE /* SignUpVC.swift */; };
@@ -90,6 +91,7 @@
 		2AA252082062A7C300BA9775 /* CreateRecipeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecipeVC.swift; sourceTree = "<group>"; };
 		2AA2520C2062BC9500BA9775 /* CreateRecipeForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecipeForm.swift; sourceTree = "<group>"; };
 		2AA2521020647F6F00BA9775 /* TextInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputView.swift; sourceTree = "<group>"; };
+		2AC67E2A2086A2F700C0E828 /* FiltersLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FiltersLauncher.swift; sourceTree = "<group>"; };
 		2AD34F0C204F0AB3004F2EF3 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		2AD34F0F204F0AE7004F2EF3 /* AccountAccessVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountAccessVC.swift; sourceTree = "<group>"; };
 		2ADA49B620570EF70024C8EE /* SignUpVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpVC.swift; sourceTree = "<group>"; };
@@ -281,6 +283,7 @@
 			children = (
 				2A0B4E08205ACE8E0056F7D5 /* Views */,
 				2A0B4E042059A6BA0056F7D5 /* HomeVC.swift */,
+				2AC67E2A2086A2F700C0E828 /* FiltersLauncher.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -423,6 +426,7 @@
 				"${BUILT_PRODUCTS_DIR}/Hero/Hero.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
 				"${BUILT_PRODUCTS_DIR}/RSKImageCropper/RSKImageCropper.framework",
+				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/SteviaLayout/Stevia.framework",
 				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
@@ -442,6 +446,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Hero.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RSKImageCropper.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stevia.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
@@ -500,6 +505,7 @@
 				2AD34F0D204F0AB3004F2EF3 /* User.swift in Sources */,
 				2A665AC92069A0460014A464 /* TagCell.swift in Sources */,
 				2A54A96C20508408008255A9 /* OnboardingCollectionVC.swift in Sources */,
+				2AC67E2B2086A2F700C0E828 /* FiltersLauncher.swift in Sources */,
 				2A0B4DF7205988510056F7D5 /* Constants.swift in Sources */,
 				2AA251E920600DFC00BA9775 /* Recipe.swift in Sources */,
 				2A665AD4206D8BBB0014A464 /* MenuBar.swift in Sources */,

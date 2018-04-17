@@ -10,37 +10,12 @@ import UIKit
 
 class MainTabBarController: UITabBarController {
     
-    var newUser = false
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
         self.delegate = self
         
         setUpViewControllers()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        if newUser {
-            let ac = UIAlertController(title: "Please create a username", message: nil, preferredStyle: .alert)
-            ac.addTextField {
-                $0.placeholder = "Username"
-                $0.addTarget(ac, action: #selector(ac.textDidChangeInAlert), for: .editingChanged)
-            }
-            
-            let submitAction = UIAlertAction(title: "Submit", style: .default) { (action) in
-                guard let username = ac.textFields?[0].text else { return }
-                FirebaseController.shared.storeUsername(username)
-                self.newUser = false
-            }
-            
-            submitAction.isEnabled = false
-            ac.addAction(submitAction)
-            
-            present(ac, animated: true, completion: nil)
-        }
     }
 
     func setUpViewControllers() {

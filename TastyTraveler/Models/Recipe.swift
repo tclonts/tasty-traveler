@@ -9,6 +9,31 @@
 import Foundation
 
 struct Recipe {
+    // KEYS
+    static let uidKey = "uid"
+    static let cityKey = "city"
+    static let countryKey = "country"
+    static let countryCodeKey = "countryCode"
+    static let nameKey = "name"
+    static let creatorKey = "creator"
+    static let creatorIDKey = "creatorID"
+    static let creationDateKey = "creationDate"
+    static let overallRatingKey = "overallRating"
+    static let ratingsKey = "ratings"
+    static let descriptionKey = "description"
+    static let servingsKey = "servings"
+    static let timeInMinutesKey = "timeInMinutes"
+    static let difficultyKey = "difficulty"
+    static let ingredientsKey = "ingredients"
+    static let stepsKey = "steps"
+    static let videoURLKey = "videoURL"
+    static let photoKey = "photo"
+    static let photoURLKey = "photoURL"
+    static let thumbnailURLKey = "thumbnailURL"
+    static let tagsKey = "tags"
+    static let hasFavoritedKey = "hasFavorited"
+    static let hasCookedKey = "hasCooked"
+    
     var uid: String?
     
     var city: String?
@@ -25,11 +50,13 @@ struct Recipe {
     var description: String?
     var servings: Int
     var timeInMinutes: Int
+    var difficulty: String
     var ingredients: [String]
     var steps: [String]
     
     var videoURL: String?
     var photoURL: String
+    var thumbnailURL: String?
     
     var tags: [Tag]?
     
@@ -38,25 +65,27 @@ struct Recipe {
     
     init(creator: User, dictionary: [String:Any]) {
         self.creator = creator
-        self.country = dictionary["country"] as? String
-        self.countryCode = dictionary["countryCode"] as? String
-        self.name = dictionary["recipeName"] as? String ?? ""
+        self.country = dictionary[Recipe.countryKey] as? String
+        self.countryCode = dictionary[Recipe.countryCodeKey] as? String
+        self.name = dictionary[Recipe.nameKey] as? String ?? ""
         let timestamp = dictionary["timestamp"] as? Double ?? 0
         self.creationDate = Date(timeIntervalSince1970: timestamp)
-        self.ratings = dictionary["ratings"] as? [Int]
+        self.ratings = dictionary[Recipe.ratingsKey] as? [Int]
+        self.difficulty = dictionary[Recipe.difficultyKey] as? String ?? "Easy"
         
         if let ratings = self.ratings {
             self.overallRating = averageRating(ratings)
         }
         
-        self.description = dictionary["description"] as? String
-        self.servings = dictionary["servings"] as? Int ?? 0
-        self.timeInMinutes = dictionary["timeInMinutes"] as? Int ?? 0
-        self.ingredients = dictionary["ingredients"] as? [String] ?? [String]()
-        self.steps = dictionary["steps"] as? [String] ?? [String]()
-        self.videoURL = dictionary["videoURL"] as? String
-        self.photoURL = dictionary["photoURL"] as? String ?? ""
-        if let tags = dictionary["tags"] as? [String] {
+        self.description = dictionary[Recipe.descriptionKey] as? String
+        self.servings = dictionary[Recipe.servingsKey] as? Int ?? 0
+        self.timeInMinutes = dictionary[Recipe.timeInMinutesKey] as? Int ?? 0
+        self.ingredients = dictionary[Recipe.ingredientsKey] as? [String] ?? [String]()
+        self.steps = dictionary[Recipe.stepsKey] as? [String] ?? [String]()
+        self.videoURL = dictionary[Recipe.videoURLKey] as? String
+        self.thumbnailURL = dictionary[Recipe.thumbnailURLKey] as? String
+        self.photoURL = dictionary[Recipe.photoURLKey] as? String ?? ""
+        if let tags = dictionary[Recipe.tagsKey] as? [String] {
             self.tags = tags.map { return Tag(rawValue: $0)! }
         }
     }

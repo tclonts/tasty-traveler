@@ -57,6 +57,35 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         return button
     }()
     
+    let usernamePlaceholder: UILabel = {
+        let label = UILabel()
+        label.text = "USERNAME"
+        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(14))
+        label.textColor = UIColor(hexString: "C7C7CD")
+        return label
+    }()
+    
+    lazy var usernameTextField: UITextField = {
+        let textField = UITextField()
+        textField.delegate = self
+        textField.borderStyle = .none
+        textField.returnKeyType = .next
+        textField.backgroundColor = .clear
+        textField.tag = 0
+        textField.autocapitalizationType = .none
+        textField.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(18))
+        textField.textColor = UIColor(hexString: "3C3C3C")
+        return textField
+    }()
+    
+    let usernameError: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(12))
+        label.textColor = .red
+        label.alpha = 0
+        return label
+    }()
+    
     let emailPlaceholder: UILabel = {
         let label = UILabel()
         label.text = "EMAIL"
@@ -71,11 +100,20 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         textField.borderStyle = .none
         textField.returnKeyType = .next
         textField.backgroundColor = .clear
-        textField.tag = 0
+        textField.keyboardType = .emailAddress
+        textField.tag = 1
         textField.autocapitalizationType = .none
         textField.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(18))
         textField.textColor = UIColor(hexString: "3C3C3C")
         return textField
+    }()
+    
+    let emailError: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(12))
+        label.textColor = .red
+        label.alpha = 0
+        return label
     }()
     
     let passwordPlaceholder: UILabel = {
@@ -93,11 +131,26 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         textField.isSecureTextEntry = true
         textField.keyboardType = .default
         textField.backgroundColor = .clear
-        textField.tag = 1
+        textField.tag = 2
         textField.returnKeyType = .done
         textField.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(18))
         textField.textColor = UIColor(hexString: "3C3C3C")
         return textField
+    }()
+    
+    let passwordError: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(12))
+        label.textColor = .red
+        label.alpha = 0
+        return label
+    }()
+    
+    let usernameTextFieldBottomBorder: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor(hexString: "DDDDDD")
+        view.height(1)
+        return view
     }()
     
     let emailTextFieldBottomBorder: UIView = {
@@ -158,6 +211,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     lazy var centerXConstraint = constraint(item: cardView, attribute: .centerX, relatedBy: .equal, toItem: self.view, attribute: .centerX, multiplier: 1, constant: 0)
     lazy var centerYConstraint = constraint(item: cardView, attribute: .centerY, relatedBy: .equal, toItem: self.view, attribute: .centerY, multiplier: 1, constant: 0)
     lazy var cardViewTopConstraint = constraint(item: cardView, attribute: .top, relatedBy: .equal, toItem: backButton, attribute: .bottom, multiplier: 1, constant: adaptConstant(27))
+    lazy var usernamePlaceholderConstraint = constraint(item: usernamePlaceholder, attribute: .centerY, relatedBy: .equal, toItem: usernameTextField, attribute: .centerY, multiplier: 1, constant: 0)
+    lazy var usernamePlaceholderActiveConstraint = constraint(item: usernamePlaceholder, attribute: .bottom, relatedBy: .equal, toItem: usernameTextField, attribute: .top, multiplier: 1, constant: -adaptConstant(7))
     lazy var emailPlaceholderConstraint = constraint(item: emailPlaceholder, attribute: .centerY, relatedBy: .equal, toItem: emailTextField, attribute: .centerY, multiplier: 1, constant: 0)
     lazy var emailPlaceholderActiveConstraint = constraint(item: emailPlaceholder, attribute: .bottom, relatedBy: .equal, toItem: emailTextField, attribute: .top, multiplier: 1, constant: -adaptConstant(7))
     lazy var passwordPlaceholderConstraint = constraint(item: passwordPlaceholder, attribute: .centerY, relatedBy: .equal, toItem: passwordTextField, attribute: .centerY, multiplier: 1, constant: 0)
@@ -166,6 +221,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     var isFromSignInVC = false
     var isWaitingForKeyboardDismissal = false
     var isTransitioningToSignInVC = false
+    var isFromFacebookLogin = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -196,21 +252,43 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     }
     
     func setUpViews() {
-        view.sv(
-            backgroundView,
-            welcomeMessageView.sv(welcomeLabel),
-            backButton,
-            cardView.sv(
-                emailPlaceholder,
-                emailTextField,
-                emailTextFieldBottomBorder,
-                passwordPlaceholder,
-                passwordTextField,
-                passwordTextFieldBottomBorder,
-                signUpButton
-            ),
-            signInButton
-        )
+        if isFromFacebookLogin {
+            view.sv(
+                backgroundView,
+                welcomeMessageView.sv(welcomeLabel),
+                backButton,
+                cardView.sv(
+                    usernamePlaceholder,
+                    usernameTextField,
+                    usernameTextFieldBottomBorder,
+                    usernameError,
+                    signUpButton
+                ),
+                signInButton
+            )
+        } else {
+            view.sv(
+                backgroundView,
+                welcomeMessageView.sv(welcomeLabel),
+                backButton,
+                cardView.sv(
+                    usernamePlaceholder,
+                    usernameTextField,
+                    usernameTextFieldBottomBorder,
+                    usernameError,
+                    emailPlaceholder,
+                    emailTextField,
+                    emailTextFieldBottomBorder,
+                    emailError,
+                    passwordPlaceholder,
+                    passwordTextField,
+                    passwordTextFieldBottomBorder,
+                    passwordError,
+                    signUpButton
+                ),
+                signInButton
+            )
+        }
         
         applyConstraints()
         applyHeroModifiers()
@@ -228,25 +306,47 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         welcomeMessageView.Bottom == cardView.Top
         welcomeLabel.centerInContainer()
         
-        emailTextField.left(adaptConstant(18)).right(adaptConstant(18)).top(adaptConstant(45))
-        equal(widths: [emailTextField, emailTextFieldBottomBorder])
-        emailTextFieldBottomBorder.Top == emailTextField.Bottom + adaptConstant(7)
-        emailTextFieldBottomBorder.centerHorizontally()
+        usernameTextField.left(adaptConstant(18)).right(adaptConstant(18)).top(adaptConstant(45))
+        equal(widths: [usernameTextField, usernameTextFieldBottomBorder])
+        usernameTextFieldBottomBorder.Top == usernameTextField.Bottom + adaptConstant(7)
+        usernameTextFieldBottomBorder.centerHorizontally()
+        usernameError.Top == usernameTextFieldBottomBorder.Bottom + adaptConstant(3)
+        usernameError.right(adaptConstant(18))
+
+        usernamePlaceholder.Left == usernameTextField.Left
+        self.view.addConstraint(usernamePlaceholderConstraint)
         
-        emailPlaceholder.Left == emailTextField.Left
-        
-        passwordTextField.left(adaptConstant(18)).right(adaptConstant(18))
-        passwordTextField.Top == emailTextFieldBottomBorder.Bottom + adaptConstant(45)
-        equal(widths: [passwordTextField, passwordTextFieldBottomBorder])
-        passwordTextFieldBottomBorder.Top == passwordTextField.Bottom + adaptConstant(7)
-        passwordTextFieldBottomBorder.centerHorizontally()
-        
-        passwordPlaceholder.Left == passwordTextField.Left
-        self.view.addConstraints([emailPlaceholderConstraint, passwordPlaceholderConstraint])
+        if isFromFacebookLogin {
+            
+            signUpButton.Top == usernameTextFieldBottomBorder.Bottom + adaptConstant(45)
+        } else {
+            emailTextField.left(adaptConstant(18)).right(adaptConstant(18))
+            emailTextField.Top == usernameTextFieldBottomBorder.Bottom + adaptConstant(45)
+            equal(widths: [emailTextField, emailTextFieldBottomBorder])
+            emailTextFieldBottomBorder.Top == emailTextField.Bottom + adaptConstant(7)
+            emailTextFieldBottomBorder.centerHorizontally()
+            emailError.Top == emailTextFieldBottomBorder.Bottom + adaptConstant(3)
+            emailError.right(adaptConstant(18))
+            
+            emailPlaceholder.Left == emailTextField.Left
+            
+            passwordTextField.left(adaptConstant(18)).right(adaptConstant(18))
+            passwordTextField.Top == emailTextFieldBottomBorder.Bottom + adaptConstant(45)
+            equal(widths: [passwordTextField, passwordTextFieldBottomBorder])
+            passwordTextFieldBottomBorder.Top == passwordTextField.Bottom + adaptConstant(7)
+            passwordTextFieldBottomBorder.centerHorizontally()
+            passwordError.Top == passwordTextFieldBottomBorder.Bottom + adaptConstant(3)
+            passwordError.right(adaptConstant(18))
+            
+            passwordPlaceholder.Left == passwordTextField.Left
+            
+            self.view.addConstraints([emailPlaceholderConstraint, passwordPlaceholderConstraint])
+            
+            signUpButton.Top == passwordTextFieldBottomBorder.Bottom + adaptConstant(45)
+        }
         
         signUpButton.height(adaptConstant(45))
         signUpButton.left(adaptConstant(18)).right(adaptConstant(18)).bottom(adaptConstant(22))
-        signUpButton.Top == passwordTextFieldBottomBorder.Bottom + adaptConstant(45)
         
         signInButton.Top == cardView.Bottom + adaptConstant(18)
         signInButton.centerHorizontally()
@@ -281,45 +381,124 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     }
     
     @objc func signUpButtonTapped() {
-        // validate email
-        guard let emailText = emailTextField.text else {
-            print("Email field is empty.")
+        guard usernameTextField.text != "" else {
+            showError(type: .username, message: "Username is empty.")
             return
         }
         
-        let validator = Validator()
-        guard let email = validator.validate(email: emailText) else {
-            print("Email is invalid.")
+        while usernameTextField.text!.hasSuffix(" ") {
+            usernameTextField.text = String(usernameTextField.text!.dropLast())
+        }
+        
+        guard let usernameText = usernameTextField.text else { return }
+        
+        guard usernameText != "" else {
+            print("Username field is empty.")
+            showError(type: .username, message: "Username is empty.")
             return
         }
         
-        Auth.auth().fetchProviders(forEmail: email) { (providers, error) in
-            if let error = error {
-                print(error.localizedDescription)
+        guard usernameText.count <= 24 else { print("Username is too long."); showError(type: .username, message: "Username is too long."); return }
+        
+        if !isFromFacebookLogin {
+            
+            // validate email
+            guard let emailText = emailTextField.text else { return }
+            guard emailText != "" else {
+                showError(type: .email, message: "Email is empty.")
                 return
             }
             
-            if providers != nil {
-                let ac = UIAlertController(title: "Error", message: "An account already exists with that email address.", preferredStyle: .alert)
-                ac.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: nil))
-                self.present(ac, animated: true, completion: nil)
-            } else {
-                guard let password = self.passwordTextField.text else {
-                    print("Password field is empty.")
+            let validator = Validator()
+            guard let email = validator.validate(email: emailText) else {
+                print("Email is invalid.")
+                showError(type: .email, message: "Email is invalid.")
+                return
+            }
+            
+            Auth.auth().fetchProviders(forEmail: email) { (providers, error) in
+                if let error = error {
+                    print(error.localizedDescription)
                     return
                 }
-                Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
-                    guard let uid = user?.uid else { return }
-                    if let error = error {
-                        print(error.localizedDescription)
-                    } else {
-                        // FirebaseController.shared.storeUsername(username, uid: uid)
-                        let mainTabBarController = MainTabBarController()
-                        mainTabBarController.newUser = true
-                        self.hero_replaceViewController(with: mainTabBarController)
+                
+                if providers != nil {
+                    self.showError(type: .email, message: "Email is already in use.")
+                    
+                } else {
+                    guard let password = self.passwordTextField.text else { return }
+                    guard password != "" else {
+                        self.showError(type: .password, message: "Password is empty.")
+                        return
                     }
-                })
+                    
+                    Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
+                        guard let uid = user?.uid else { return }
+                        if let error = error {
+                            print(error.localizedDescription)
+                        } else {
+                            FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
+                                if isUnique {
+                                    FirebaseController.shared.storeUsername(usernameText, uid: uid)
+                                    let mainTabBarController = MainTabBarController()
+                                    self.hero_replaceViewController(with: mainTabBarController)
+                                } else {
+                                    print("Username is already taken")
+                                    self.showError(type: .username, message: "Username is already taken.")
+                                }
+                            })
+                        }
+                    })
+                }
             }
+        } else {
+            guard let uid = Auth.auth().currentUser?.uid else { print("No user id for Facebook user."); return }
+            FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
+                if isUnique {
+                    FirebaseController.shared.storeUsername(usernameText, uid: uid)
+                    let mainTabBarController = MainTabBarController()
+                    self.hero_replaceViewController(with: mainTabBarController)
+                } else {
+                    print("Username is already taken")
+                    self.showError(type: .username, message: "Username is already taken.")
+                }
+            })
+        }
+    }
+    
+    func showError(type: ValidationError, message: String) {
+        var errorToShow: UILabel
+        
+        switch type {
+        case .username:
+            errorToShow = self.usernameError
+        case .email:
+            errorToShow = self.emailError
+        case .password:
+            errorToShow = self.passwordError
+        }
+        
+        errorToShow.text = message
+        
+        UIView.animate(withDuration: 0.2) {
+            errorToShow.alpha = 1
+        }
+    }
+    
+    func hideError(_ type: ValidationError) {
+        var errorToHide: UILabel
+        
+        switch type {
+        case .username:
+            errorToHide = self.usernameError
+        case .email:
+            errorToHide = self.emailError
+        case .password:
+            errorToHide = self.passwordError
+        }
+        
+        UIView.animate(withDuration: 0.2) {
+            errorToHide.alpha = 0
         }
     }
     
@@ -332,11 +511,28 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
 
     
     // MARK: - TextFieldDelegate Functions
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == usernameTextField && self.usernameError.alpha == 1 {
+            hideError(.username)
+        } else if textField == emailTextField && self.emailTextField.alpha == 1 {
+            hideError(.email)
+        } else if textField == passwordTextField && self.passwordTextField.alpha == 1 {
+            hideError(.password)
+        }
+        return true
+    }
+    
     func textFieldDidBeginEditing(_ textField: UITextField) {
         guard textField.text == "" else { return }
         if textField == emailTextField {
             self.view.removeConstraint(emailPlaceholderConstraint)
             self.view.addConstraint(emailPlaceholderActiveConstraint)
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if textField == usernameTextField {
+            self.view.removeConstraint(usernamePlaceholderConstraint)
+            self.view.addConstraint(usernamePlaceholderActiveConstraint)
             UIView.animate(withDuration: 0.3) {
                 self.view.layoutIfNeeded()
             }
@@ -354,6 +550,12 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         if textField == emailTextField {
             self.view.removeConstraint(emailPlaceholderActiveConstraint)
             self.view.addConstraint(emailPlaceholderConstraint)
+            UIView.animate(withDuration: 0.3) {
+                self.view.layoutIfNeeded()
+            }
+        } else if textField == usernameTextField {
+            self.view.removeConstraint(usernamePlaceholderActiveConstraint)
+            self.view.addConstraint(usernamePlaceholderConstraint)
             UIView.animate(withDuration: 0.3) {
                 self.view.layoutIfNeeded()
             }
@@ -413,4 +615,10 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     @objc func handleTap() {
         view.endEditing(true)
     }
+}
+
+enum ValidationError {
+    case username
+    case email
+    case password
 }

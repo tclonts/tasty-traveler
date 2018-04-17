@@ -15,7 +15,7 @@ class RecipeCell: BaseCell {
         didSet {
             guard let photoURL = recipe?.photoURL else { return }
             recipeHeaderView.photoImageView.loadImage(urlString: photoURL)
-            recipeHeaderView.countryLabel.text = recipe?.country
+            recipeHeaderView.countryLabel.text = "United States"//recipe?.country
             if let countryCode = recipe?.countryCode { recipeHeaderView.countryFlag.image = UIImage(named: countryCode) }
 
             recipeHeaderView.recipeNameLabel.text = recipe?.name
@@ -80,6 +80,10 @@ class RecipeCell: BaseCell {
         recipeHeaderView.starsImageView.Right == recipeHeaderView.numberOfRatingsLabel.Left - adaptConstant(4)
         
         recipeHeaderView.creatorNameLabel.bottom(adaptConstant(16))
+    }
+    
+    override func prepareForReuse() {
+        recipeHeaderView.heroID = ""
     }
     
 }

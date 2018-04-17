@@ -12,6 +12,7 @@ import Hero
 import FacebookCore
 import FacebookLogin
 import Firebase
+import SVProgressHUD
 
 class AccountAccessVC: UIViewController {
 
@@ -154,6 +155,8 @@ class AccountAccessVC: UIViewController {
         super.viewDidLoad()
         
         setUpViews()
+        
+        SVProgressHUD.setDefaultMaskType(.black)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -244,29 +247,33 @@ class AccountAccessVC: UIViewController {
             case .success(let grantedPermissions, let declinedPermissions, let accessToken):
                 print("Logged in!")
                 
+                SVProgressHUD.show()
                 let credential = FacebookAuthProvider.credential(withAccessToken: accessToken.authenticationToken)
                 Auth.auth().signIn(with: credential, completion: { (user, error) in
                     if let error = error {
                         print(error)
+                        SVProgressHUD.dismiss()
                         return
                     }
                     if let user = user {
-//                        FirebaseController.shared.isUsernameStored(uid: user.uid, completion: { (result) in
-//                            if result {
-//                                let tabBarController = UIStoryboard(name: "Home", bundle: nil).instantiateViewController(withIdentifier: Identifiers.tabBarController)
-//                                self.present(tabBarController, animated: true, completion: nil)
-//
-//                            } else {
-//                                let nextVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: Identifiers.loginContainerVC) as! LoginContainerVC
-//                                nextVC.isUsingEmail = false
-//                                self.navigationController?.pushViewController(nextVC, animated: true)
-//                            }
-//                        })
-                        let mainTabBarController = MainTabBarController()
-                        self.present(mainTabBarController, animated: true, completion: nil)
-                        print("User: \(user)")
+                        FirebaseController.shared.isUsernameStored(uid: user.uid, completion: { (result) in
+                            SVProgressHUD.dismiss()
+                            if result {
+                                let mainTabBarController = MainTabBarController()
+                                self.present(mainTabBarController, animated: true, completion: nil)
+                                print("User: \(user)")
+                            } else {
+                                // NEW ACCOUNT USING FACEBOOK
+                                let signUpVC = SignUpVC()
+                                signUpVC.isFromFacebookLogin = true
+                                signUpVC.isHeroEnabled = true
+                                signUpVC.view.heroModifiers = [.fade]
+                                self.present(signUpVC, animated: true, completion: nil)
+                            }
+                        })
                     } else {
                         print("Could not log in using Facebook.")
+                        SVProgressHUD.dismiss()
                         return
                     }
                     

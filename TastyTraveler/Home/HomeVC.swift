@@ -56,16 +56,28 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         return refreshControl
     }()
     
+    lazy var filtersLauncher: FiltersLauncher = {
+        let launcher = FiltersLauncher()
+        launcher.homeVC = self
+        return launcher
+    }()
+    
     var recipes = [Recipe]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
+        let statusBarColor = UIColor.white
+        statusBarView.backgroundColor = statusBarColor
+        view.sv(statusBarView)
         
         self.collectionView!.register(RecipeCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.collectionView?.register(HomeHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "header")
         self.collectionView?.refreshControl = refreshControl
         
         self.navigationController?.navigationBar.isHidden = true
+        self.isHeroEnabled = true
         
         self.view.backgroundColor = .white
         self.collectionView?.backgroundColor = .white
@@ -73,6 +85,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         
 //        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
         self.view.sv(loadingRecipesView)
@@ -85,6 +98,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     @objc func handleRefresh() {
         print("Handling refresh..")
         recipes.removeAll()
+        //collectionView?.reloadData()
         fetchAllRecipes()
     }
     
@@ -139,15 +153,26 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecipeCell
         
-        let recipe = recipes[indexPath.item]
+        if recipes.count > 0 {
+            let recipe = recipes[indexPath.item]
+            cell.recipe = recipe
+        }
         
-        cell.recipe = recipe
         return cell
     }
     
+    var previousIndexPath: IndexPath?
+    
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as! RecipeCell
+        if let previousIndexPath = previousIndexPath {
+            if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? RecipeCell {
+                previousCell.recipeHeaderView.heroID = ""
+            }
+        }
         
+        previousIndexPath = indexPath
+        
+        let cell = collectionView.cellForItem(at: indexPath) as! RecipeCell
         cell.recipeHeaderView.heroID = "recipeHeaderView"
         
         guard let recipe = cell.recipe else { return }
@@ -199,7 +224,7 @@ extension HomeVC {
             
             recipeIDsDictionary.forEach({ (key, value) in
                 guard let recipeDictionary = value as? [String:Any] else { return }
-                guard let creatorID = recipeDictionary["creatorID"] as? String else { return }
+                guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
                 
                 FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
                     var recipe = Recipe(creator: creator, dictionary: recipeDictionary)

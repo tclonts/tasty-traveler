@@ -11,6 +11,8 @@ import Stevia
 import MobileCoreServices
 import Firebase
 import RSKImageCropper
+import AVKit
+import AVFoundation
 
 class CreateRecipeVC: UIViewController {
     
@@ -21,6 +23,10 @@ class CreateRecipeVC: UIViewController {
     let tagsDataSource = TagsDataSource()
     
     let photoImagePicker = UIImagePickerController()
+    var localVideoURL: URL?
+    var servings: String?
+    var timeInMinutes: String?
+    var difficulty: String?
     
     lazy var formView: CreateRecipeForm = {
         let form = CreateRecipeForm()
@@ -42,6 +48,9 @@ class CreateRecipeVC: UIViewController {
         formView.stepsTableView.delegate = stepsDataSource
         formView.tagsCollectionView.dataSource = tagsDataSource
         formView.tagsCollectionView.delegate = tagsDataSource
+        
+        ingredientsDataSource.ingredientsTableView = formView.ingredientsTableView
+        stepsDataSource.stepsTableView = formView.stepsTableView
         
         photoImagePicker.delegate = self
         
@@ -75,9 +84,73 @@ class CreateRecipeVC: UIViewController {
     
     func submitRecipe() {
         guard let photo = formView.photoImageView.image else { return }
-        let recipeDictionary: [String:Any] = ["photo": UIImageJPEGRepresentation(photo, 0.8)!,
-                                              "recipeName": formView.recipeNameTextInputView.textView.text,
-                                              "creatorID": Auth.auth().currentUser!.uid]
+        guard let name = formView.recipeNameTextInputView.textView.text else { return }
+        guard let servings = servings else { return }
+        guard let timeInMinutes = timeInMinutes else { return }
+        guard let difficulty = formView.difficultyControl.titleForSegment(at: formView.difficultyControl.selectedSegmentIndex) else { return }
+        
+        var steps = stepsDataSource.steps
+        
+        // if the last element in the tableview has an empty textfield continue, if not append that textfield text to the steps array
+        let stepsIndexPath = IndexPath(row: stepsDataSource.steps.count, section: 0)
+        
+        if let stepCell = formView.stepsTableView.cellForRow(at: stepsIndexPath) as? TextInputTableViewCell {
+            if let text = stepCell.textField.text {
+                if !steps.contains(text) && text != "" {
+                    steps.append(text)
+                }
+            } else {
+                print("Last step field is empty")
+            }
+        } else {
+            return
+        }
+        
+        var ingredients = ingredientsDataSource.ingredients
+        
+        let ingredientsIndexPath = IndexPath(row: ingredientsDataSource.ingredients.count, section: 0)
+        if let ingredientCell = formView.ingredientsTableView.cellForRow(at: ingredientsIndexPath) as? TextInputTableViewCell {
+            if let text = ingredientCell.textField.text {
+                if !ingredients.contains(text) && text != "" {
+                    ingredients.append(text)
+                }
+            } else {
+                print("Last ingredient field is empty")
+            }
+        } else {
+            return
+        }
+        
+        let servingsInt = Int(servings)
+        let timeInMinutesInt = Int(timeInMinutes)
+        
+        var recipeDictionary: [String:Any] = [Recipe.photoKey: UIImageJPEGRepresentation(photo, 0.8)!,
+                                              Recipe.nameKey: name,
+                                              Recipe.creatorIDKey: Auth.auth().currentUser!.uid,
+                                              Recipe.servingsKey: servingsInt!,
+                                              Recipe.timeInMinutesKey: timeInMinutesInt!,
+                                              Recipe.difficultyKey: difficulty,
+                                              Recipe.ingredientsKey: ingredients,
+                                              Recipe.stepsKey: steps]
+        
+        if let descriptionText = formView.descriptionTextInputView.textView.text {
+            if descriptionText != "" && descriptionText != "Give your recipe a description..." {
+                recipeDictionary[Recipe.descriptionKey] = descriptionText
+            }
+        }
+        
+        if let videoURL = localVideoURL {
+            recipeDictionary[Recipe.videoURLKey] = videoURL
+            recipeDictionary[Recipe.thumbnailURLKey] = UIImageJPEGRepresentation(formView.tutorialVideoImageView.image!, 0.8)!
+        }
+        
+        if let selectedTags = formView.tagsCollectionView.indexPathsForSelectedItems {
+            let tagIndexes = selectedTags.map { $0.item }
+            var tags = [String]()
+            tagIndexes.forEach { tags.append(tagsDataSource.tags[$0]) }
+            recipeDictionary[Recipe.tagsKey] = tags
+        }
+        
         FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
         self.dismiss(animated: true, completion: nil)
     }
@@ -124,29 +197,87 @@ extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControlle
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else { return }
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            let imageCropViewController = RSKImageCropViewController(image: image)
+            imageCropViewController.delegate = self
+            imageCropViewController.dataSource = self
+            imageCropViewController.cropMode = .custom
+            
+            photoImagePicker.pushViewController(imageCropViewController, animated: true)
+        }
         
-//        let videoUrl = info[UIImagePickerControllerMediaURL] as! NSURL?
-//        let pathString = videoUrl?.relativePath
+        if let videoURL = info[UIImagePickerControllerMediaURL] as? URL {
+            let compressedURL = NSURL.fileURL(withPath: NSTemporaryDirectory() + UUID().uuidString + ".mov")
+            compressVideo(inputURL: videoURL, outputURL: compressedURL, handler: { (exportSession) in
+                guard let session = exportSession else { return }
+                
+                switch session.status {
+                case .unknown:
+                    break
+                case .waiting:
+                    break
+                case .exporting:
+                    break
+                case .completed:
+                    guard let compressedData = NSData(contentsOf: compressedURL) else { return }
+                    self.localVideoURL = exportSession?.outputURL
+                    DispatchQueue.main.async {
+                        self.formView.tutorialVideoImageView.image = self.getThumbnail(forURL: self.localVideoURL!)
+                        self.formView.tutorialVideoImageView.isHidden = false
+                        self.formView.containerView.removeConstraint(self.formView.servingsConstraintNoVideo)
+                        self.formView.containerView.addConstraint(self.formView.servingsConstraint)
+                    }
+                    self.dismiss(animated: true, completion: nil)
+                case .failed:
+                    break
+                case .cancelled:
+                    break
+                }
+            })
+        }
+    }
+    
+    func playVideo() {
+        if let videoURL = localVideoURL {
+            let player = AVPlayer(url: videoURL)
+            
+            let playerViewController = AVPlayerViewController()
+            playerViewController.player = player
+            
+            present(playerViewController, animated: true, completion: {
+                playerViewController.player!.play()
+            })
+        }
+    }
+    
+    func compressVideo(inputURL: URL, outputURL: URL, handler:@escaping (_ exportSession: AVAssetExportSession?)-> Void) {
+        let urlAsset = AVURLAsset(url: inputURL, options: nil)
+        guard let exportSession = AVAssetExportSession(asset: urlAsset, presetName: AVAssetExportPresetHighestQuality) else {
+            handler(nil)
+            
+            return
+        }
         
-//        let imageUID = UUID().uuidString
-        
-//        formView.photoImageView.image = image
-//        formView.photoImageView.isHidden = false
-//        formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
-//        formView.containerView.addConstraint(formView.recipeNameConstraint)
-        
-        let imageCropViewController = RSKImageCropViewController(image: image)
-        imageCropViewController.delegate = self
-        imageCropViewController.dataSource = self
-        imageCropViewController.cropMode = .custom
-        
-        photoImagePicker.pushViewController(imageCropViewController, animated: true)
-        
-//        if let jpegData = UIImageJPEGRepresentation(image, 80) {
-//        }
-        
-//        dismiss(animated: true)
+        exportSession.outputURL = outputURL
+        exportSession.outputFileType = AVFileType.mov
+        exportSession.shouldOptimizeForNetworkUse = true
+        exportSession.exportAsynchronously { () -> Void in
+            handler(exportSession)
+        }
+    }
+    
+    func getThumbnail(forURL videoURL: URL) -> UIImage? {
+        do {
+            let asset = AVURLAsset(url: videoURL)
+            let imgGenerator = AVAssetImageGenerator(asset: asset)
+            imgGenerator.appliesPreferredTrackTransform = true
+            let cgImage = try imgGenerator.copyCGImage(at: CMTimeMake(0, 1), actualTime: nil)
+            let thumbnail = UIImage(cgImage: cgImage)
+            return thumbnail
+        } catch let error {
+            print("Error generating thumbnail: \(error.localizedDescription)")
+            return nil
+        }
     }
     
     func imageCropViewControllerDidCancelCrop(_ controller: RSKImageCropViewController) {
@@ -174,11 +305,16 @@ extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControlle
     }
 }
 
-class TextInputTableViewCell: UITableViewCell {
+protocol TextInputCellDelegate: class {
+    func handleEndEditing(text: String, cell: TextInputTableViewCell)
+}
+
+class TextInputTableViewCell: UITableViewCell, UITextFieldDelegate {
     lazy var textField: UITextField = {
         let textField = UITextField()
         textField.borderStyle = .none
-        
+        textField.returnKeyType = .done
+        textField.delegate = self
         return textField
     }()
     
@@ -187,6 +323,8 @@ class TextInputTableViewCell: UITableViewCell {
         label.isHidden = true
         return label
     }()
+    
+    weak var delegate: TextInputCellDelegate?
     
     func configure(text: String?, placeholder: String?, step: Int?) {
         textField.text = text
@@ -217,10 +355,24 @@ class TextInputTableViewCell: UITableViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if let text = textField.text {
+            if text != "" {
+                delegate?.handleEndEditing(text: text, cell: self)
+            }
+        }
+    }
 }
 
-class IngredientsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate {
+class IngredientsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, TextInputCellDelegate {
     var ingredients = [String]()
+    var ingredientsTableView: UITableView?
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return ingredients.count + 1
@@ -235,7 +387,7 @@ class IngredientsDataSource: NSObject, UITableViewDataSource, UITableViewDelegat
             cell.configure(text: ingredients[indexPath.row], placeholder: nil, step: nil)
         }
 
-        cell.textField.delegate = self
+        cell.delegate = self
         return cell
     }
     
@@ -251,17 +403,24 @@ class IngredientsDataSource: NSObject, UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 43
     }
+    
+    func handleEndEditing(text: String, cell: TextInputTableViewCell) {
+//        guard let indexPath = ingredientsTableView?.indexPath(for: cell) else { return }
+//        guard !ingredients.contains(text) else { return }
 //
-//    func textFieldDidEndEditing(_ textField: UITextField) {
-//        if textField.text != ingredients.last && textField.text != "" {
-//            ingredients.append(textField.text!)
-//            print(ingredients)
+//        // last row of the steps tableview
+//        if indexPath.row == ingredients.count {
+//            ingredients.append(text)
+//        } else {
+//            // replace existing step
+//            ingredients[indexPath.row] = text
 //        }
-//    }
+    }
 }
 
-class StepsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate {
+class StepsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, TextInputCellDelegate {
     var steps = [String]()
+    var stepsTableView: UITableView?
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return steps.count + 1
@@ -276,7 +435,7 @@ class StepsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, UIT
             cell.configure(text: steps[indexPath.row], placeholder: nil, step: indexPath.row + 1)
         }
         
-        cell.textField.delegate = self
+        cell.delegate = self
         return cell
     }
     
@@ -291,6 +450,19 @@ class StepsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, UIT
                 (cell as! TextInputTableViewCell).textField.becomeFirstResponder()
             }
         }
+    }
+    
+    func handleEndEditing(text: String, cell: TextInputTableViewCell) {
+//        guard let indexPath = stepsTableView?.indexPath(for: cell) else { return }
+//        guard !steps.contains(text) else { return }
+//
+//        // last row of the steps tableview
+//        if indexPath.row == steps.count {
+//            steps.append(text)
+//        } else {
+//            // replace existing step
+//            steps[indexPath.row] = text
+//        }
     }
 }
 
@@ -309,7 +481,7 @@ class TagsDataSource: NSObject, UICollectionViewDataSource, UICollectionViewDele
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tagCell", for: indexPath) as! TagCell
         
-        let tag = tags[indexPath.row]
+        let tag = tags[indexPath.item]
         
         cell.tagString = tag
         cell.setUpViews()

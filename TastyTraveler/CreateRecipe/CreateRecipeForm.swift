@@ -35,6 +35,7 @@ class CreateRecipeForm: UIView {
         textView.textView.textContainerInset = UIEdgeInsets.zero
         textView.textView.textContainer.lineFragmentPadding = 0
         textView.textView.delegate = self
+        textView.textView.returnKeyType = .done
         return textView
     }()
     
@@ -52,26 +53,16 @@ class CreateRecipeForm: UIView {
         return view
     }()
     
-    let descriptionTextView: UITextView = {
-        let textView = UITextView()
-        textView.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))
-        textView.textColor = Color.darkText
-        textView.text = "This is an example description. You can write anything about the recipe here. Share the recipe's origin, overview, inspiration, etc."
-        textView.isScrollEnabled = false
-        textView.textContainerInset = UIEdgeInsets.zero
-        textView.textContainer.lineFragmentPadding = 0
-        return textView
-    }()
-    
     lazy var descriptionTextInputView: TextInputView = {
         let textView = TextInputView()
         textView.textView.text = "Give your recipe a description..."
-        textView.textView.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(18))
+        textView.textView.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(18))
         textView.textView.textColor = Color.lightGray
         textView.textView.isScrollEnabled = false
         textView.textView.textContainerInset = UIEdgeInsets.zero
         textView.textView.textContainer.lineFragmentPadding = 0
         textView.textView.delegate = self
+        textView.textView.returnKeyType = .done
         return textView
     }()
     
@@ -93,9 +84,31 @@ class CreateRecipeForm: UIView {
         return button
     }()
     
-    let tutorialVideoImageView: UIImageView = {
+    lazy var tutorialVideoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.isHidden = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tutorialVideoTapped))
+        imageView.addGestureRecognizer(tapGesture)
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.isUserInteractionEnabled = true
+        imageView.layer.cornerRadius = adaptConstant(10)
+        
+        let playButtonImage = UIImageView()
+        playButtonImage.image = #imageLiteral(resourceName: "playButton")
+        
+        let deleteButton = UIButton(type: .system)
+        deleteButton.setImage(#imageLiteral(resourceName: "deleteButton"), for: .normal)
+        deleteButton.addTarget(self, action: #selector(deleteVideoButtonTapped), for: .touchUpInside)
+        
+        imageView.sv(playButtonImage, deleteButton)
+        
+        playButtonImage.width(adaptConstant(36)).height(adaptConstant(36))
+        playButtonImage.centerInContainer()
+        deleteButton.width(adaptConstant(30)).height(adaptConstant(30))
+        deleteButton.left(adaptConstant(10)).top(adaptConstant(10))
+        
         return imageView
     }()
     
@@ -244,6 +257,9 @@ class CreateRecipeForm: UIView {
     let bottomView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
+//        view.layer.shadowOffset = CGSize(width: 0, height: -6)
+//        view.layer.shadowOpacity = 0.10
+//        view.layer.shadowRadius = 25
         return view
     }()
     
@@ -260,6 +276,7 @@ class CreateRecipeForm: UIView {
     lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "doneButton"), for: .normal)
+        button.width(adaptConstant(60)).height(adaptConstant(60))
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -333,8 +350,8 @@ class CreateRecipeForm: UIView {
         tutorialVideoButton.right(margin)
         tutorialVideoImageView.right(margin)
         tutorialVideoImageView.Top == tutorialVideoButton.Bottom + adaptConstant(10)
-        tutorialVideoImageView.width(adaptConstant(118))
-        tutorialVideoImageView.heightEqualsWidth()
+        tutorialVideoImageView.left(margin)
+        tutorialVideoImageView.Height == tutorialVideoImageView.Width * 0.75
         
         // Servings
         containerView.addConstraint(servingsConstraintNoVideo)
@@ -406,6 +423,24 @@ class CreateRecipeForm: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    @objc fileprivate func tutorialVideoTapped() {
+        self.createRecipeVC?.playVideo()
+    }
+    
+    @objc fileprivate func deleteVideoButtonTapped() {
+        self.createRecipeVC?.localVideoURL = nil
+        self.containerView.removeConstraint(servingsConstraint)
+        self.containerView.addConstraint(servingsConstraintNoVideo)
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.tutorialVideoImageView.alpha = 0
+            self.layoutIfNeeded()
+        }) { (completed) in
+            self.tutorialVideoImageView.alpha = 1
+            self.tutorialVideoImageView.isHidden = true
+        }
+    }
+    
     @objc fileprivate func cancelButtonTapped() {
         self.createRecipeVC?.dismiss(animated: true, completion: nil)
 //        print(ingredientsTableView.numberOfRows(inSection: 0))
@@ -413,21 +448,29 @@ class CreateRecipeForm: UIView {
     }
     
     @objc fileprivate func doneButtonTapped() {
+        let name = self.recipeNameTextInputView.textView.text
+        if name == "" || name == "Name this recipe" { return }
+        
+        
+        
         self.createRecipeVC?.submitRecipe()
     }
     
     @objc fileprivate func addIngredientTapped() {
         var previousIngredient: String?
         
+        // Checking only visible row for ingredient
         if ingredientsTableView.numberOfRows(inSection: 0) == 1 {
             let cell = ingredientsTableView.cellForRow(at: IndexPath(row: 0, section: 0)) as! TextInputTableViewCell
             if cell.textField.text != "" { previousIngredient = cell.textField.text }
         } else {
+            // Multiple rows exist, check if the last row has ingredient
             let cell = ingredientsTableView.cellForRow(at: IndexPath(row: (createRecipeVC?.ingredientsDataSource.ingredients.count)!, section: 0)) as! TextInputTableViewCell
             if cell.textField.text != "" { previousIngredient = cell.textField.text }
         }
         
         if previousIngredient != nil {
+//            guard !(createRecipeVC?.ingredientsDataSource.ingredients.contains(previousIngredient!))! else { return }
             createRecipeVC?.ingredientsDataSource.ingredients.append(previousIngredient!)
             
             guard let ingredients = createRecipeVC?.ingredientsDataSource.ingredients else { return }
@@ -450,6 +493,7 @@ class CreateRecipeForm: UIView {
         }
         
         if previousStep != nil {
+//            guard !(createRecipeVC?.stepsDataSource.steps.contains(previousStep!))! else { return }
             createRecipeVC?.stepsDataSource.steps.append(previousStep!)
             
             guard let steps = createRecipeVC?.stepsDataSource.steps else { return }
@@ -489,7 +533,7 @@ class CreateRecipeForm: UIView {
     }
     
     @objc fileprivate func chooseVideo() {
-        //createRecipeVC?.chooseVideo()
+        createRecipeVC?.chooseVideo()
     }
 }
 
@@ -509,6 +553,7 @@ extension CreateRecipeForm: UITextFieldDelegate {
                     let title = NSAttributedString(string: updatedString + " servings", attributes: [
                         NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
                         NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                    self.createRecipeVC?.servings = updatedString
                     self.servingsButton.setAttributedTitle(title, for: .normal)
                 }
             }
@@ -527,6 +572,7 @@ extension CreateRecipeForm: UITextFieldDelegate {
                     let title = NSAttributedString(string: updatedString + " minutes", attributes: [
                         NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
                         NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                    self.createRecipeVC?.timeInMinutes = updatedString
                     self.timeButton.setAttributedTitle(title, for: .normal)
                 }
             }
@@ -551,6 +597,10 @@ extension CreateRecipeForm: UITextViewDelegate {
     }
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if (text == "\n") {
+            textView.resignFirstResponder()
+            return true
+        }
         if textView == recipeNameTextInputView.textView {
             let newText = (textView.text as NSString).replacingCharacters(in: range, with: text)
             let numberOfChars = newText.count
@@ -562,12 +612,12 @@ extension CreateRecipeForm: UITextViewDelegate {
     
     func textViewDidBeginEditing(_ textView: UITextView) {
         if textView == recipeNameTextInputView.textView && recipeNameTextInputView.textView.text == "Name this recipe" {
-            textView.textColor = Color.blackText
+            textView.textColor = Color.darkText
             textView.text = ""
         }
         
         if textView == descriptionTextInputView.textView && descriptionTextInputView.textView.text == "Give your recipe a description..." {
-            textView.textColor = Color.blackText
+            textView.textColor = Color.darkGrayText
             textView.text = ""
         }
     }

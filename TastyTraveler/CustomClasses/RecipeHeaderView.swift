@@ -20,14 +20,14 @@ class RecipeHeaderView: UIView {
     
     let countryFlag: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = #imageLiteral(resourceName: "PR")
+        imageView.image = #imageLiteral(resourceName: "US")
         imageView.height(adaptConstant(15)).width(adaptConstant(22))
         return imageView
     }()
     
     let countryLabel: UILabel = {
         let label = UILabel()
-        label.text = "test"
+        label.text = "United States"
         label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(12))
         label.textColor = Color.darkGrayText
         return label

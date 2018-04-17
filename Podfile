@@ -29,5 +29,8 @@ target 'TastyTraveler' do
   
   # Image Crop
   pod 'RSKImageCropper'
+  
+  # Loading indicators
+  pod 'SVProgressHUD'
 
 end
