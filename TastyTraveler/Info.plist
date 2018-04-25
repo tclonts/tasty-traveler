@@ -28,7 +28,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>8</string>
+	<string>14</string>
 	<key>FacebookAppID</key>
 	<string>2061930147409249</string>
 	<key>FacebookDisplayName</key>
@@ -47,6 +47,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We will quickly grab your location, randomized within one mile, to display the origin of your recipe.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>proximanova-semibold-webfont.ttf</string>

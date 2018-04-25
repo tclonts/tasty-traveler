@@ -11,17 +11,17 @@ import Stevia
 
 class TagCell: BaseCell {
     
-    var tagString: String? {
-        didSet {
-            tagLabel.text = tagString!
-        }
-    }
+//    var tagString: String? {
+//        didSet {
+//            tagLabel.text = tagString!
+//        }
+//    }
     
     let tagLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))
-        label.textColor = Color.lightGray
-        
+//        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))
+//        label.textColor = Color.lightGray
+//
         return label
     }()
     
@@ -65,6 +65,14 @@ class TagCell: BaseCell {
         selectedBackgroundView = customSelectedBackgroundView
     }
     
-    
+    override var isSelected: Bool {
+        didSet {
+            if self.isSelected {
+                self.tagLabel.textColor = .white
+            } else {
+                self.tagLabel.textColor = Color.lightGray
+            }
+        }
+    }
     
 }

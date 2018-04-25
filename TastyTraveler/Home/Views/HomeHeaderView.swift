@@ -9,6 +9,19 @@
 import UIKit
 import Stevia
 
+class CustomSearchField: UITextField {
+    
+    var homeHeaderView: HomeHeaderView?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented.")
+    }
+}
+
 class HomeHeaderView: BaseCell {
     
     let recipesLabel: UILabel = {
@@ -30,11 +43,12 @@ class HomeHeaderView: BaseCell {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "filter"), for: .normal)
         button.width(adaptConstant(27)).height(adaptConstant(31))
+        button.addTarget(self, action: #selector(showFilters), for: .touchUpInside)
         return button
     }()
     
-    lazy var searchField: UITextField = {
-        let textField = UITextField()
+    lazy var searchField: CustomSearchField = {
+        let textField = CustomSearchField()
         textField.placeholder = "Search recipes"
         textField.borderStyle = .none
         textField.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(14))
@@ -50,16 +64,36 @@ class HomeHeaderView: BaseCell {
         textField.setRightPadding(amount: adaptConstant(14))
         
         textField.backgroundColor = .white
+        textField.homeHeaderView = self
         return textField
     }()
     
-//    weak var homeVC: HomeVC!
+    lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Cancel", for: .normal)
+        button.addTarget(self, action: #selector(cancelSearch), for: .touchUpInside)
+        button.isHidden = true
+        button.alpha = 0
+        return button
+    }()
+    
+    lazy var filterStatusView: FilterStatusCell = {
+        let view = FilterStatusCell()
+        view.isHidden = true
+        view.homeHeaderView = self
+        return view
+    }()
+    
+    weak var homeVC: HomeVC!
+    weak var searchVC: SearchVC?
     
     override func setUpViews() {
         sv(recipesLabel,
            mapButton,
            filterButton,
-           searchField)
+           searchField,
+           cancelButton,
+           filterStatusView)
         
         recipesLabel.left(adaptConstant(18)).top(adaptConstant(16))
         mapButton.right(adaptConstant(18))
@@ -67,7 +101,31 @@ class HomeHeaderView: BaseCell {
         filterButton.left(adaptConstant(18))
         filterButton.Top == recipesLabel.Bottom + adaptConstant(18)
         searchField.Left == filterButton.Right + adaptConstant(18)
-        searchField.right(20)
+        searchField.right(adaptConstant(18))
         alignCenter(searchField, with: filterButton)
+        
+        cancelButton.right(adaptConstant(32))
+        cancelButton.CenterY == searchField.CenterY
+        
+        filterStatusView.Top == searchField.Bottom + adaptConstant(18)
+        filterStatusView.left(adaptConstant(18)).right(0).height(adaptConstant(30))
+    }
+    
+    @objc func cancelSearch() {
+        //homeVC.cancelledSearch = true
+        searchVC?.view.removeFromSuperview()
+        searchVC?.removeFromParentViewController()
+//        UIView.animate(withDuration: 0.3, animations: {
+//            self.cancelButton.alpha = 0
+//        }) { (completed) in
+//            self.cancelButton.isHidden = true
+//        }
+        //homeVC.view.endEditing(true)
+        //searchField.text = ""
+        //searchField.resignFirstResponder()
+    }
+    
+    @objc func showFilters() {
+        homeVC.showFilters()
     }
 }

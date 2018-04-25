@@ -15,9 +15,20 @@ class RecipeCell: BaseCell {
         didSet {
             guard let photoURL = recipe?.photoURL else { return }
             recipeHeaderView.photoImageView.loadImage(urlString: photoURL)
-            recipeHeaderView.countryLabel.text = "United States"//recipe?.country
-            if let countryCode = recipe?.countryCode { recipeHeaderView.countryFlag.image = UIImage(named: countryCode) }
+            
+            if let countryCode = recipe?.countryCode, let locality = recipe?.locality {
+                recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
+                recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
+            } else {
+                recipeHeaderView.countryFlag.image = nil
+                recipeHeaderView.countryLabel.text = "Location Unavailable"
+            }
 
+            let title = NSAttributedString(string: recipe!.meal!, attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(12))!,
+                NSAttributedStringKey.foregroundColor: UIColor.white])
+            recipeHeaderView.mealLabel.setAttributedTitle(title, for: .normal)
+            
             recipeHeaderView.recipeNameLabel.text = recipe?.name
             recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
 
@@ -59,6 +70,10 @@ class RecipeCell: BaseCell {
         
         recipeHeaderView.photoImageView.top(0).left(0).right(0)
         recipeHeaderView.photoImageView.Height == recipeHeaderView.photoImageView.Width * 0.75
+        
+        recipeHeaderView.mealLabel.left(0)
+        recipeHeaderView.mealLabel.Bottom == recipeHeaderView.photoImageView.Bottom - adaptConstant(27)
+        recipeHeaderView.mealLabel.height(adaptConstant(20))
         
         recipeHeaderView.countryFlag.left(adaptConstant(10))
         recipeHeaderView.countryFlag.Top == recipeHeaderView.photoImageView.Bottom + adaptConstant(12)

@@ -10,7 +10,7 @@ import UIKit
 import Stevia
 
 class MenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-
+    
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -21,9 +21,9 @@ class MenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UIC
     }()
     
     let cellID = "cellID"
-    let tabNames = ["About", "Ingredients", "Directions"]
+    var tabNames = ["About", "Ingredients", "Directions"]
     
-    var recipeDetailVC: RecipeDetailVC?
+    weak var delegate: MenuBarDelegate?
     
     var horizontalBarLeftConstraint: NSLayoutConstraint?
 
@@ -39,11 +39,10 @@ class MenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UIC
         let selectedIndexPath = IndexPath(item: 0, section: 0)
         collectionView.selectItem(at: selectedIndexPath, animated: false, scrollPosition: UICollectionViewScrollPosition())
         
-        setUpHorizontalBar()
         
     }
     
-    func setUpHorizontalBar() {
+    func setUpHorizontalBar(onTop: Bool) {
         let horizontalBarView = UIView()
         horizontalBarView.backgroundColor = UIColor(hexString: "A8C046")
         sv(horizontalBarView)
@@ -51,17 +50,23 @@ class MenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UIC
         horizontalBarLeftConstraint = horizontalBarView.leftAnchor.constraint(equalTo: self.leftAnchor)
         horizontalBarLeftConstraint?.isActive = true
 
-        horizontalBarView.bottom(0)
+        switch onTop {
+        case true:
+            horizontalBarView.top(0)
+        case false:
+            horizontalBarView.bottom(0)
+        }
+        
         horizontalBarView.widthAnchor.constraint(equalTo: self.widthAnchor, multiplier: 1/3).isActive = true
         horizontalBarView.height(adaptConstant(3))
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        recipeDetailVC?.scrollToMenuIndex(indexPath.item)
+        delegate?.scrollToMenuIndex(indexPath.item)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+        return tabNames.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -113,4 +118,8 @@ class MenuCell: BaseCell {
         
         tabLabel.centerInContainer()
     }
+}
+
+protocol MenuBarDelegate: class {
+    func scrollToMenuIndex(_ menuIndex: Int)
 }

@@ -11,9 +11,10 @@ import Foundation
 struct Recipe {
     // KEYS
     static let uidKey = "uid"
-    static let cityKey = "city"
-    static let countryKey = "country"
+    static let mealKey = "meal"
+    static let localityKey = "locality"
     static let countryCodeKey = "countryCode"
+    static let countryKey = "country"
     static let nameKey = "name"
     static let creatorKey = "creator"
     static let creatorIDKey = "creatorID"
@@ -36,9 +37,11 @@ struct Recipe {
     
     var uid: String?
     
-    var city: String?
-    var country: String?
+    var meal: String?
+    
+    var locality: String?
     var countryCode: String?
+    var country: String?
     
     var name: String
     var creator: User
@@ -65,8 +68,10 @@ struct Recipe {
     
     init(creator: User, dictionary: [String:Any]) {
         self.creator = creator
-        self.country = dictionary[Recipe.countryKey] as? String
+        self.meal = dictionary[Recipe.mealKey] as? String
+        self.locality = dictionary[Recipe.localityKey] as? String
         self.countryCode = dictionary[Recipe.countryCodeKey] as? String
+        self.country = dictionary[Recipe.countryKey] as? String
         self.name = dictionary[Recipe.nameKey] as? String ?? ""
         let timestamp = dictionary["timestamp"] as? Double ?? 0
         self.creationDate = Date(timeIntervalSince1970: timestamp)

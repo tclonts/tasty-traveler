@@ -66,6 +66,25 @@ class CreateRecipeForm: UIView {
         return textView
     }()
     
+    let mealTypeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Meal"
+        label.font = UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))
+        label.textColor = Color.darkText
+        return label
+    }()
+    
+    lazy var mealTypeButton: UIButton = {
+        let button = UIButton(type: .system)
+        let title = NSAttributedString(string: "Choose meal type", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        button.addTarget(self, action: #selector(chooseMealType), for: .touchUpInside)
+        button.contentHorizontalAlignment = .right
+        return button
+    }()
+    
     let tutorialVideoLabel: UILabel = {
         let label = UILabel()
         label.text = "Tutorial Video"
@@ -306,6 +325,8 @@ class CreateRecipeForm: UIView {
             photoImageView,
             nameAndCameraView,
             descriptionTextInputView,
+            mealTypeLabel,
+            mealTypeButton,
             tutorialVideoLabel,
             tutorialVideoButton,
             tutorialVideoImageView,
@@ -343,8 +364,15 @@ class CreateRecipeForm: UIView {
         descriptionTextInputView.left(adaptConstant(18)).right(margin)
         descriptionTextInputView.height(60)
         
+        // Meal
+        mealTypeLabel.Top == descriptionTextInputView.Bottom + adaptConstant(27)
+        mealTypeLabel.left(margin)
+        mealTypeButton.CenterY == mealTypeLabel.CenterY
+        mealTypeButton.right(margin)
+        mealTypeButton.Left == mealTypeLabel.Right
+        
         // Tutorial Video
-        tutorialVideoLabel.Top == descriptionTextInputView.Bottom + adaptConstant(27)
+        tutorialVideoLabel.Top == mealTypeLabel.Bottom + adaptConstant(27)
         tutorialVideoLabel.left(margin)
         tutorialVideoButton.CenterY == tutorialVideoLabel.CenterY
         tutorialVideoButton.right(margin)
@@ -425,6 +453,69 @@ class CreateRecipeForm: UIView {
     
     @objc fileprivate func tutorialVideoTapped() {
         self.createRecipeVC?.playVideo()
+    }
+    
+    @objc fileprivate func chooseMealType() {
+        let actionSheet = UIAlertController(title: "Meal Type", message: nil, preferredStyle: .actionSheet)
+        let breakfastAction = UIAlertAction(title: "Breakfast", style: .default) { (_) in
+            print("Breakfast tapped")
+            let title = NSAttributedString(string: "Breakfast", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            self.mealTypeButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        let lunchAction = UIAlertAction(title: "Lunch", style: .default) { (_) in
+            print("Lunch tapped")
+            let title = NSAttributedString(string: "Lunch", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            self.mealTypeButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        let dinnerAction = UIAlertAction(title: "Dinner", style: .default) { (_) in
+            print("Dinner tapped")
+            let title = NSAttributedString(string: "Dinner", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            self.mealTypeButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        let snackAction = UIAlertAction(title: "Snack", style: .default) { (_) in
+            print("Snack tapped")
+            let title = NSAttributedString(string: "Snack", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            self.mealTypeButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        let drinkAction = UIAlertAction(title: "Drink", style: .default) { (_) in
+            print("Drink tapped")
+            let title = NSAttributedString(string: "Drink", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            self.mealTypeButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        let dessertAction = UIAlertAction(title: "Dessert", style: .default) { (_) in
+            print("Dessert tapped")
+            let title = NSAttributedString(string: "Dessert", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            self.mealTypeButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        actionSheet.addAction(breakfastAction)
+        actionSheet.addAction(lunchAction)
+        actionSheet.addAction(dinnerAction)
+        actionSheet.addAction(snackAction)
+        actionSheet.addAction(drinkAction)
+        actionSheet.addAction(dessertAction)
+        actionSheet.addAction(cancelAction)
+        
+        self.createRecipeVC?.present(actionSheet, animated: true, completion: nil)
     }
     
     @objc fileprivate func deleteVideoButtonTapped() {

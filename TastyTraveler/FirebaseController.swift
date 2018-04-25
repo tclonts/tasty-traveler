@@ -8,6 +8,7 @@
 
 import Firebase
 import UIKit
+import SVProgressHUD
 
 class FirebaseController {
     static var shared = FirebaseController()
@@ -86,6 +87,7 @@ class FirebaseController {
             
             let recipeName = dictionary[Recipe.nameKey] as! String
             
+            // Firebase Recipe: name, timestamp, photoURL, creatorID, # servings, # minutes, difficulty, ingredients, steps, countryCode, locality, tags, description,
             var dictionaryToUpload: [String:Any] = [Recipe.nameKey: recipeName,
                                                     "timestamp": timestamp,
                                                     Recipe.photoURLKey: photoURL,
@@ -94,7 +96,8 @@ class FirebaseController {
                                                     Recipe.timeInMinutesKey: dictionary[Recipe.timeInMinutesKey] as! Int,
                                                     Recipe.difficultyKey: dictionary[Recipe.difficultyKey] as! String,
                                                     Recipe.ingredientsKey: dictionary[Recipe.ingredientsKey] as! [String],
-                                                    Recipe.stepsKey: dictionary[Recipe.stepsKey] as! [String]]
+                                                    Recipe.stepsKey: dictionary[Recipe.stepsKey] as! [String],
+                                                    Recipe.mealKey: dictionary[Recipe.mealKey] as! String]
             
             if let tags = dictionary[Recipe.tagsKey] as? [String] {
                 dictionaryToUpload[Recipe.tagsKey] = tags
@@ -102,6 +105,12 @@ class FirebaseController {
             
             if let description = dictionary[Recipe.descriptionKey] as? String {
                 dictionaryToUpload[Recipe.descriptionKey] = description
+            }
+            
+            if let countryCode = dictionary[Recipe.countryCodeKey] as? String, let locality = dictionary[Recipe.localityKey] as? String {
+                dictionaryToUpload[Recipe.countryCodeKey] = countryCode
+                dictionaryToUpload[Recipe.localityKey] = locality
+                dictionaryToUpload[Recipe.countryKey] = dictionary[Recipe.countryKey]
             }
             
             self.ref.child("recipes").child(recipeID).setValue(dictionaryToUpload)
@@ -126,6 +135,9 @@ class FirebaseController {
                     self.ref.child("recipes").child(recipeID).updateChildValues([Recipe.videoURLKey: uploadedVideoURL])
                 }
             }
+            
+            SVProgressHUD.showSuccess(withStatus: "Recipe uploaded!")
+            SVProgressHUD.dismiss(withDelay: 0.5)
         }
     }
 

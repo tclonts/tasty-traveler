@@ -18,6 +18,18 @@ class RecipeHeaderView: UIView {
         return imageView
     }()
     
+    let mealLabel: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = Color.primaryOrange
+        button.layer.cornerRadius = adaptConstant(10)
+        button.clipsToBounds = true
+        button.layer.masksToBounds = true
+        button.isUserInteractionEnabled = false
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: adaptConstant(6), bottom: 0, right: adaptConstant(8))
+        button.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMaxXMinYCorner]
+        return button
+    }()
+    
     let countryFlag: UIImageView = {
         let imageView = UIImageView()
         imageView.image = #imageLiteral(resourceName: "US")
@@ -80,6 +92,7 @@ class RecipeHeaderView: UIView {
         self.backgroundColor = .white
         
         sv(photoImageView,
+           mealLabel,
            countryFlag,
            countryLabel,
            recipeNameLabel,

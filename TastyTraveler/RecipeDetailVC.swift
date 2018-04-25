@@ -15,8 +15,18 @@ class RecipeDetailVC: UIViewController {
         
     var recipe: Recipe? {
         didSet {
-            recipeHeaderView.countryLabel.text = "United States"//recipe?.country
-            if let countryCode = recipe?.countryCode { recipeHeaderView.countryFlag.image = UIImage(named: countryCode) }
+            if let countryCode = recipe?.countryCode, let locality = recipe?.locality {
+                recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
+                recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
+            } else {
+                recipeHeaderView.countryFlag.image = nil
+                recipeHeaderView.countryLabel.text = "Location Unavailable"
+            }
+            
+            let title = NSAttributedString(string: recipe!.meal!, attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(12))!,
+                NSAttributedStringKey.foregroundColor: UIColor.white])
+            recipeHeaderView.mealLabel.setAttributedTitle(title, for: .normal)
             
             recipeHeaderView.recipeNameLabel.text = recipe?.name
             recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
@@ -113,7 +123,8 @@ class RecipeDetailVC: UIViewController {
     
     lazy var menuBar: MenuBar = {
         let menuBar = MenuBar()
-        menuBar.recipeDetailVC = self
+        menuBar.delegate = self
+        menuBar.setUpHorizontalBar(onTop: false)
         return menuBar
     }()
     
@@ -320,6 +331,10 @@ class RecipeDetailVC: UIViewController {
         recipeHeaderView.photoImageView.top(0).left(0).right(0)
         recipeHeaderView.photoImageView.Height == recipeHeaderView.photoImageView.Width * 0.75
         
+        recipeHeaderView.mealLabel.left(0)
+        recipeHeaderView.mealLabel.Bottom == recipeHeaderView.photoImageView.Bottom - adaptConstant(27)
+        recipeHeaderView.mealLabel.height(adaptConstant(20))
+        
         recipeHeaderView.countryFlag.left(margin)
         recipeHeaderView.countryFlag.Top == recipeHeaderView.photoImageView.Bottom + adaptConstant(16)
         recipeHeaderView.countryLabel.Left == recipeHeaderView.countryFlag.Right + adaptConstant(4)
@@ -349,8 +364,6 @@ class RecipeDetailVC: UIViewController {
         // view - recipeheaderview height - navbar height - menu bar height - bottomview height
         let collectionViewHeight: CGFloat = self.view.frame.height - menuBar.frame.height - recipeHeaderView.frame.height - 64 - menuBar.frame.height - adaptConstant(45) - adaptConstant(45)
         collectionView.height(collectionViewHeight)
-        
-        
     }
     
     func setUpBottomView() {
@@ -374,11 +387,6 @@ class RecipeDetailVC: UIViewController {
 
 extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
-    func scrollToMenuIndex(_ menuIndex: Int) {
-        let indexPath = IndexPath(item: menuIndex, section: 0)
-        collectionView.scrollToItem(at: indexPath, at: UICollectionViewScrollPosition(), animated: true)
-    }
-    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         print("SCROLL")
         if scrollView == self.scrollView && aboutCellScrollView != nil {
@@ -387,9 +395,7 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
                 if tableView.contentSize.height > tableView.frame.size.height {
                     ingredientsCellTableView?.isScrollEnabled = (self.scrollView.contentOffset.y >= (self.scrollView.contentSize.height - self.scrollView.frame.size.height))
                 }
-                
             }
-            
         }
 
         if scrollView == self.aboutCellScrollView && aboutCellScrollView != nil {
@@ -483,5 +489,12 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
+    }
+}
+
+extension RecipeDetailVC: MenuBarDelegate {
+    func scrollToMenuIndex(_ menuIndex: Int) {
+        let indexPath = IndexPath(item: menuIndex, section: 0)
+        collectionView.scrollToItem(at: indexPath, at: UICollectionViewScrollPosition(), animated: true)
     }
 }

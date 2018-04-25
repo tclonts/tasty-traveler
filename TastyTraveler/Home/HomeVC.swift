@@ -50,6 +50,27 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         return containerView
     }()
     
+    lazy var emptyDataView: UIStackView = {
+        let label = UILabel()
+        label.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(20))
+        label.text = "No Recipes Found"
+        label.textColor = Color.gray
+        
+        let button = UIButton(type: .system)
+        let title = NSAttributedString(string: "Remove All Filters", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        button.addTarget(self, action: #selector(clearFilters), for: .touchUpInside)
+        
+        let stackView = UIStackView(arrangedSubviews: [label, button])
+        stackView.axis = .vertical
+        stackView.spacing = adaptConstant(20)
+        stackView.isHidden = true
+        stackView.alpha = 0
+        return stackView
+    }()
+    
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
@@ -63,6 +84,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }()
     
     var recipes = [Recipe]()
+    
+    var cancelledSearch = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -92,7 +115,34 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         loadingRecipesView.left(0).right(0)
         loadingRecipesView.centerVertically()
         
+        self.view.sv(emptyDataView)
+        emptyDataView.centerInContainer()
+        
         fetchAllRecipes()
+    }
+    
+    func showFilters() {
+        filtersLauncher.showFilters()
+    }
+    
+    func showEmptyView() {
+        emptyDataView.isHidden = false
+        UIView.animate(withDuration: 0.3) {
+            self.emptyDataView.alpha = 1
+        }
+        print("No recipes found.")
+    }
+    
+    func hideEmptyView() {
+        self.emptyDataView.alpha = 0
+        self.emptyDataView.isHidden = true
+    }
+    
+    @objc func clearFilters() {
+        filtersLauncher.clearFilters()
+        filtersLauncher.filtersApplied = false
+        hideEmptyView()
+        handleRefresh()
     }
     
     @objc func handleRefresh() {
@@ -107,12 +157,20 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        
         return UIEdgeInsetsMake(0, 0, adaptConstant(18), 0 )
+        
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: view.frame.width, height: adaptConstant(125))
+        if filtersLauncher.filtersApplied {
+            return CGSize(width: view.frame.width, height: adaptConstant(165))
+        } else {
+            return CGSize(width: view.frame.width, height: adaptConstant(125))
+        }
     }
+    
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = view.frame.width - adaptConstant(36) // margins
@@ -133,8 +191,16 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! HomeHeaderView
         
-//        header.homeVC = self
+        header.homeVC = self
         header.searchField.delegate = self
+        header.searchField.addTarget(self, action: #selector(UITextFieldDelegate.textFieldShouldEndEditing(_:)), for: .editingChanged)
+        
+        if filtersLauncher.filtersApplied {
+            header.filterStatusView.isHidden = false
+            header.filterStatusView.filtersCollectionView.reloadData()
+        } else {
+            header.filterStatusView.isHidden = true
+        }
         
         return header
     }
@@ -237,9 +303,15 @@ extension HomeVC {
                     self.collectionView?.reloadData()
                     UIApplication.shared.isNetworkActivityIndicatorVisible = false
                     self.loadingRecipesView.isHidden = true
+                    
+                    if self.filtersLauncher.filtersApplied {
+                        self.filtersLauncher.applyFilters()
+//                        self.filterStatusView.filtersCollectionView.reloadData()
+//                        self.filterStatusView.isHidden = false
+                    }
+                    
+                    self.recipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
                 })
-                
-                
             })
         }
     }
@@ -247,5 +319,84 @@ extension HomeVC {
 
 extension HomeVC: UITextFieldDelegate {
     func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        //self.collectionView?.isScrollEnabled = true
+        
+    }
+    
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        //if cancelledSearch { cancelledSearch = false; return true }
+        self.collectionView?.isScrollEnabled = false
+        let searchVC = SearchVC()
+        addChildViewController(searchVC)
+//        searchVC.view.frame = CGRect(x: view.bounds.minX, y: adaptConstant(125), width: view.bounds.width, height: view.bounds.height - adaptConstant(125))
+        //view.addSubview(searchVC.view)
+        let y = textField.superview!.frame.maxY
+        print(y)
+        searchVC.view.frame = CGRect(x: view.bounds.minX, y: y, width: view.bounds.width, height: view.bounds.height - y)
+        if let searchField = textField as? CustomSearchField {
+            searchField.homeHeaderView?.searchVC = searchVC
+            searchField.homeHeaderView?.cancelButton.isHidden = false
+            UIView.animate(withDuration: 0.3, animations: {
+                searchField.homeHeaderView?.cancelButton.alpha = 1
+            })
+        }
+        view.addSubview(searchVC.view)
+        searchVC.didMove(toParentViewController: self)
+        
+        NotificationCenter.default.post(name: Notification.Name("handleTextChangeNotification"), object: nil, userInfo: ["text": textField.text!])
+        
+        return true
+    }
+    
+}
+
+class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    let tableView = UITableView()
+    var searchResults = [String]()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleTextChange(_:)), name: Notification.Name("handleTextChangeNotification"), object: nil)
+        
+        tableView.dataSource = self
+        tableView.delegate = self
+        
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        
+        self.view.sv(tableView)
+        
+        tableView.fillContainer()
+    }
+    
+    @objc func handleTextChange(_ notification: Notification) {
+        if let userInfo = notification.userInfo {
+            if let text = userInfo["text"] as? String {
+                print(text)
+            }
+        }
+    }
+    
+    func updateSearchResults() {
+        
+    }
+    
+    func loadMore() {
+        
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchResults.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        
+        return cell
     }
 }

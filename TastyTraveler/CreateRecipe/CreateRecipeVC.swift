@@ -13,6 +13,7 @@ import Firebase
 import RSKImageCropper
 import AVKit
 import AVFoundation
+import CoreLocation
 
 class CreateRecipeVC: UIViewController {
     
@@ -27,6 +28,13 @@ class CreateRecipeVC: UIViewController {
     var servings: String?
     var timeInMinutes: String?
     var difficulty: String?
+    var states: [State]?
+    
+    lazy var locationManager: CLLocationManager = {
+        let lm = CLLocationManager()
+        lm.delegate = self
+        return lm
+    }()
     
     lazy var formView: CreateRecipeForm = {
         let form = CreateRecipeForm()
@@ -41,6 +49,8 @@ class CreateRecipeVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        states = loadJson(filename: "states")
         
         formView.ingredientsTableView.dataSource = ingredientsDataSource
         formView.ingredientsTableView.delegate = ingredientsDataSource
@@ -59,6 +69,12 @@ class CreateRecipeVC: UIViewController {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        requestAuthorization()
     }
     
     var viewIsDark = Bool()
@@ -88,6 +104,7 @@ class CreateRecipeVC: UIViewController {
         guard let servings = servings else { return }
         guard let timeInMinutes = timeInMinutes else { return }
         guard let difficulty = formView.difficultyControl.titleForSegment(at: formView.difficultyControl.selectedSegmentIndex) else { return }
+        guard let mealType = formView.mealTypeButton.titleLabel?.text else { return }
         
         var steps = stepsDataSource.steps
         
@@ -131,7 +148,8 @@ class CreateRecipeVC: UIViewController {
                                               Recipe.timeInMinutesKey: timeInMinutesInt!,
                                               Recipe.difficultyKey: difficulty,
                                               Recipe.ingredientsKey: ingredients,
-                                              Recipe.stepsKey: steps]
+                                              Recipe.stepsKey: steps,
+                                              Recipe.mealKey: mealType]
         
         if let descriptionText = formView.descriptionTextInputView.textView.text {
             if descriptionText != "" && descriptionText != "Give your recipe a description..." {
@@ -151,7 +169,43 @@ class CreateRecipeVC: UIViewController {
             recipeDictionary[Recipe.tagsKey] = tags
         }
         
-        FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+        getUserLocation()
+        if let location = locationManager.location {
+            let geocoder = CLGeocoder()
+            
+            // Look up the location and pass it to the completion handler
+            geocoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) in
+                if error == nil {
+                    guard let placemark = placemarks?[0] else { print("placemark not found"); return }
+                    let countryCode = placemark.isoCountryCode
+                    recipeDictionary[Recipe.countryCodeKey] = countryCode
+                    recipeDictionary[Recipe.countryKey] = placemark.country
+                    
+                    // Found state or province; display that instead of city
+                    if let administrativeArea = placemark.administrativeArea, let states = self.states {
+                        if let matchingState = states.first(where: { $0.country == countryCode && $0.short == administrativeArea}) {
+                            recipeDictionary[Recipe.localityKey] = matchingState.name
+                            
+                            // Upload with location
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                        } else {
+                            recipeDictionary[Recipe.localityKey] = administrativeArea
+                            
+                            // Upload with location
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                        }
+                    }
+                    
+                } else {
+                    print(error!.localizedDescription)
+                }
+            })
+        } else {
+            // Upload without location
+            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+            print("No location available.")
+        }
+        
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -174,6 +228,53 @@ class CreateRecipeVC: UIViewController {
         }
         
         formView.scrollView.scrollIndicatorInsets = formView.scrollView.contentInset
+    }
+}
+
+extension CreateRecipeVC: CLLocationManagerDelegate {
+    func requestAuthorization() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
+    func getUserLocation() {
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+            
+            // One-time delivery of the user's location
+            locationManager.requestLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first {
+            print(location.coordinate)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .denied {
+            showLocationDisabledPopUp()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print(error.localizedDescription)
+    }
+    
+    func showLocationDisabledPopUp() {
+        let alertController = UIAlertController(title: "Location Access Disabled", message: "We need your location to display the origin of your recipe.", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        
+        let openAction = UIAlertAction(title: "Open Settings", style: .default) { (action) in
+            if let url = URL(string: UIApplicationOpenSettingsURLString) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            }
+        }
+        alertController.addAction(openAction)
+        
+        self.present(alertController, animated: true, completion: nil)
     }
 }
 
@@ -483,16 +584,12 @@ class TagsDataSource: NSObject, UICollectionViewDataSource, UICollectionViewDele
         
         let tag = tags[indexPath.item]
         
-        cell.tagString = tag
+        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: Color.lightGray])
+//        cell.tagString = tag
+        cell.tagLabel.attributedText = attributedString
         cell.setUpViews()
         
         return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as! TagCell
-        
-        cell.tagLabel.textColor = .white
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
@@ -503,13 +600,9 @@ class TagsDataSource: NSObject, UICollectionViewDataSource, UICollectionViewDele
         return adaptConstant(8)
     }
     
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as! TagCell
-        
-        cell.tagLabel.textColor = Color.lightGray
-    }
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: adaptConstant(115), height: collectionView.frame.height)
+        
+        let attributedString = NSAttributedString(string: tags[indexPath.row], attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: Color.lightGray])
+        return CGSize(width: attributedString.size().width + adaptConstant(24), height: collectionView.frame.height)
     }
 }
