@@ -9,6 +9,8 @@
 import UIKit
 import Stevia
 import Hero
+import FirebaseAuth
+import SVProgressHUD
 
 private let reuseIdentifier = "recipeCell"
 
@@ -17,6 +19,36 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     lazy var tapGesture: UITapGestureRecognizer = {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         return gesture
+    }()
+    
+    lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Cancel", for: .normal)
+        button.addTarget(self, action: #selector(cancelSearch), for: .touchUpInside)
+        button.isHidden = true
+        button.alpha = 0
+        return button
+    }()
+    
+    lazy var searchField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Search recipes"
+        textField.borderStyle = .none
+        textField.returnKeyType = .search
+        textField.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(14))
+        textField.textColor = Color.darkText
+        textField.layer.cornerRadius = 5
+        textField.layer.masksToBounds = false
+        textField.layer.shadowRadius = adaptConstant(30)
+        textField.layer.shadowOffset = CGSize(width: 0, height: 0)
+        textField.layer.shadowOpacity = 0.1
+        textField.height(adaptConstant(38))
+        
+        textField.setLeftPadding(amount: adaptConstant(14))
+        textField.setRightPadding(amount: adaptConstant(14))
+        
+        textField.backgroundColor = .white
+        return textField
     }()
     
     lazy var testView: UICollectionReusableView = {
@@ -83,9 +115,13 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         return launcher
     }()
     
+    var searchResultRecipes = [Recipe]()
     var recipes = [Recipe]()
+    var lastSearchText = ""
     
     var cancelledSearch = false
+    var isCancelButtonShowing = false
+    var recipeDataHasChanged = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,7 +144,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
+        //notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         
 //        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
         self.view.sv(loadingRecipesView)
@@ -119,6 +155,15 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         emptyDataView.centerInContainer()
         
         fetchAllRecipes()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if recipeDataHasChanged {
+            collectionView?.reloadItems(at: [previousIndexPath!])
+            recipeDataHasChanged = false
+        }
     }
     
     func showFilters() {
@@ -141,6 +186,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     @objc func clearFilters() {
         filtersLauncher.clearFilters()
         filtersLauncher.filtersApplied = false
+        //collectionView?.reloadSections([0])
         hideEmptyView()
         handleRefresh()
     }
@@ -152,21 +198,45 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         fetchAllRecipes()
     }
     
+    @objc func cancelSearch() {
+        print("canceled search")
+        searchField.text = ""
+        lastSearchText = ""
+        searchField.resignFirstResponder()
+        self.searchResultRecipes = recipes
+        self.hideEmptyView()
+        UIView.animate(withDuration: 0.3, animations: {
+            self.cancelButton.alpha = 0
+        }) { (_) in
+            self.cancelButton.isHidden = true
+            self.isCancelButtonShowing = false
+        }
+        cancelButton.removeFromSuperview()
+        self.collectionView?.reloadSections([1])
+    }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return adaptConstant(20)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        
-        return UIEdgeInsetsMake(0, 0, adaptConstant(18), 0 )
+        if section == 1 {
+            return UIEdgeInsetsMake(0, 0, adaptConstant(18), 0 )
+        } else {
+            return UIEdgeInsets.zero
+        }
         
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        if filtersLauncher.filtersApplied {
-            return CGSize(width: view.frame.width, height: adaptConstant(165))
+        if section == 0 {
+            if filtersLauncher.filtersApplied {
+                return CGSize(width: view.frame.width, height: adaptConstant(165))
+            } else {
+                return CGSize(width: view.frame.width, height: adaptConstant(125))
+            }
         } else {
-            return CGSize(width: view.frame.width, height: adaptConstant(125))
+            return CGSize.zero
         }
     }
     
@@ -189,39 +259,48 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! HomeHeaderView
-        
-        header.homeVC = self
-        header.searchField.delegate = self
-        header.searchField.addTarget(self, action: #selector(UITextFieldDelegate.textFieldShouldEndEditing(_:)), for: .editingChanged)
-        
-        if filtersLauncher.filtersApplied {
-            header.filterStatusView.isHidden = false
-            header.filterStatusView.filtersCollectionView.reloadData()
+        if indexPath.section == 0 {
+            
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! HomeHeaderView
+            
+            header.homeVC = self
+            header.searchField = searchField
+            header.searchField.delegate = self
+            header.searchField.addTarget(self, action: #selector(textChanged(textField:)), for: .editingChanged)
+            
+            header.setUpViews()
+            
+            if filtersLauncher.filtersApplied {
+                header.filterStatusView.isHidden = false
+                header.filterStatusView.filtersCollectionView.reloadData()
+            } else {
+                header.filterStatusView.isHidden = true
+            }
+            
+            return header
         } else {
-            header.filterStatusView.isHidden = true
+            return UICollectionReusableView()
         }
-        
-        return header
     }
 
     // MARK: UICollectionViewDataSource
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
+        return 2
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-
-        return recipes.count
+        if section == 0 { return 0 }
+        return searchResultRecipes.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecipeCell
-        
-        if recipes.count > 0 {
-            let recipe = recipes[indexPath.item]
+        print(indexPath)
+        if searchResultRecipes.count > 0 {
+            let recipe = searchResultRecipes[indexPath.item]
             cell.recipe = recipe
+            cell.delegate = self
         }
         
         return cell
@@ -245,7 +324,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = recipe
-        recipeDetailVC.recipeHeaderView.photoImageView.image = cell.recipeHeaderView.photoImageView.image
+        recipeDetailVC.homeVC = self
+        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL)
         // matching IDs for: Photo, favoriteButton, flagImageView, countryLabel, creatorLabel, ratingsStars, numberOfRatingsLabel
         
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
@@ -261,10 +341,10 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 //        let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: view.window)
 //
         if notification.name == Notification.Name.UIKeyboardWillHide {
-            self.view.removeGestureRecognizer(tapGesture)
+            //self.view.removeGestureRecognizer(tapGesture)
             //self.collectionView?.contentInset = UIEdgeInsets.zero
         } else {
-            self.view.addGestureRecognizer(tapGesture)
+            //self.view.addGestureRecognizer(tapGesture)
             //self.collectionView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
         }
         
@@ -272,7 +352,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     @objc func handleTap() {
-        view.endEditing(true)
+        searchField.resignFirstResponder()
+        searchField.layoutIfNeeded()
     }
 }
 
@@ -287,30 +368,53 @@ extension HomeVC {
             self.collectionView?.refreshControl?.endRefreshing()
             
             guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
+            guard let userID = Auth.auth().currentUser?.uid else { return }
             
             recipeIDsDictionary.forEach({ (key, value) in
                 guard let recipeDictionary = value as? [String:Any] else { return }
-                guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
+                guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String, creatorID != userID else { return }
                 
                 FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
-                    var recipe = Recipe(creator: creator, dictionary: recipeDictionary)
-                    recipe.uid = key
+                    var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
                     
-                    self.recipes.append(recipe)
-                    self.recipes.sort(by: { (r1, r2) -> Bool in
-                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                    
+                    FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                        if (snapshot.value as? Double) != nil {
+                            recipe.hasFavorited = true
+                        } else {
+                            recipe.hasFavorited = false
+                        }
+                        
+                        self.recipes.append(recipe)
+                        self.recipes.sort(by: { (r1, r2) -> Bool in
+                            return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                        })
+                        //                    self.collectionView?.reloadData()
+                        
+                        if self.lastSearchText != "" {
+                            self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
+                                return recipe.name.lowercased().contains(self.lastSearchText.lowercased()) || (recipe.locality?.lowercased().contains(self.lastSearchText.lowercased()))!
+                            }
+                        } else {
+                            self.searchResultRecipes = self.recipes
+                        }
+                        
+                        self.collectionView?.reloadData()
+                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                        self.loadingRecipesView.isHidden = true
+                        
+                        if self.filtersLauncher.filtersApplied {
+                            self.filtersLauncher.applyFilters()
+                            //                        self.filterStatusView.filtersCollectionView.reloadData()
+                            //                        self.filterStatusView.isHidden = false
+                        }
+                        
+                        self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
+                        
+                    }, withCancel: { (error) in
+                        print("Failed to fetch favorite info for recipe: ", error)
                     })
-                    self.collectionView?.reloadData()
-                    UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                    self.loadingRecipesView.isHidden = true
                     
-                    if self.filtersLauncher.filtersApplied {
-                        self.filtersLauncher.applyFilters()
-//                        self.filterStatusView.filtersCollectionView.reloadData()
-//                        self.filterStatusView.isHidden = false
-                    }
-                    
-                    self.recipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
                 })
             })
         }
@@ -318,46 +422,166 @@ extension HomeVC {
 }
 
 extension HomeVC: UITextFieldDelegate {
+    @objc func textChanged(textField: UITextField) {
+        if let text = textField.text {
+            print(text)
+            if text.isEmpty {
+                self.lastSearchText = text
+                self.searchResultRecipes = self.recipes
+                self.collectionView?.reloadSections([1])
+                
+                if textField.subviews.contains(cancelButton) {
+                    UIView.animate(withDuration: 0.3, animations: {
+                        self.cancelButton.alpha = 0
+                    }, completion: { (_) in
+                        self.cancelButton.isHidden = true
+                        self.cancelButton.removeFromSuperview()
+                    })
+                    isCancelButtonShowing = false
+                }
+                return
+            }
+            
+            if !textField.subviews.contains(cancelButton) {
+                textField.sv(cancelButton)
+            }
+            
+            if !isCancelButtonShowing {
+                cancelButton.right(adaptConstant(12))
+                cancelButton.centerVertically()
+                cancelButton.isHidden = false
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.cancelButton.alpha = 1
+                })
+                isCancelButtonShowing = true
+            }
+            
+            self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
+                return recipe.name.lowercased().contains(text.lowercased()) || (recipe.locality?.lowercased().contains(text.lowercased()))!
+            }
+            self.collectionView?.reloadSections([1])
+            self.lastSearchText = text
+            self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
+        }
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        print("RETURN: " + textField.text!)
+        textField.resignFirstResponder()
+        textField.layoutIfNeeded()
+        
+        return true
+    }
+    
     func textFieldDidBeginEditing(_ textField: UITextField) {
         
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        //self.collectionView?.isScrollEnabled = true
         
+        if textField.subviews.contains(cancelButton) && textField.text == "" {
+            UIView.animate(withDuration: 0.3, animations: {
+                self.cancelButton.alpha = 0
+            }, completion: { (_) in
+                self.cancelButton.isHidden = true
+            })
+            isCancelButtonShowing = false
+        }
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        //if cancelledSearch { cancelledSearch = false; return true }
-        self.collectionView?.isScrollEnabled = false
-        let searchVC = SearchVC()
-        addChildViewController(searchVC)
-//        searchVC.view.frame = CGRect(x: view.bounds.minX, y: adaptConstant(125), width: view.bounds.width, height: view.bounds.height - adaptConstant(125))
-        //view.addSubview(searchVC.view)
-        let y = textField.superview!.frame.maxY
-        print(y)
-        searchVC.view.frame = CGRect(x: view.bounds.minX, y: y, width: view.bounds.width, height: view.bounds.height - y)
-        if let searchField = textField as? CustomSearchField {
-            searchField.homeHeaderView?.searchVC = searchVC
-            searchField.homeHeaderView?.cancelButton.isHidden = false
-            UIView.animate(withDuration: 0.3, animations: {
-                searchField.homeHeaderView?.cancelButton.alpha = 1
-            })
-        }
-        view.addSubview(searchVC.view)
-        searchVC.didMove(toParentViewController: self)
+//        if cancelledSearch { cancelledSearch = false; return true }
+//        self.collectionView?.isScrollEnabled = false
+//        let searchVC = SearchVC()
+//        addChildViewController(searchVC)
+////        searchVC.view.frame = CGRect(x: view.bounds.minX, y: adaptConstant(125), width: view.bounds.width, height: view.bounds.height - adaptConstant(125))
+//        //view.addSubview(searchVC.view)
+//        let y = textField.superview!.frame.maxY
+//        print(y)
+//        searchVC.view.frame = CGRect(x: view.bounds.minX, y: y, width: view.bounds.width, height: view.bounds.height - y)
+//        if let searchField = textField as? CustomSearchField {
+//            searchField.homeHeaderView?.searchVC = searchVC
+//            searchField.homeHeaderView?.cancelButton.isHidden = false
+//            UIView.animate(withDuration: 0.3, animations: {
+//                searchField.homeHeaderView?.cancelButton.alpha = 1
+//            })
+//        }
+//        view.addSubview(searchVC.view)
+//        searchVC.didMove(toParentViewController: self)
+//        searchVC.homeVC = self
         
-        NotificationCenter.default.post(name: Notification.Name("handleTextChangeNotification"), object: nil, userInfo: ["text": textField.text!])
+        
+        
+        //NotificationCenter.default.post(name: Notification.Name("handleTextChangeNotification"), object: nil, userInfo: ["text": textField.text!])
         
         return true
     }
-    
+}
+
+extension HomeVC: RecipeCellDelegate {
+    func didTapFavorite(for cell: RecipeCell) {
+        guard let indexPath = collectionView?.indexPath(for: cell) else { return }
+        
+        var recipe = self.searchResultRecipes[indexPath.item]
+        
+        let recipeID = recipe.uid
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        if recipe.hasFavorited {
+            // remove
+            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
+            FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
+            
+            SVProgressHUD.showError(withStatus: "Removed")
+            SVProgressHUD.dismiss(withDelay: 1)
+            
+            recipe.hasFavorited = false
+            
+            self.searchResultRecipes[indexPath.item] = recipe
+            
+            self.collectionView?.reloadItems(at: [indexPath])
+            
+            NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+        } else {
+            // add
+            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
+                if let error = error {
+                    print("Failed to favorite recipe:", error)
+                    return
+                }
+                
+                let timestamp = Date().timeIntervalSince1970
+                
+                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+                    if let error = error {
+                        print("Failted to favorite recipe:", error)
+                        return
+                    }
+                    
+                    print("Successfully favorited recipe.")
+                    
+                    SVProgressHUD.showSuccess(withStatus: "Saved")
+                    SVProgressHUD.dismiss(withDelay: 1)
+                    
+                    recipe.hasFavorited = true
+                    
+                    self.searchResultRecipes[indexPath.item] = recipe
+                    
+                    self.collectionView?.reloadItems(at: [indexPath])
+                    
+                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                }
+            }
+        }
+    }
 }
 
 class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     let tableView = UITableView()
-    var searchResults = [String]()
+    var searchResults = [Recipe]()
+    var homeVC: HomeVC?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -366,6 +590,7 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
         
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.keyboardDismissMode = .onDrag
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
@@ -377,7 +602,10 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @objc func handleTextChange(_ notification: Notification) {
         if let userInfo = notification.userInfo {
             if let text = userInfo["text"] as? String {
-                print(text)
+                searchResults = homeVC!.recipes.filter { (recipe) -> Bool in
+                    return recipe.name.lowercased().contains(text.lowercased())
+                }
+                self.tableView.reloadData()
             }
         }
     }
@@ -397,6 +625,14 @@ class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
+        cell.textLabel?.text = searchResults[indexPath.row].name
+        
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let recipe = searchResults[indexPath.row]
+        
+        print(recipe.name)
     }
 }

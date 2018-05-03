@@ -35,7 +35,7 @@ struct Recipe {
     static let hasFavoritedKey = "hasFavorited"
     static let hasCookedKey = "hasCooked"
     
-    var uid: String?
+    var uid: String
     
     var meal: String?
     
@@ -63,10 +63,14 @@ struct Recipe {
     
     var tags: [Tag]?
     
+    // PERSONAL
     var hasFavorited = false
+    var favoritedDate: Date?
     var hasCooked = false
+    var cookedDate: Date?
     
-    init(creator: User, dictionary: [String:Any]) {
+    init(uid: String, creator: User, dictionary: [String:Any]) {
+        self.uid = uid
         self.creator = creator
         self.meal = dictionary[Recipe.mealKey] as? String
         self.locality = dictionary[Recipe.localityKey] as? String

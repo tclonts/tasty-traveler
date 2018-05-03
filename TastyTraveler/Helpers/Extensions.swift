@@ -32,6 +32,11 @@ extension UIButton {
         self.layer.insertSublayer(gradientLayer, at: 0)
     }
     
+    func setCustomTitle(string: String, font: UIFont, textColor: UIColor, for controlState: UIControlState) {
+        let attributedText = NSAttributedString(string: string, attributes: [NSAttributedStringKey.font: font,
+                                                                             NSAttributedStringKey.foregroundColor: textColor])
+        self.setAttributedTitle(attributedText, for: controlState)
+    }
 }
 
 extension UIViewController {
@@ -117,6 +122,26 @@ extension UIAlertController {
             }
         }
     }
+}
+
+extension UIViewController {
+    
+    func setTabBarHidden(_ hidden: Bool, animated: Bool = true, duration: TimeInterval = 0.3) {
+        if animated {
+            if let frame = self.tabBarController?.tabBar.frame {
+                let factor: CGFloat = hidden ? 1 : -1
+                let y = self.view.frame.size.height + frame.size.height * factor
+                UIView.animate(withDuration: duration, animations: {
+                    (self.tabBarController as! MainTabBarController).shadowView.frame = CGRect(x: frame.origin.x, y: y, width: frame.width, height: frame.height)
+                    self.tabBarController?.tabBar.frame = CGRect(x: frame.origin.x, y: y, width: frame.width, height: frame.height)
+                })
+                return
+            }
+        }
+        self.tabBarController?.tabBar.isHidden = hidden
+        (self.tabBarController as! MainTabBarController).shadowView.isHidden = hidden
+    }
+    
 }
 
 extension UIAlertAction {

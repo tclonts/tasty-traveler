@@ -139,16 +139,42 @@ class CreateRecipeForm: UIView {
         return label
     }()
     
-    lazy var servingsButton: UIButton = {
-        let button = UIButton(type: .system)
-        let title = NSAttributedString(string: "Enter number of servings", attributes: [
-            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-        button.setAttributedTitle(title, for: .normal)
-        button.addTarget(self, action: #selector(servingsButtonTapped), for: .touchUpInside)
-        button.contentHorizontalAlignment = .right
-        return button
+    lazy var servingsTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Enter number of servings"
+        textField.textAlignment = .right
+        textField.delegate = self
+        textField.contentHorizontalAlignment = .right
+        textField.keyboardType = .numberPad
+        textField.tag = 0
+        textField.font = ProximaNova.regular.of(size: adaptConstant(14))
+        textField.textColor = Color.primaryOrange
+        textField.inputAccessoryView = toolbar
+        textField.height(textField.intrinsicContentSize.height + adaptConstant(20))
+        return textField
     }()
+    
+    lazy var toolbar: UIToolbar = {
+        let tb = UIToolbar()
+        tb.barStyle = .default
+        tb.isTranslucent = false
+        
+        let doneButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.done, target: self, action: #selector(toolbarDoneTapped))
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
+        
+        var items = [UIBarButtonItem]()
+        items.append(flexSpace)
+        items.append(doneButton)
+        
+        tb.items = items
+        tb.sizeToFit()
+        
+        return tb
+    }()
+    
+    @objc func toolbarDoneTapped() {
+        self.endEditing(true)
+    }
     
     let timeLabel: UILabel = {
         let label = UILabel()
@@ -158,15 +184,19 @@ class CreateRecipeForm: UIView {
         return label
     }()
     
-    let timeButton: UIButton = {
-        let button = UIButton(type: .system)
-        let title = NSAttributedString(string: "Enter total time", attributes: [
-            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-        button.setAttributedTitle(title, for: .normal)
-        button.addTarget(self, action: #selector(timeButtonTapped), for: .touchUpInside)
-        button.contentHorizontalAlignment = .right
-        return button
+    lazy var timeTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Enter time in minutes"
+        textField.textAlignment = .right
+        textField.delegate = self
+        textField.contentHorizontalAlignment = .right
+        textField.keyboardType = .numberPad
+        textField.tag = 1
+        textField.font = ProximaNova.regular.of(size: adaptConstant(14))
+        textField.textColor = Color.primaryOrange
+        textField.inputAccessoryView = toolbar
+        textField.height(textField.intrinsicContentSize.height + adaptConstant(20))
+        return textField
     }()
     
     let difficultyLabel: UILabel = {
@@ -192,7 +222,7 @@ class CreateRecipeForm: UIView {
         
         segmentedControl.setTitleTextAttributes([
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!,
-            NSAttributedStringKey.foregroundColor: Color.darkText], for: .selected)
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange], for: .selected)
         return segmentedControl
     }()
     
@@ -297,6 +327,11 @@ class CreateRecipeForm: UIView {
         button.setImage(#imageLiteral(resourceName: "doneButton"), for: .normal)
         button.width(adaptConstant(60)).height(adaptConstant(60))
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
+        
+        //TESTING
+        let longGesture = UILongPressGestureRecognizer(target: self, action: #selector(createTestRecipe))
+        button.addGestureRecognizer(longGesture)
+        
         return button
     }()
     
@@ -318,7 +353,7 @@ class CreateRecipeForm: UIView {
         backgroundColor = .white
         setUpViews()
     }
-    
+
     fileprivate func setUpViews() {
         
         containerView.sv(
@@ -331,9 +366,9 @@ class CreateRecipeForm: UIView {
             tutorialVideoButton,
             tutorialVideoImageView,
             servingsLabel,
-            servingsButton,
+            servingsTextField,
             timeLabel,
-            timeButton,
+            timeTextField,
             difficultyLabel,
             difficultyControl,
             ingredientsLabel,
@@ -384,16 +419,16 @@ class CreateRecipeForm: UIView {
         // Servings
         containerView.addConstraint(servingsConstraintNoVideo)
         servingsLabel.left(margin)
-        servingsButton.right(margin)
-        servingsButton.CenterY == servingsLabel.CenterY
-        servingsButton.Left == servingsLabel.Right
+        servingsTextField.right(margin)
+        servingsTextField.CenterY == servingsLabel.CenterY
+        servingsTextField.Left == servingsLabel.Right
         
         // Time
         timeLabel.Top == servingsLabel.Bottom + adaptConstant(27)
         timeLabel.left(margin)
-        timeButton.right(margin)
-        timeButton.CenterY == timeLabel.CenterY
-        timeButton.Left == timeLabel.Right
+        timeTextField.right(margin)
+        timeTextField.CenterY == timeLabel.CenterY
+        timeTextField.Left == timeLabel.Right
         
         // Difficulty
         difficultyLabel.Top == timeLabel.Bottom + adaptConstant(27)
@@ -539,12 +574,18 @@ class CreateRecipeForm: UIView {
     }
     
     @objc fileprivate func doneButtonTapped() {
+        print("Done tapped")
+        
         let name = self.recipeNameTextInputView.textView.text
         if name == "" || name == "Name this recipe" { return }
         
         
         
         self.createRecipeVC?.submitRecipe()
+    }
+    
+    @objc fileprivate func createTestRecipe() {
+        self.createRecipeVC?.submitTestRecipe()
     }
     
     @objc fileprivate func addIngredientTapped() {
@@ -595,30 +636,6 @@ class CreateRecipeForm: UIView {
         }
     }
     
-    @objc fileprivate func servingsButtonTapped() {
-        let textField = UITextField()
-        textField.keyboardType = .numberPad
-        textField.tag = 0
-        textField.width(0).height(0)
-        textField.delegate = self
-        self.sv(textField)
-        textField.becomeFirstResponder()
-    }
-    
-    @objc fileprivate func timeButtonTapped() {
-        let textField = UITextField()
-        textField.keyboardType = .numberPad
-        textField.tag = 1
-        textField.width(0).height(0)
-        textField.delegate = self
-        self.sv(textField)
-        textField.becomeFirstResponder()
-    }
-    
-    func showTextField() {
-        
-    }
-    
     @objc fileprivate func choosePhoto() {
         createRecipeVC?.choosePhoto()
     }
@@ -629,47 +646,41 @@ class CreateRecipeForm: UIView {
 }
 
 extension CreateRecipeForm: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        
-        // Servings textfield
-        if textField.tag == 0 {
-            if let updatedString = (textField.text as NSString?)?.replacingCharacters(in: range, with: string) {
-                if updatedString == "" {
-                    let title = NSAttributedString(string: "Enter number of servings", attributes: [
-                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-                    self.servingsButton.setAttributedTitle(title, for: .normal)
-                } else {
-                    
-                    let title = NSAttributedString(string: updatedString + " servings", attributes: [
-                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-                    self.createRecipeVC?.servings = updatedString
-                    self.servingsButton.setAttributedTitle(title, for: .normal)
-                }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField.tag == 0 && textField.text != "" {
+            if textField.text == "1" {
+                textField.text = "\(textField.text!) serving"
+            } else {
+                textField.text = "\(textField.text!) servings"
             }
         }
         
-        // Time textfield
-        if textField.tag == 1 {
-            if let updatedString = (textField.text as NSString?)?.replacingCharacters(in: range, with: string) {
-                if updatedString == "" {
-                    let title = NSAttributedString(string: "Enter total time", attributes: [
-                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-                    self.timeButton.setAttributedTitle(title, for: .normal)
-                } else {
-                    
-                    let title = NSAttributedString(string: updatedString + " minutes", attributes: [
-                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-                    self.createRecipeVC?.timeInMinutes = updatedString
-                    self.timeButton.setAttributedTitle(title, for: .normal)
-                }
+        if textField.tag == 1 && textField.text != "" {
+            if textField.text == "1" {
+                textField.text = "\(textField.text!) minute"
+            } else {
+                textField.text = "\(textField.text!) minutes"
+            }
+        }
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField.text != "" && textField.tag == 0 {
+            if textField.text!.contains("servings") {
+                textField.text = textField.text?.replacingOccurrences(of: " servings", with: "")
+            } else {
+                textField.text = textField.text?.replacingOccurrences(of: " serving", with: "")
             }
         }
         
-        return true
+        if textField.text != "" && textField.tag == 1 {
+            if textField.text!.contains("minutes") {
+                textField.text = textField.text?.replacingOccurrences(of: " minutes", with: "")
+            } else {
+                textField.text = textField.text?.replacingOccurrences(of: " minute", with: "")
+            }
+        }
     }
 }
 

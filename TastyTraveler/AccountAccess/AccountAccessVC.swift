@@ -33,6 +33,8 @@ class AccountAccessVC: UIViewController {
     lazy var onboardingCollectionVC: OnboardingCollectionVC = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 0
         let vc = OnboardingCollectionVC(collectionViewLayout: layout)
         addChildViewController(vc)
         vc.didMove(toParentViewController: self)
@@ -42,13 +44,14 @@ class AccountAccessVC: UIViewController {
     let pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.numberOfPages = 3
+        pageControl.isUserInteractionEnabled = false
         return pageControl
     }()
     
     let bottomView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.cornerRadius = 17
+        view.layer.cornerRadius = adaptConstant(17)
         view.layer.masksToBounds = true
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         
@@ -68,7 +71,7 @@ class AccountAccessVC: UIViewController {
     let cardView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.cornerRadius = 17
+        view.layer.cornerRadius = adaptConstant(17)
         view.layer.masksToBounds = true
         
         let shadowView = UIView()
@@ -89,14 +92,12 @@ class AccountAccessVC: UIViewController {
         button.setBackgroundImage(#imageLiteral(resourceName: "signUpButton"), for: .normal)
         button.addTarget(self, action: #selector(emailSignUpButtonTapped), for: .touchUpInside)
         let icon = UIImageView(image: #imageLiteral(resourceName: "emailIcon"))
-        let iconWidth = self.view.frame.height * 0.020989505
-        let iconHeight = self.view.frame.height * 0.016491754
-        icon.width(iconWidth)
-        icon.height(iconHeight)
+        icon.width(adaptConstant(14))
+        icon.height(adaptConstant(11))
         
         let label = UILabel()
         label.text = "SIGN UP"
-        let fontSize = self.view.frame.height * 0.021
+        let fontSize = adaptConstant(14)
         label.font = UIFont(name: "ProximaNova-SemiBold", size: fontSize)
         label.textColor = .white
         
@@ -114,15 +115,13 @@ class AccountAccessVC: UIViewController {
         let button = UIButton(type: .system)
         button.setBackgroundImage(#imageLiteral(resourceName: "facebookButton"), for: .normal)
         let icon = UIImageView(image: #imageLiteral(resourceName: "facebookIcon"))
-        let iconWidth = self.view.frame.height * 0.020989505
-        let iconHeight = self.view.frame.height * 0.022488756
-        icon.width(iconWidth)
-        icon.height(iconHeight)
+        icon.width(adaptConstant(14))
+        icon.height(adaptConstant(15))
         button.addTarget(self, action: #selector(facebookButtonTapped), for: .touchUpInside)
         
         let label = UILabel()
         label.text = "CONNECT"
-        let fontSize = self.view.frame.height * 0.021
+        let fontSize = adaptConstant(14)
         label.font = UIFont(name: "ProximaNova-SemiBold", size: fontSize)
         label.textColor = .white
         
@@ -140,7 +139,7 @@ class AccountAccessVC: UIViewController {
         let button = UIButton(type: .system)
         let buttonTitleString = NSString(string: "Already have an account?  Sign In")
         let range = buttonTitleString.range(of: "Sign In")
-        let fontSize = self.view.frame.height * 0.0245
+        let fontSize = adaptConstant(16)
         let attributedString = NSMutableAttributedString(string: buttonTitleString as String,
                                                          attributes: [NSAttributedStringKey.font : UIFont(name: "ProximaNova-Regular", size: fontSize)!,
                                                                       NSAttributedStringKey.foregroundColor : UIColor(hexString: "6d6d6d")])
@@ -185,35 +184,36 @@ class AccountAccessVC: UIViewController {
         backgroundView.fillContainer()
         
         // Title label
-        let fontSize = self.view.frame.height * 0.068965517
-        let spacing = self.view.frame.height * 0.056971514
+        let fontSize = adaptConstant(45)
+        let spacing = adaptConstant(38)
         titleLabel.font = UIFont(name: "ProximaNova-Bold", size: fontSize)
         titleLabel.top(spacing)
         titleLabel.centerHorizontally()
         
         // Onboarding Collection View
+        onboardingCollectionVC.accountAccessVC = self
         onboardingCollectionVC.view.backgroundColor = .clear
         onboardingCollectionVC.collectionView?.backgroundColor = .clear
-        onboardingCollectionVC.view.Top == titleLabel.Bottom + 34
+        onboardingCollectionVC.view.Top == titleLabel.Bottom + adaptConstant(34)
         onboardingCollectionVC.view.fillHorizontally()
         onboardingCollectionVC.view.Bottom == bottomView.Top
         pageControl.Bottom == onboardingCollectionVC.view.Bottom - spacing
         pageControl.centerHorizontally()
         
         // Bottom View
-        bottomView.height(22%)
-        bottomView.left(3.7%)
-        bottomView.right(3.7%)
+        bottomView.height(adaptConstant(146))
+        bottomView.left(adaptConstant(20))
+        bottomView.right(adaptConstant(20))
         bottomView.bottom(0)
         
         cardView.followEdges(bottomView)
         
         // Email Sign Up Button
         equal(widths: emailSignUpButton, facebookButton)
-        stackView.top(27%)
-        stackView.left(6.9%)
-        stackView.right(6.9%)
-        stackView.height(34%)
+        stackView.top(adaptConstant(38))
+        stackView.left(adaptConstant(20))
+        stackView.right(adaptConstant(20))
+        stackView.height(adaptConstant(50))
         stackView.centerHorizontally()
         
         signInButton.centerHorizontally()

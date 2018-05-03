@@ -17,19 +17,22 @@ class MainTabBarController: UITabBarController {
         
         setUpViewControllers()
     }
+    
+    let shadowView = UIView()
+    
 
     func setUpViewControllers() {
         // Home
         let homeNavController = templateNavController(image: #imageLiteral(resourceName: "home"), selectedImage: #imageLiteral(resourceName: "homeSelected"), viewController: HomeVC(collectionViewLayout: UICollectionViewFlowLayout()))
         
         // Favorites
-        let favoritesNavController = templateNavController(image: #imageLiteral(resourceName: "favorites"), selectedImage: #imageLiteral(resourceName: "favoritesSelected"), viewController: FavoritesVC(collectionViewLayout: UICollectionViewFlowLayout()))
+        let favoritesNavController = templateNavController(image: #imageLiteral(resourceName: "favorites"), selectedImage: #imageLiteral(resourceName: "favoritesSelected"), viewController: FavoritesVC())
         
         // Create Recipe
         let createRecipeNavController = templateNavController(image: #imageLiteral(resourceName: "createRecipe"), selectedImage: #imageLiteral(resourceName: "createRecipe"))
         
-        // Notifications
-        let notificationsNavController = templateNavController(image: #imageLiteral(resourceName: "notifications"), selectedImage: #imageLiteral(resourceName: "notificationsSelected"))
+        // Questions
+        let messagesNavController = templateNavController(image: #imageLiteral(resourceName: "messages"), selectedImage: #imageLiteral(resourceName: "messagesSelected"), viewController: MessagesVC())
         
         // Profile
         let profileNavController = templateNavController(image: #imageLiteral(resourceName: "profile"), selectedImage: #imageLiteral(resourceName: "profileSelected"), viewController: ProfileVC(collectionViewLayout: UICollectionViewFlowLayout()))
@@ -39,7 +42,7 @@ class MainTabBarController: UITabBarController {
         tabBar.layer.borderWidth = 0.0
         tabBar.clipsToBounds = true
         
-        let shadowView = UIView(frame: tabBar.frame)
+        shadowView.frame = tabBar.frame
         shadowView.backgroundColor = .white
         shadowView.layer.shadowOffset = CGSize(width: 0, height: -10)
         shadowView.layer.shadowRadius = 20
@@ -48,12 +51,10 @@ class MainTabBarController: UITabBarController {
         
         self.view.insertSubview(shadowView, belowSubview: tabBar)
         
-        
-        
         viewControllers = [homeNavController,
                            favoritesNavController,
                            createRecipeNavController,
-                           notificationsNavController,
+                           messagesNavController,
                            profileNavController]
         
         guard let items = tabBar.items else { return }

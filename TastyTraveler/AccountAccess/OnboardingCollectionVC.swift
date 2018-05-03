@@ -12,6 +12,8 @@ import Stevia
 private let reuseIdentifier = "onboardingCell"
 
 class OnboardingCollectionVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+    
+    var accountAccessVC: AccountAccessVC!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,6 +79,14 @@ class OnboardingCollectionVC: UICollectionViewController, UICollectionViewDelega
         label.centerHorizontally()
         
         return cell
+    }
+    
+    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        accountAccessVC.pageControl.currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
+    }
+    
+    override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        accountAccessVC.pageControl.currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

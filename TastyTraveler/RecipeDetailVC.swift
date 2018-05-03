@@ -10,11 +10,16 @@ import UIKit
 import Stevia
 import Hero
 import AVKit
+import FirebaseAuth
+import SVProgressHUD
 
 class RecipeDetailVC: UIViewController {
-        
+    
     var recipe: Recipe? {
         didSet {
+            
+            guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
+                
             if let countryCode = recipe?.countryCode, let locality = recipe?.locality {
                 recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
                 recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
@@ -23,10 +28,9 @@ class RecipeDetailVC: UIViewController {
                 recipeHeaderView.countryLabel.text = "Location Unavailable"
             }
             
-            let title = NSAttributedString(string: recipe!.meal!, attributes: [
-                NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(12))!,
-                NSAttributedStringKey.foregroundColor: UIColor.white])
-            recipeHeaderView.mealLabel.setAttributedTitle(title, for: .normal)
+            if let meal = recipe?.meal {
+                self.recipeHeaderView.mealLabel.text = "  \(meal)  "
+            }
             
             recipeHeaderView.recipeNameLabel.text = recipe?.name
             recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
@@ -38,12 +42,23 @@ class RecipeDetailVC: UIViewController {
                 recipeHeaderView.numberOfRatingsLabel.text = "No Ratings"
             }
             
-            recipeHeaderView.favoriteButton.setImage(recipe?.hasFavorited == true ? #imageLiteral(resourceName: "favoriteButtonSelected") : #imageLiteral(resourceName: "favoriteButton"), for: .normal)
+            if userID == recipe!.creator.uid {
+                isMyRecipe = true
+                // my recipe
+                recipeHeaderView.favoriteButton.isHidden = true
+                favoriteButtonNavBar.isHidden = true
+                self.bottomView.isHidden = true
+            } else {
+                isMyRecipe = false
+                // someone else's recipe
+                recipe!.hasFavorited ? recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal) : recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
+            }
             
             if let ratings = recipe?.ratings {
                 let text = "(\(ratings.count))"
                 recipeHeaderView.numberOfRatingsLabel.text = text
             }
+            
         }
     }
     
@@ -78,7 +93,7 @@ class RecipeDetailVC: UIViewController {
         let button = UIButton(type: .system)
         button.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
         
-        let attributedText = NSAttributedString(string: "SHARE", attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: 13)!,
+        let attributedText = NSAttributedString(string: "SHARE", attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(13))!,
                                                                              NSAttributedStringKey.foregroundColor: Color.darkGrayText])
         
         button.setImage(#imageLiteral(resourceName: "shareNav"), for: .normal)
@@ -93,18 +108,23 @@ class RecipeDetailVC: UIViewController {
     
     lazy var favoriteButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        button.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
-        
-        let attributedText = NSAttributedString(string: "SAVE", attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: 13)!,
-                                                                             NSAttributedStringKey.foregroundColor: Color.darkGrayText])
-        
-        button.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
-        button.setAttributedTitle(attributedText, for: .normal)
+        //button.addTarget(self, action: #selector(favoriteButtonNavTapped), for: .touchUpInside)
+        button.isUserInteractionEnabled = false
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)
+        button.alpha = 0
+        return button
+    }()
+    
+    lazy var favoriteButtonNavBar: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(favoriteButtonNavTapped), for: .touchUpInside)
         
         button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
         button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
         button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)
-        
+        button.alpha = 0
         return button
     }()
     
@@ -150,21 +170,46 @@ class RecipeDetailVC: UIViewController {
         return view
     }()
     
+    let cookLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 16)
+        label.text = "Cooked it!"
+        label.textColor = Color.primaryOrange
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let cookedDateLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 12)
+        label.textColor = Color.gray
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
+    }()
+    
     lazy var cookButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .white
-        button.setTitleColor(Color.primaryOrange, for: .normal)
-        button.setTitleColor(Color.gray, for: .selected)
-        button.setTitle("Cooked it!", for: .normal)
-        button.setTitle("Cooked", for: .selected)
+        button.addTarget(self, action: #selector(cookButtonTapped), for: .touchUpInside)
+        
+        let stackView = UIStackView(arrangedSubviews: [cookLabel, cookedDateLabel])
+        stackView.axis = .vertical
+//        stackView.alignment = .center
+        
+        button.sv(stackView)
+        stackView.left(0).right(0)
+        stackView.centerVertically()
+        stackView.isUserInteractionEnabled = false
+        
         return button
     }()
     
     lazy var askButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = Color.primaryOrange
-        button.setTitle("Ask", for: .normal)
-        button.setTitleColor(.white, for: .normal)
+        button.setCustomTitle(string: "Message", font: ProximaNova.semibold.of(size: 16), textColor: .white, for: .normal)
+        button.addTarget(self, action: #selector(askButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -172,8 +217,11 @@ class RecipeDetailVC: UIViewController {
     var aboutCellScrollView: UIScrollView?
     var ingredientsCellTableView: UITableView?
     var directionsCellTableView: UITableView?
+    weak var homeVC: HomeVC?
     
     var viewIsDark: Bool?
+    var isMyRecipe = false
+    var isFromChatLogVC = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -190,11 +238,18 @@ class RecipeDetailVC: UIViewController {
         setUpViews()
         applyHeroModifiers()
         
+        let attributedText = NSAttributedString(string: "SAVE", attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(13))!, NSAttributedStringKey.foregroundColor: Color.darkGrayText])
+        favoriteButtonNavBar.setAttributedTitle(attributedText, for: .normal)
+        favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
+        
         viewIsDark = true
+        
+        formatCookButton()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
         
         topView.topConstraint?.constant = 0
         UIView.animate(withDuration: 0.3) {
@@ -211,7 +266,150 @@ class RecipeDetailVC: UIViewController {
         
     }
     
+    @objc func favoriteButtonNavTapped() {
+        favoriteRecipe()
+    }
+    
+    @objc func cookButtonTapped() {
+        recipe?.cookedDate = recipe?.cookedDate == nil ? Date() : nil
+        recipe?.hasCooked = !recipe!.hasCooked
+        formatCookButton()
+        
+        if recipe!.hasCooked {
+            let popup = CookedItAlertView()
+            popup.modalPresentationStyle = .overCurrentContext
+            
+            self.present(popup, animated: false) {
+                popup.showAlertView()
+            }
+        }
+    }
+    
+    func formatCookButton() {
+        if recipe!.hasCooked {
+            guard let cookedDate = recipe?.cookedDate else { return }
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "MM/dd/yy"
+            
+            cookLabel.text = "Cooked"
+            cookLabel.textColor = Color.gray
+            cookedDateLabel.text = dateFormatter.string(from: cookedDate)
+            UIView.animate(withDuration: 0.3, animations: {
+                self.cookedDateLabel.isHidden = false
+                
+                self.cookButton.layoutIfNeeded()
+            })
+        } else {
+            cookLabel.text = "Cooked it!"
+            cookLabel.textColor = Color.primaryOrange
+            UIView.animate(withDuration: 0.3, animations: {
+                self.cookedDateLabel.isHidden = true
+                
+                self.cookButton.layoutIfNeeded()
+            })
+        }
+    }
+    
+    @objc func askButtonTapped() {
+        print("ask button tapped")
+        
+        if isFromChatLogVC {
+            dismiss(animated: true, completion: nil)
+        } else {
+            
+            let chatLogVC = ChatLogVC(collectionViewLayout: UICollectionViewFlowLayout())
+            let chat = Chat(recipe: self.recipe!, withUser: self.recipe!.creator)
+            chatLogVC.chat = chat
+            chatLogVC.isFromRecipeDetailView = true
+            let chatLogNav = UINavigationController(rootViewController: chatLogVC)
+            chatLogNav.navigationBar.isTranslucent = false
+            chatLogNav.modalPresentationStyle = .overCurrentContext
+            
+            self.present(chatLogNav, animated: true, completion: nil)
+        }
+        //navigationController?.pushViewController(chatLogVC, animated: true)
+    }
+    
+    func setUpFavoriteButtons() {
+        if recipe!.hasFavorited {
+            SVProgressHUD.showSuccess(withStatus: "Saved")
+            SVProgressHUD.dismiss(withDelay: 1)
+            recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
+            
+        } else {
+            SVProgressHUD.showError(withStatus: "Removed")
+            SVProgressHUD.dismiss(withDelay: 1)
+            recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
+        }
+    }
+    
+    func favoriteRecipe() {
+        guard let recipeID = recipe?.uid else { return }
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        if self.recipe!.hasFavorited {
+            // remove
+            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
+            FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
+            
+            SVProgressHUD.showError(withStatus: "Removed")
+            SVProgressHUD.dismiss(withDelay: 1)
+            
+            self.recipe?.hasFavorited = false
+            
+            if !isFromFavorites {
+                self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                self.homeVC?.recipeDataHasChanged = true
+            } else {
+                NotificationCenter.default.post(name: Notification.Name("RecipeUploaded"), object: nil)
+            }
+            
+            NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+            
+        } else {
+            // add
+            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
+                if let error = error {
+                    print("Failed to favorite recipe:", error)
+                    return
+                }
+                
+                let timestamp = Date().timeIntervalSince1970
+                
+                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+                    if let error = error {
+                        print("Failted to favorite recipe:", error)
+                        return
+                    }
+                    
+                    print("Successfully favorited recipe.")
+                    
+                    SVProgressHUD.showSuccess(withStatus: "Saved")
+                    SVProgressHUD.dismiss(withDelay: 1)
+                    
+                    self.recipe?.hasFavorited = true
+                    
+                    if !self.isFromFavorites {
+                        self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                        self.homeVC?.recipeDataHasChanged = true
+                    } else {
+                        NotificationCenter.default.post(name: Notification.Name("RecipeUploaded"), object: nil)
+                    }
+                    
+                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                }
+            }
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        print("layed out")
+    }
+    
     @objc func favoriteButtonTapped() {
+        favoriteRecipe()
     }
     
     func showTopView() {
@@ -223,9 +421,13 @@ class RecipeDetailVC: UIViewController {
             self.topView.alpha = 1
             self.navigationController?.navigationBar.alpha = 0
             self.recipeHeaderView.favoriteButton.alpha = 1
+            self.favoriteButtonNavBar.alpha = 0
             self.setNeedsStatusBarAppearanceUpdate()
         }) { (complete) in
             self.navigationController?.navigationBar.isHidden = true
+            if !self.isMyRecipe {
+                self.favoriteButtonNavBar.isHidden = true
+            }
             self.viewIsDark = true
         }
     }
@@ -233,11 +435,17 @@ class RecipeDetailVC: UIViewController {
     func showNavBar() {
         self.navigationController?.navigationBar.alpha = 0
         self.navigationController?.navigationBar.isHidden = false
+        
+        self.favoriteButtonNavBar.alpha = 0
+        if !self.isMyRecipe {
+            self.favoriteButtonNavBar.isHidden = false
+        }
         viewIsDark = false
         
         UIView.animate(withDuration: 0.3, animations: {
             self.navigationController?.navigationBar.alpha = 1
             self.topView.alpha = 0
+            self.favoriteButtonNavBar.alpha = 1
             self.recipeHeaderView.favoriteButton.alpha = 0
             self.setNeedsStatusBarAppearanceUpdate()
         }) { (complete) in
@@ -282,15 +490,16 @@ class RecipeDetailVC: UIViewController {
         self.view.sv(scrollView, topView, bottomView)
         self.view.backgroundColor = .white
         
-        self.navigationController?.navigationBar.sv(backButtonNav, favoriteButtonNav, shareButtonNav)
+        self.navigationController?.navigationBar.sv(backButtonNav, favoriteButtonNavBar, shareButtonNav)
         
-        shareButtonNav.right(20)
+        shareButtonNav.right(adaptConstant(20))
         shareButtonNav.centerVertically()
         
-        favoriteButtonNav.Right == shareButtonNav.Left - 30
-        favoriteButtonNav.centerVertically()
+        favoriteButtonNavBar.Right == shareButtonNav.Left - 30
+        favoriteButtonNavBar.width(adaptConstant(69))
+        favoriteButtonNavBar.centerVertically()
         
-        backButtonNav.left(20)
+        backButtonNav.left(adaptConstant(20))
         backButtonNav.centerVertically()
         
         setUpScrollView()
@@ -301,7 +510,11 @@ class RecipeDetailVC: UIViewController {
     func setUpTopView() {
         topView.sv(backButton, shareButton)
         
-        topView.top(-adaptConstant(79)).left(0).right(0).height(adaptConstant(79))
+        if screenHeight == iPhoneXScreenHeight {
+            topView.top(-adaptConstant(104)).left(0).right(0).height(adaptConstant(104))
+        } else {
+            topView.top(-adaptConstant(79)).left(0).right(0).height(adaptConstant(79))
+        }
         
         backButton.left(20)
         backButton.centerVertically()
@@ -312,9 +525,21 @@ class RecipeDetailVC: UIViewController {
     
     func setUpScrollView() {
         scrollView.delegate = self
-        scrollView.top(0).left(0).right(0).Bottom == bottomView.Top
+        scrollView.top(0).left(0).right(0)
         
-        scrollView.contentInset = UIEdgeInsets(top: -20, left: 0, bottom: 0, right: 0)
+        if isMyRecipe {
+            scrollView.bottom(0)
+        } else {
+            scrollView.Bottom == bottomView.Top
+        }
+        
+        let bottomBarHeight = isMyRecipe ? 0 : adaptConstant(45)
+        
+        if screenHeight == iPhoneXScreenHeight {
+            scrollView.contentInset = UIEdgeInsets(top: -45, left: 0, bottom: 0, right: 0)
+        } else {
+            scrollView.contentInset = UIEdgeInsets(top: -20, left: 0, bottom: 0, right: 0)
+        }
         
         scrollView.sv(
             containerView.sv(
@@ -330,6 +555,8 @@ class RecipeDetailVC: UIViewController {
         recipeHeaderView.top(0).left(0).right(0)
         recipeHeaderView.photoImageView.top(0).left(0).right(0)
         recipeHeaderView.photoImageView.Height == recipeHeaderView.photoImageView.Width * 0.75
+        recipeHeaderView.placeholderImageView.CenterY == recipeHeaderView.photoImageView.CenterY
+        recipeHeaderView.placeholderImageView.CenterX == recipeHeaderView.photoImageView.CenterX
         
         recipeHeaderView.mealLabel.left(0)
         recipeHeaderView.mealLabel.Bottom == recipeHeaderView.photoImageView.Bottom - adaptConstant(27)
@@ -355,6 +582,7 @@ class RecipeDetailVC: UIViewController {
         
         recipeHeaderView.favoriteButton.right(adaptConstant(20))
         recipeHeaderView.favoriteButton.CenterY == recipeHeaderView.photoImageView.Bottom
+        recipeHeaderView.favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
         
         menuBar.left(0).right(0).height(adaptConstant(40))
         menuBar.Top == recipeHeaderView.Bottom + adaptConstant(12)
@@ -362,12 +590,20 @@ class RecipeDetailVC: UIViewController {
         collectionView.Top == menuBar.Bottom
         collectionView.left(0).right(0).bottom(0)
         // view - recipeheaderview height - navbar height - menu bar height - bottomview height
-        let collectionViewHeight: CGFloat = self.view.frame.height - menuBar.frame.height - recipeHeaderView.frame.height - 64 - menuBar.frame.height - adaptConstant(45) - adaptConstant(45)
-        collectionView.height(collectionViewHeight)
+        if screenHeight == iPhoneXScreenHeight {
+            let collectionViewHeight: CGFloat = self.view.frame.height - menuBar.frame.height - recipeHeaderView.frame.height - 64 - menuBar.frame.height - bottomBarHeight - adaptConstant(45) - 20
+            collectionView.height(collectionViewHeight)
+        } else {
+            let collectionViewHeight: CGFloat = self.view.frame.height - menuBar.frame.height - recipeHeaderView.frame.height - 64 - menuBar.frame.height - bottomBarHeight - adaptConstant(45)
+            collectionView.height(collectionViewHeight)
+        }
     }
     
     func setUpBottomView() {
-        bottomView.bottom(0).left(0).right(0).height(adaptConstant(45))
+        bottomView.left(0).right(0).height(adaptConstant(45))
+        
+        bottomView.Bottom == view.safeAreaLayoutGuide.Bottom
+        
         bottomView.width(self.view.frame.width)
         bottomView.sv(cookButton, askButton)
         
@@ -383,6 +619,8 @@ class RecipeDetailVC: UIViewController {
     }
     
     var isInAboutCellScrollView = false
+    
+    var isFromFavorites = false
 }
 
 extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
@@ -412,11 +650,11 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
         
         if scrollView == self.scrollView {
             if viewIsDark == nil { return }
-            if scrollView.contentOffset.y >= recipeHeaderView.photoImageView.frame.height - adaptConstant(79) && self.viewIsDark! {
+            if scrollView.contentOffset.y >= recipeHeaderView.photoImageView.frame.height - adaptConstant(79) && self.viewIsDark! && scrollView.isDragging {
                 showNavBar()
             }
             
-            if scrollView.contentOffset.y < recipeHeaderView.photoImageView.frame.height - adaptConstant(79) && !self.viewIsDark! {
+            if scrollView.contentOffset.y < recipeHeaderView.photoImageView.frame.height - adaptConstant(79) && !self.viewIsDark! && scrollView.isDragging {
                 showTopView()
             }
             

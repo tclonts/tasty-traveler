@@ -10,24 +10,32 @@ import UIKit
 
 class RecipeHeaderView: UIView {
     
-    let photoImageView: CustomImageView = {
-        let imageView = CustomImageView()
-        imageView.image = #imageLiteral(resourceName: "image")
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
+    let placeholderImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = #imageLiteral(resourceName: "imagePlaceholder")
+        imageView.contentMode = .scaleAspectFit
+        imageView.width(adaptConstant(90))
         return imageView
     }()
     
-    let mealLabel: UIButton = {
-        let button = UIButton(type: .system)
-        button.backgroundColor = Color.primaryOrange
-        button.layer.cornerRadius = adaptConstant(10)
-        button.clipsToBounds = true
-        button.layer.masksToBounds = true
-        button.isUserInteractionEnabled = false
-        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: adaptConstant(6), bottom: 0, right: adaptConstant(8))
-        button.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMaxXMinYCorner]
-        return button
+    let photoImageView: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.02)
+        return imageView
+    }()
+    
+    let mealLabel: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = Color.primaryOrange
+        label.layer.cornerRadius = adaptConstant(10)
+        label.clipsToBounds = true
+        label.layer.masksToBounds = true
+        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(12))
+        label.textColor = .white
+        label.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMaxXMinYCorner]
+        return label
     }()
     
     let countryFlag: UIImageView = {
@@ -91,7 +99,8 @@ class RecipeHeaderView: UIView {
         
         self.backgroundColor = .white
         
-        sv(photoImageView,
+        sv(placeholderImageView,
+           photoImageView,
            mealLabel,
            countryFlag,
            countryLabel,
@@ -100,6 +109,7 @@ class RecipeHeaderView: UIView {
            favoriteButton,
            starsImageView,
            numberOfRatingsLabel)
+        
     }
     
     required init?(coder aDecoder: NSCoder) {

@@ -10,7 +10,7 @@ import Foundation
 
 struct User {
     var uid: String
-//    var avatarURL: String?
+    var avatarURL: String?
 //    var country: String?
     var username: String
     

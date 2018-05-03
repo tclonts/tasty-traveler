@@ -24,10 +24,9 @@ class RecipeCell: BaseCell {
                 recipeHeaderView.countryLabel.text = "Location Unavailable"
             }
 
-            let title = NSAttributedString(string: recipe!.meal!, attributes: [
-                NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(12))!,
-                NSAttributedStringKey.foregroundColor: UIColor.white])
-            recipeHeaderView.mealLabel.setAttributedTitle(title, for: .normal)
+            if let meal = recipe?.meal {
+                self.recipeHeaderView.mealLabel.text = "  \(meal)  "
+            }
             
             recipeHeaderView.recipeNameLabel.text = recipe?.name
             recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
@@ -58,6 +57,7 @@ class RecipeCell: BaseCell {
     }()
     
     let recipeHeaderView = RecipeHeaderView()
+    weak var delegate: RecipeCellDelegate?
     
     override func setUpViews() {
         sv(shadowView.sv(recipeHeaderView))
@@ -70,6 +70,9 @@ class RecipeCell: BaseCell {
         
         recipeHeaderView.photoImageView.top(0).left(0).right(0)
         recipeHeaderView.photoImageView.Height == recipeHeaderView.photoImageView.Width * 0.75
+        
+        recipeHeaderView.placeholderImageView.CenterY == recipeHeaderView.photoImageView.CenterY
+        recipeHeaderView.placeholderImageView.CenterX == recipeHeaderView.photoImageView.CenterX
         
         recipeHeaderView.mealLabel.left(0)
         recipeHeaderView.mealLabel.Bottom == recipeHeaderView.photoImageView.Bottom - adaptConstant(27)
@@ -95,13 +98,23 @@ class RecipeCell: BaseCell {
         recipeHeaderView.starsImageView.Right == recipeHeaderView.numberOfRatingsLabel.Left - adaptConstant(4)
         
         recipeHeaderView.creatorNameLabel.bottom(adaptConstant(16))
+        
+        recipeHeaderView.favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
+    }
+    
+    @objc func favoriteTapped() {
+        delegate?.didTapFavorite(for: self)
     }
     
     override func prepareForReuse() {
         recipeHeaderView.heroID = ""
     }
-    
 }
+
+protocol RecipeCellDelegate: class {
+    func didTapFavorite(for cell: RecipeCell)
+}
+
 func starsImageForRating(_ rating: Double) -> UIImage {
     switch rating {
     case 0.5:

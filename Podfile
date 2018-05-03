@@ -32,5 +32,11 @@ target 'TastyTraveler' do
   
   # Loading indicators
   pod 'SVProgressHUD'
+  
+  # Star Rating Control
+  pod 'Cosmos', '~> 15.0'
+  
+  # Popover view
+  pod 'Popover'
 
 end

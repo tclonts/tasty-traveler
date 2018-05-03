@@ -209,6 +209,23 @@ class CreateRecipeVC: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
     
+    func submitTestRecipe() {
+        let ac = UIAlertController(title: "Submit Test Recipe", message: "Generate and submit a recipe for testing.", preferredStyle: .alert)
+        ac.addTextField { (textField) in
+            textField.placeholder = "Enter recipe name"
+        }
+        ac.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (_) in
+            guard let name = ac.textFields![0].text else { return }
+            
+            FirebaseController.shared.uploadTestRecipe(named: name)
+            
+            self.dismiss(animated: true, completion: nil)
+        }))
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(ac, animated: true, completion: nil)
+    }
+    
     @objc func handleTap() {
         self.view.endEditing(true)
     }

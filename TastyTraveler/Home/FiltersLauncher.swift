@@ -185,7 +185,14 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         collectionView.Bottom == menuBar.Top
         menuBar.height(adaptConstant(50)).left(0).right(0)
         menuBar.Bottom == doneButton.Top
-        doneButton.height(adaptConstant(44)).left(0).right(0).bottom(0)
+        
+        doneButton.height(adaptConstant(44)).left(0).right(0)
+        
+        if screenHeight == iPhoneXScreenHeight {
+            doneButton.bottom(34)
+        } else {
+            doneButton.bottom(0)
+        }
     }
     
     func removeFilter(cell: FilterCell) {
@@ -220,6 +227,8 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
             
             let height: CGFloat = adaptConstant(433)
             let y = window.frame.height - height
+            
+            
             backgroundView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: height)
             
             blackView.frame = window.frame
@@ -238,21 +247,21 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
 //        if !selectedMeals.isEmpty { FirebaseController.shared.filterRecipesByMeal(types: [selectedMeals]) }
 //        if !selectedLocations.isEmpty { FirebaseController.shared.filterRecipesByLocation(locations: [selectedLocations]) }
         guard homeVC != nil else { return }
-        guard !selectedFilters.isEmpty else { handleDismiss(); homeVC?.handleRefresh(); filtersApplied = false; return }
+        guard !selectedFilters.isEmpty else { handleDismiss(); filtersApplied = false; homeVC?.handleRefresh(); return }
         
         if !selectedMeals.isEmpty {
-            homeVC?.recipes = homeVC!.recipes.filter { selectedMeals.contains($0.meal!) }
+            homeVC?.searchResultRecipes = homeVC!.searchResultRecipes.filter { selectedMeals.contains($0.meal!) }
         }
         
         if !selectedLocations.isEmpty {
-            homeVC?.recipes = homeVC!.recipes.filter { recipe in
+            homeVC?.searchResultRecipes = homeVC!.searchResultRecipes.filter { recipe in
                 guard let country = recipe.country else { return false }
                 return selectedLocations.contains(country)
             }
         }
         
         if !selectedTags.isEmpty {
-            homeVC?.recipes = homeVC!.recipes.filter { recipe in
+            homeVC?.searchResultRecipes = homeVC!.searchResultRecipes.filter { recipe in
                 guard let recipeTags = recipe.tags else { return false }
                 let selectedTagsSet = Set(selectedTags)
                 let tagsArray = recipeTags.map { $0.rawValue }
@@ -265,7 +274,7 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         filtersApplied = true
         handleDismiss()
         homeVC?.collectionView?.reloadData()
-        if homeVC!.recipes.isEmpty {
+        if homeVC!.searchResultRecipes.isEmpty {
             homeVC?.showEmptyView()
         } else {
             homeVC?.hideEmptyView()
@@ -342,6 +351,7 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
             case 1:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: locationSectionID, for: indexPath) as! LocationSection
                 cell.filtersLauncher = self
+                cell.fetchLocations()
                 return cell
             case 2:
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: tagsSectionID, for: indexPath) as! TagsSection

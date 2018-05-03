@@ -68,6 +68,54 @@ class FirebaseController {
         }
     }
     
+    func fetchRecipeWithUID(uid: String, completion: @escaping (Recipe) -> ()) {
+        self.ref.child("recipes").child(uid).observeSingleEvent(of: .value) { (snapshot) in
+            guard let recipeDictionary = snapshot.value as? [String:Any] else { return }
+            guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
+            
+            self.fetchUserWithUID(uid: creatorID, completion: { (user) in
+                let recipe = Recipe(uid: uid, creator: user, dictionary: recipeDictionary)
+                completion(recipe)
+            })
+        }
+    }
+    
+    func uploadTestRecipe(named name: String) {
+        guard let currentUser = Auth.auth().currentUser else { return }
+        
+        let recipeID = UUID().uuidString
+        let photoURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/1200px-Good_Food_Display_-_NCI_Visuals_Online.jpg"
+        let timestamp = Date().timeIntervalSince1970
+        
+        let recipeName = name
+        
+        let dictionaryToUpload: [String:Any] = [
+            Recipe.nameKey: recipeName,
+            "timestamp": timestamp,
+            Recipe.photoURLKey: photoURL,
+            Recipe.creatorIDKey: currentUser.uid,
+            Recipe.servingsKey: 4,
+            Recipe.timeInMinutesKey: 30,
+            Recipe.difficultyKey: "Easy",
+            Recipe.ingredientsKey: ["One", "Two", "Three", "Four"],
+            Recipe.stepsKey: ["Step One", "Step Two", "Step Three", "Step Four"],
+            Recipe.mealKey: "Lunch",
+            Recipe.tagsKey: ["Gluten-free", "Vegetarian", "Organic"],
+            Recipe.descriptionKey: "This is an example description.",
+            Recipe.countryCodeKey: "US",
+            Recipe.countryKey: "United States",
+            Recipe.localityKey: "Florida"
+        ]
+        
+        self.ref.child("recipes").child(recipeID).setValue(dictionaryToUpload)
+        self.ref.child("users").child(currentUser.uid).child("uploadedRecipes").child(recipeID).setValue(true)
+        
+        NotificationCenter.default.post(Notification(name: Notification.Name("RecipeUploaded")))
+        
+        SVProgressHUD.showSuccess(withStatus: "Recipe uploaded!")
+        SVProgressHUD.dismiss(withDelay: 0.5)
+    }
+    
     func uploadRecipe(dictionary: [String:Any]) {
         guard let currentUser = Auth.auth().currentUser else { return }
         
@@ -111,6 +159,9 @@ class FirebaseController {
                 dictionaryToUpload[Recipe.countryCodeKey] = countryCode
                 dictionaryToUpload[Recipe.localityKey] = locality
                 dictionaryToUpload[Recipe.countryKey] = dictionary[Recipe.countryKey]
+                
+                self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).updateChildValues(["countryCode": countryCode])
+                self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).child("recipes").child(recipeID).setValue(true)
             }
             
             self.ref.child("recipes").child(recipeID).setValue(dictionaryToUpload)
