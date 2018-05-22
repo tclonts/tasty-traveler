@@ -14,7 +14,7 @@ class RecipeCell: BaseCell {
     var recipe: Recipe? {
         didSet {
             guard let photoURL = recipe?.photoURL else { return }
-            recipeHeaderView.photoImageView.loadImage(urlString: photoURL)
+            recipeHeaderView.photoImageView.loadImage(urlString: photoURL, placeholder: nil)
             
             if let countryCode = recipe?.countryCode, let locality = recipe?.locality {
                 recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
@@ -31,28 +31,22 @@ class RecipeCell: BaseCell {
             recipeHeaderView.recipeNameLabel.text = recipe?.name
             recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
 
-            if let overallRating = recipe?.overallRating {
-                recipeHeaderView.starsImageView.image = starsImageForRating(overallRating.round(nearest: 0.5))
-            } else {
-                recipeHeaderView.starsImageView.isHidden = true
-                recipeHeaderView.numberOfRatingsLabel.text = "No Ratings"
+            recipe!.averageRating { (rating) in
+                self.recipeHeaderView.starRating.rating = rating
+                self.recipeHeaderView.starRating.text = "(\(self.recipe!.reviewsDictionary?.count ?? 0))"
             }
 
             recipeHeaderView.favoriteButton.setImage(recipe?.hasFavorited == true ? #imageLiteral(resourceName: "favoriteButtonSelected") : #imageLiteral(resourceName: "favoriteButton"), for: .normal)
-            
-            if let ratings = recipe?.ratings {
-                let text = "(\(ratings.count))"
-                recipeHeaderView.numberOfRatingsLabel.text = text
-            }
         }
     }
     
-    let shadowView: UIView = {
+    lazy var shadowView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = adaptConstant(12)
         view.layer.shadowOpacity = 0.1
         view.layer.shadowOffset = CGSize(width: 0, height: adaptConstant(10))
         view.layer.shadowRadius = adaptConstant(25)
+        view.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
         return view
     }()
     
@@ -92,10 +86,8 @@ class RecipeCell: BaseCell {
         recipeHeaderView.favoriteButton.right(adaptConstant(14))
         recipeHeaderView.favoriteButton.CenterY == recipeHeaderView.photoImageView.Bottom
         
-        recipeHeaderView.numberOfRatingsLabel.right(adaptConstant(10))
-        recipeHeaderView.starsImageView.CenterY == recipeHeaderView.creatorNameLabel.CenterY
-        recipeHeaderView.numberOfRatingsLabel.CenterY == recipeHeaderView.creatorNameLabel.CenterY
-        recipeHeaderView.starsImageView.Right == recipeHeaderView.numberOfRatingsLabel.Left - adaptConstant(4)
+        recipeHeaderView.starRating.right(adaptConstant(10))
+        recipeHeaderView.starRating.CenterY == recipeHeaderView.creatorNameLabel.CenterY
         
         recipeHeaderView.creatorNameLabel.bottom(adaptConstant(16))
         
@@ -108,6 +100,12 @@ class RecipeCell: BaseCell {
     
     override func prepareForReuse() {
         recipeHeaderView.heroID = ""
+        recipeHeaderView.starRating.rating = 0
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.layoutIfNeeded()
     }
 }
 

@@ -23,6 +23,7 @@ class HomeHeaderView: UICollectionViewCell {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "mapIcon"), for: .normal)
         button.width(adaptConstant(27)).height(adaptConstant(27))
+        button.addTarget(self, action: #selector(openMapView), for: .touchUpInside)
         return button
     }()
     
@@ -128,5 +129,8 @@ class HomeHeaderView: UICollectionViewCell {
     
     @objc func showFilters() {
         homeVC.showFilters()
+    }
+    @objc func openMapView() {
+        homeVC.openMapView()
     }
 }

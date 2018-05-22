@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct User {
+struct TTUser {
     var uid: String
     var avatarURL: String?
 //    var country: String?
@@ -22,5 +22,6 @@ struct User {
     init(uid: String, dictionary: [String:Any]) {
         self.uid = uid
         self.username = dictionary["username"] as? String ?? ""
+        self.avatarURL = dictionary["avatarURL"] as? String
     }
 }

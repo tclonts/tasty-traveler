@@ -13,7 +13,7 @@ class CreateRecipeForm: UIView {
 
     var createRecipeVC: CreateRecipeVC?
     
-    let scrollView: UIScrollView = {
+    lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.backgroundColor = .white
         scrollView.contentInsetAdjustmentBehavior = .never
@@ -147,7 +147,7 @@ class CreateRecipeForm: UIView {
         textField.contentHorizontalAlignment = .right
         textField.keyboardType = .numberPad
         textField.tag = 0
-        textField.font = ProximaNova.regular.of(size: adaptConstant(14))
+        textField.font = ProximaNova.regular.of(size: 16)
         textField.textColor = Color.primaryOrange
         textField.inputAccessoryView = toolbar
         textField.height(textField.intrinsicContentSize.height + adaptConstant(20))
@@ -192,7 +192,7 @@ class CreateRecipeForm: UIView {
         textField.contentHorizontalAlignment = .right
         textField.keyboardType = .numberPad
         textField.tag = 1
-        textField.font = ProximaNova.regular.of(size: adaptConstant(14))
+        textField.font = ProximaNova.regular.of(size: 16)
         textField.textColor = Color.primaryOrange
         textField.inputAccessoryView = toolbar
         textField.height(textField.intrinsicContentSize.height + adaptConstant(20))
@@ -238,6 +238,8 @@ class CreateRecipeForm: UIView {
         let tableView = UITableView()
         tableView.isScrollEnabled = false
         tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0)
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 43
         tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: "ingredientCell")
         return tableView
     }()
@@ -267,6 +269,8 @@ class CreateRecipeForm: UIView {
         let tableView = UITableView()
         tableView.isScrollEnabled = false
         tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0)
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 43
         tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: "stepCell")
         return tableView
     }()
@@ -442,7 +446,7 @@ class CreateRecipeForm: UIView {
         ingredientsTableView.Top == ingredientsLabel.Bottom + adaptConstant(10)
         ingredientsTableView.left(margin).right(margin)
         ingredientsTableView.height(adaptConstant(39))
-        addIngredientButton.Top == ingredientsTableView.Bottom + adaptConstant(20)
+        addIngredientButton.Top == ingredientsTableView.Bottom + adaptConstant(12)
         addIngredientButton.left(margin)
         
         // Steps
@@ -451,7 +455,7 @@ class CreateRecipeForm: UIView {
         stepsTableView.Top == stepsLabel.Bottom + adaptConstant(10)
         stepsTableView.left(margin).right(margin)
         stepsTableView.height(adaptConstant(39))
-        addStepButton.Top == stepsTableView.Bottom + adaptConstant(10)
+        addStepButton.Top == stepsTableView.Bottom + adaptConstant(12)
         addStepButton.left(margin)
         
         // Tags
@@ -466,7 +470,8 @@ class CreateRecipeForm: UIView {
             bottomView.sv(cancelButton, doneButton)
         )
         
-        scrollViewContainer.top(0).left(0).right(0)
+        scrollViewContainer.left(0).right(0)
+        scrollViewContainer.Top == self.safeAreaLayoutGuide.Top
         scrollViewContainer.Bottom == bottomView.Top
         
         scrollView.top(0).left(0).right(0).bottom(0)
@@ -477,7 +482,9 @@ class CreateRecipeForm: UIView {
         scrollView.top(0).left(0).right(0)
         scrollView.Bottom == bottomView.Top
         
-        bottomView.bottom(0).left(0).right(0).height(adaptConstant(76))
+        bottomView.left(0).right(0).height(adaptConstant(76))
+        
+        bottomView.Bottom == self.safeAreaLayoutGuide.Bottom
         cancelButton.left(adaptConstant(27)).centerVertically()
         doneButton.right(adaptConstant(27)).centerVertically()
     }
@@ -576,11 +583,12 @@ class CreateRecipeForm: UIView {
     @objc fileprivate func doneButtonTapped() {
         print("Done tapped")
         
-        let name = self.recipeNameTextInputView.textView.text
+        self.recipeNameTextInputView.textView.text = self.recipeNameTextInputView.textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard let name = self.recipeNameTextInputView.textView.text else { return }
+        
         if name == "" || name == "Name this recipe" { return }
-        
-        
-        
+                
         self.createRecipeVC?.submitRecipe()
     }
     
@@ -649,6 +657,7 @@ extension CreateRecipeForm: UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField.tag == 0 && textField.text != "" {
+            self.createRecipeVC?.servings = textField.text!
             if textField.text == "1" {
                 textField.text = "\(textField.text!) serving"
             } else {
@@ -657,6 +666,7 @@ extension CreateRecipeForm: UITextFieldDelegate {
         }
         
         if textField.tag == 1 && textField.text != "" {
+            self.createRecipeVC?.timeInMinutes = textField.text!
             if textField.text == "1" {
                 textField.text = "\(textField.text!) minute"
             } else {

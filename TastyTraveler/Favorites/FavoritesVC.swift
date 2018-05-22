@@ -190,6 +190,8 @@ class FavoritesVC: UIViewController, UICollectionViewDelegate, UICollectionViewD
         
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         
+        var incomingFavorites = [Recipe]()
+        
         FirebaseController.shared.ref.child("users").child(userID).child("favorites").observeSingleEvent(of: .value) { (snapshot) in
             guard let favoriteRecipesDictionary = snapshot.value as? [String:Double] else {
                 self.collectionView.reloadData()
@@ -199,27 +201,45 @@ class FavoritesVC: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 return
             }
             
+            let group = DispatchGroup()
+            
             favoriteRecipesDictionary.forEach({ (key, value) in
+                group.enter()
+                
                 FirebaseController.shared.ref.child("recipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
-                    guard let recipeDictionary = snapshot.value as? [String:Any] else { return }
-                    guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
+                    guard let recipeDictionary = snapshot.value as? [String:Any] else { group.leave(); return }
+                    guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { group.leave(); return }
                     
                     FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
+                        guard let creator = creator else { return }
+                        
                         var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
                         recipe.favoritedDate = Date(timeIntervalSince1970: value)
                         recipe.hasFavorited = true
                         
-                        self.favorites.append(recipe)
-                        self.favorites.sort(by: { (r1, r2) -> Bool in
-                            return r1.favoritedDate!.compare(r2.favoritedDate!) == .orderedDescending
-                        })
-                        
-                        self.collectionView.reloadData()
-                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                        self.loadingRecipesView.isHidden = true
+                        incomingFavorites.append(recipe)
+                        group.leave()
+//                        self.favorites.sort(by: { (r1, r2) -> Bool in
+//                            return r1.favoritedDate!.compare(r2.favoritedDate!) == .orderedDescending
+//                        })
+//
+//                        self.collectionView.reloadData()
+//                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+//                        self.loadingRecipesView.isHidden = true
                     })
                 })
             })
+            
+            group.notify(queue: .main) {
+                self.favorites = incomingFavorites
+                self.favorites.sort(by: { (r1, r2) -> Bool in
+                    return r1.favoritedDate!.compare(r2.favoritedDate!) == .orderedDescending
+                })
+                
+                self.collectionView.reloadData()
+                UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                self.loadingRecipesView.isHidden = true
+            }
         }
     }
 
@@ -239,14 +259,7 @@ class FavoritesVC: UIViewController, UICollectionViewDelegate, UICollectionViewD
         
         cell.recipe = isSearching ? searchResultFavorites[indexPath.item] : favorites[indexPath.item]
         cell.delegate = self
-        cell.layer.shadowOpacity = 0.1
-        cell.layer.shadowOffset = CGSize(width: 0, height: adaptConstant(10))
-        cell.layer.shadowRadius = adaptConstant(25)
-        cell.clipsToBounds = false
-        
-        let rect = CGRect(x: 0, y: 0, width: itemSize.width, height: itemSize.height)
-        let path = UIBezierPath(rect: rect).cgPath
-        cell.layer.shadowPath = path
+//        cell.clipsToBounds = false
         
         return cell
     }
@@ -271,7 +284,8 @@ class FavoritesVC: UIViewController, UICollectionViewDelegate, UICollectionViewD
         
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = recipe
-        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL)
+        //recipeDetailVC.formatCookButton()
+        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
 
         
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
@@ -349,7 +363,7 @@ class FavoriteCell: BaseCell {
     
     var recipe: Recipe? {
         didSet {
-            backgroundImageView.loadImage(urlString: recipe!.photoURL)
+            backgroundImageView.loadImage(urlString: recipe!.photoURL, placeholder: nil)
             
             recipeNameLabel.text = recipe?.name
             
@@ -359,10 +373,13 @@ class FavoriteCell: BaseCell {
         }
     }
     
-    let shadowView: UIView = {
+    lazy var shadowView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = adaptConstant(12)
-        
+        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOffset = CGSize(width: 0, height: adaptConstant(10))
+        view.layer.shadowRadius = adaptConstant(25)
+        view.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
         return view
     }()
     

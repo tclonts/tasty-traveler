@@ -32,13 +32,16 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             messagesRef.observeSingleEvent(of: .value, with: { (snapshot) in
                 
                 guard let dictionary = snapshot.value as? [String:Any] else { return }
-                
-                self.messages.append(Message(dictionary: dictionary))
-                DispatchQueue.main.async {
-                    self.collectionView?.reloadData()
-                    // scroll to the last index
-                    let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
-                    self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
+                let message = Message(dictionary: dictionary)
+                if message.recipeID == self.chat!.recipe.uid {
+                    self.messages.append(message)
+                    
+                    DispatchQueue.main.async {
+                        self.collectionView?.reloadData()
+                        // scroll to the last index
+                        let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
+                        self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
+                    }
                 }
             })
         }
@@ -66,7 +69,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     }
     
     lazy var textInputAccessoryView: TextInputAccessoryView = {
-        let frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 50)
+        let frame = CGRect(x: 0, y: 0, width: view.frame.width, height: adaptConstant(50))
         let textInputView = TextInputAccessoryView(frame: frame)
         textInputView.delegate = self
         return textInputView
@@ -91,7 +94,8 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         collectionView?.contentInsetAdjustmentBehavior = .never
         collectionView?.backgroundColor = .white
         collectionView?.alwaysBounceVertical = true
-        collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+        collectionView?.contentInset = UIEdgeInsets(top: adaptConstant(8), left: 0, bottom: adaptConstant(50), right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: adaptConstant(8), left: 0, bottom: adaptConstant(50), right: 0)
         collectionView?.register(ChatMessageCell.self, forCellWithReuseIdentifier: "chatMessageCell")
         
         collectionView?.keyboardDismissMode = .interactive
@@ -129,15 +133,16 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = chat!.recipe
-        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: chat!.recipe.photoURL)
+        //recipeDetailVC.formatCookButton()
+        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: chat!.recipe.photoURL, placeholder: nil)
         recipeDetailVC.isFromChatLogVC = true
         recipeDetailVC.isFromFavorites = true
         
-        //let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
-        //recipeNavigationController.navigationBar.isHidden = true
+        let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
+        recipeNavigationController.navigationBar.isHidden = true
         
-        self.navigationController?.pushViewController(recipeDetailVC, animated: true)
-        //self.present(recipeNavigationController, animated: true, completion: nil)
+//        self.navigationController?.pushViewController(recipeDetailVC, animated: true)
+        self.present(recipeNavigationController, animated: true, completion: nil)
     }
     
     @objc func handleKeyboardDidShow() {
@@ -200,7 +205,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         setUpCell(cell, message: message)
         
-        cell.bubbleViewWidthAnchor?.constant = estimateFrameForText(message.text).width + 32
+        cell.bubbleViewWidthAnchor?.constant = estimateFrameForText(message.text).width + adaptConstant(32)
         cell.textView.isHidden = false
         
         return cell
@@ -211,7 +216,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         var height: CGFloat = 80
         
         let message = messages[indexPath.item]
-        height = estimateFrameForText(message.text).height + 20
+        height = estimateFrameForText(message.text).height + adaptConstant(20)
         
         let width = UIScreen.main.bounds.width
         return CGSize(width: width, height: height)
@@ -225,7 +230,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     
     func setUpCell(_ cell: ChatMessageCell, message: Message) {
         if let profileImageURL = self.chat?.withUser.avatarURL {
-            cell.profileImageView.loadImage(urlString: profileImageURL)
+            cell.profileImageView.loadImage(urlString: profileImageURL, placeholder: #imageLiteral(resourceName: "avatar"))
         }
         
         if message.fromID == Auth.auth().currentUser?.uid {

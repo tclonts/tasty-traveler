@@ -30,22 +30,61 @@ class AccountAccessVC: UIViewController {
         return label
     }()
     
-    lazy var onboardingCollectionVC: OnboardingCollectionVC = {
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 0
-        let vc = OnboardingCollectionVC(collectionViewLayout: layout)
-        addChildViewController(vc)
-        vc.didMove(toParentViewController: self)
-        return vc
-    }()
+//    lazy var onboardingCollectionVC: OnboardingCollectionVC = {
+//        let layout = UICollectionViewFlowLayout()
+//        layout.scrollDirection = .horizontal
+//        layout.minimumLineSpacing = 0
+//        layout.minimumInteritemSpacing = 0
+//        let vc = OnboardingCollectionVC(collectionViewLayout: layout)
+//        addChildViewController(vc)
+//        vc.didMove(toParentViewController: self)
+//        return vc
+//    }()
     
-    let pageControl: UIPageControl = {
-        let pageControl = UIPageControl()
-        pageControl.numberOfPages = 3
-        pageControl.isUserInteractionEnabled = false
-        return pageControl
+//    let pageControl: UIPageControl = {
+//        let pageControl = UIPageControl()
+//        pageControl.numberOfPages = 3
+//        pageControl.isUserInteractionEnabled = false
+//        return pageControl
+//    }()
+    
+    let onboardingView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        
+        let earthImageView = UIImageView(image: #imageLiteral(resourceName: "earth"))
+        earthImageView.height(adaptConstant(183)).width(adaptConstant(183))
+        
+        let circleImageView = UIImageView(image: #imageLiteral(resourceName: "circle"))
+        circleImageView.height(adaptConstant(217)).width(adaptConstant(217))
+        
+        let magnifyingGlassImageView = UIImageView(image: #imageLiteral(resourceName: "magnifyingGlass"))
+        magnifyingGlassImageView.height(adaptConstant(119)).width(adaptConstant(121))
+        
+        let label = UILabel()
+        label.text = "Discover authentic recipes from around the world."
+        label.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(20))
+        label.alpha = 0.85
+        label.textColor = .white
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        
+        view.sv(earthImageView, circleImageView, magnifyingGlassImageView, label)
+        
+        earthImageView.top(adaptConstant(18))
+        earthImageView.centerHorizontally()
+        
+        circleImageView.top(0)
+        circleImageView.centerHorizontally()
+        
+        magnifyingGlassImageView.Bottom == earthImageView.Bottom
+        magnifyingGlassImageView.Left == circleImageView.CenterX
+        
+        label.Top == circleImageView.Bottom + adaptConstant(40)
+        label.left(0).right(0).bottom(0)
+        label.centerHorizontally()
+        
+        return view
     }()
     
     let bottomView: UIView = {
@@ -172,8 +211,9 @@ class AccountAccessVC: UIViewController {
         self.view.sv(
             backgroundView,
             titleLabel,
-            onboardingCollectionVC.view,
-            pageControl,
+            //onboardingCollectionVC.view,
+            //pageControl,
+            onboardingView,
             cardView,
             bottomView.sv(
                 stackView,
@@ -185,23 +225,31 @@ class AccountAccessVC: UIViewController {
         
         // Title label
         let fontSize = adaptConstant(45)
-        let spacing = adaptConstant(38)
+//        let spacing = adaptConstant(38)
         titleLabel.font = UIFont(name: "ProximaNova-Bold", size: fontSize)
-        titleLabel.top(spacing)
+        titleLabel.Bottom == onboardingView.Top - adaptConstant(40)
         titleLabel.centerHorizontally()
         
         // Onboarding Collection View
-        onboardingCollectionVC.accountAccessVC = self
-        onboardingCollectionVC.view.backgroundColor = .clear
-        onboardingCollectionVC.collectionView?.backgroundColor = .clear
-        onboardingCollectionVC.view.Top == titleLabel.Bottom + adaptConstant(34)
-        onboardingCollectionVC.view.fillHorizontally()
-        onboardingCollectionVC.view.Bottom == bottomView.Top
-        pageControl.Bottom == onboardingCollectionVC.view.Bottom - spacing
-        pageControl.centerHorizontally()
+//        onboardingCollectionVC.accountAccessVC = self
+//        onboardingCollectionVC.view.backgroundColor = .clear
+//        onboardingCollectionVC.collectionView?.backgroundColor = .clear
+//        onboardingCollectionVC.view.Top == titleLabel.Bottom + adaptConstant(34)
+//        onboardingCollectionVC.view.fillHorizontally()
+//        onboardingCollectionVC.view.Bottom == bottomView.Top
+//        pageControl.Bottom == onboardingCollectionVC.view.Bottom - spacing
+//        pageControl.centerHorizontally()
+        if screenHeight == iPhoneXScreenHeight {
+            onboardingView.centerInContainer()
+        } else {
+            onboardingView.Bottom == bottomView.Top - adaptConstant(60)
+        }
+        onboardingView.left(adaptConstant(60)).right(adaptConstant(60))
         
         // Bottom View
-        bottomView.height(adaptConstant(146))
+        var bottomHeight = adaptConstant(146)
+        if screenHeight == iPhoneXScreenHeight { bottomHeight += self.view.safeAreaInsets.bottom + 12 }
+        bottomView.height(bottomHeight)
         bottomView.left(adaptConstant(20))
         bottomView.right(adaptConstant(20))
         bottomView.bottom(0)
@@ -217,8 +265,12 @@ class AccountAccessVC: UIViewController {
         stackView.centerHorizontally()
         
         signInButton.centerHorizontally()
-        signInButton.Top == stackView.Bottom
-        signInButton.bottom(0)
+        if screenHeight == iPhoneXScreenHeight {
+            signInButton.Top == stackView.Bottom + 12
+        } else {
+            signInButton.Top == stackView.Bottom
+            signInButton.bottom(0)
+        }
     }
     
     @objc func signInButtonTapped() {
@@ -235,10 +287,35 @@ class AccountAccessVC: UIViewController {
         self.present(signUpVC, animated: true, completion: nil)
     }
     
+    func verifyUserAndLogin(user: User) {
+        
+        FirebaseController.shared.isUsernameStored(uid: user.uid, completion: { (result) in
+            SVProgressHUD.dismiss()
+            if result {
+                let mainTabBarController = MainTabBarController()
+                guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+                
+                appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
+                
+                UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
+                    appDelegate.window?.rootViewController = mainTabBarController
+                }, completion: nil)
+                
+            } else {
+                let signUpVC = SignUpVC()
+                signUpVC.isFromFacebookLogin = true
+                signUpVC.isHeroEnabled = true
+                signUpVC.view.heroModifiers = [.fade]
+                self.present(signUpVC, animated: true, completion: nil)
+            }
+        })
+        print("successfully signed in using firebase")
+    }
+    
     @objc func facebookButtonTapped() {
         let loginManager = LoginManager()
         loginManager.loginBehavior = .native
-        loginManager.logIn(readPermissions: [.publicProfile, .userFriends], viewController: self) { (loginResult) in
+        loginManager.logIn(readPermissions: [.email], viewController: self) { (loginResult) in
             switch loginResult {
             case .failed(let error):
                 print(error)
@@ -249,35 +326,57 @@ class AccountAccessVC: UIViewController {
                 
                 SVProgressHUD.show()
                 let credential = FacebookAuthProvider.credential(withAccessToken: accessToken.authenticationToken)
+                
                 Auth.auth().signIn(with: credential, completion: { (user, error) in
                     if let error = error {
                         print(error)
-                        SVProgressHUD.dismiss()
-                        return
-                    }
-                    if let user = user {
-                        FirebaseController.shared.isUsernameStored(uid: user.uid, completion: { (result) in
-                            SVProgressHUD.dismiss()
-                            if result {
-                                let mainTabBarController = MainTabBarController()
-                                self.present(mainTabBarController, animated: true, completion: nil)
-                                print("User: \(user)")
-                            } else {
-                                // NEW ACCOUNT USING FACEBOOK
-                                let signUpVC = SignUpVC()
-                                signUpVC.isFromFacebookLogin = true
-                                signUpVC.isHeroEnabled = true
-                                signUpVC.view.heroModifiers = [.fade]
-                                self.present(signUpVC, animated: true, completion: nil)
+                        if (error as NSError).code == AuthErrorCode.accountExistsWithDifferentCredential.rawValue {
+                            
+                            if let userEmail = (error as NSError).userInfo[AuthErrorUserInfoEmailKey] as? String {
+                                let ac = UIAlertController(title: "Existing Account", message: "There is an account registered to the email associated with your Facebook account. Enter your password to merge accounts.", preferredStyle: .alert)
+                                ac.addTextField(configurationHandler: { (textField) in
+                                    textField.placeholder = "Enter password"
+                                    textField.isSecureTextEntry = true
+                                })
+                                ac.addAction(UIAlertAction(title: "Merge", style: .default, handler: { (_) in
+                                    guard let text = ac.textFields![0].text else { return }
+                                    
+                                    SVProgressHUD.show()
+                                    
+                                    let emailCredential = EmailAuthProvider.credential(withEmail: userEmail, password: text)
+                                    
+                                    Auth.auth().signIn(with: emailCredential, completion: { (user, error) in
+                                        if let error = error {
+                                            print(error)
+                                            SVProgressHUD.showError(withStatus: "Incorrect password")
+                                            return
+                                        }
+                                        
+                                        user!.link(with: credential, completion: { (user, error) in
+                                            if let error = error {
+                                                print(error)
+                                                SVProgressHUD.dismiss()
+                                                return
+                                            }
+                                            
+                                            if let user = user {
+                                                self.verifyUserAndLogin(user: user)
+                                            }
+                                        })
+                                    })
+                                }))
+                                ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                                self.present(ac, animated: true, completion: nil)
                             }
-                        })
-                    } else {
-                        print("Could not log in using Facebook.")
+                        }
                         SVProgressHUD.dismiss()
                         return
                     }
                     
-                    print("successfully signed in using firebase")
+                    if let user = user {
+                        
+                        self.verifyUserAndLogin(user: user)
+                    }
                 })
             }
         }

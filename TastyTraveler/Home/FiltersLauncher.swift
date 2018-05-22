@@ -83,12 +83,20 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
     
     var selectedFilters = [String]()
     
+    let containerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }()
+    
     let backgroundView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.cornerRadius = adaptConstant(27)
+        view.layer.cornerRadius = adaptConstant(12)
         view.layer.masksToBounds = true
-        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        view.layer.shadowOpacity = 0.16
+        view.layer.shadowOffset = CGSize(width: 0, height: 6)
+        view.layer.shadowRadius = 16
         return view
     }()
     
@@ -122,6 +130,10 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         button.setAttributedTitle(title, for: .normal)
         button.backgroundColor = Color.primaryOrange
         button.addTarget(self, action: #selector(applyFilters), for: .touchUpInside)
+        button.layer.cornerRadius = adaptConstant(12)
+        button.layer.shadowOpacity = 0.16
+        button.layer.shadowOffset = CGSize(width: 0, height: 6)
+        button.layer.shadowRadius = 16
         return button
     }()
     
@@ -169,11 +181,13 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         
         setUpViews()
         
-        backgroundView.addGestureRecognizer(swipeDownGesture)
+        containerView.addGestureRecognizer(swipeDownGesture)
     }
     
     func setUpViews() {
-        backgroundView.sv(filtersLabel, clearButton, selectedFiltersCollectionView, collectionView, menuBar, doneButton)
+        containerView.sv(backgroundView.sv(filtersLabel, clearButton, selectedFiltersCollectionView, collectionView, menuBar), doneButton)
+        
+        backgroundView.top(0).left(0).right(0)
         
         filtersLabel.top(adaptConstant(8)).centerHorizontally()
         clearButton.right(adaptConstant(27))
@@ -183,16 +197,10 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         collectionView.Top == selectedFiltersCollectionView.Bottom
         collectionView.left(0).right(0)
         collectionView.Bottom == menuBar.Top
-        menuBar.height(adaptConstant(50)).left(0).right(0)
-        menuBar.Bottom == doneButton.Top
+        menuBar.height(adaptConstant(50)).left(0).right(0).bottom(0)
         
-        doneButton.height(adaptConstant(44)).left(0).right(0)
-        
-        if screenHeight == iPhoneXScreenHeight {
-            doneButton.bottom(34)
-        } else {
-            doneButton.bottom(0)
-        }
+        doneButton.Top == backgroundView.Bottom + 8
+        doneButton.height(adaptConstant(44)).left(0).right(0).bottom(0)
     }
     
     func removeFilter(cell: FilterCell) {
@@ -223,20 +231,20 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
             blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleDismiss)))
             
             window.addSubview(blackView)
-            window.addSubview(backgroundView)
+            window.addSubview(containerView)
             
             let height: CGFloat = adaptConstant(433)
-            let y = window.frame.height - height
+            let y = window.frame.height - height - window.safeAreaInsets.bottom - 8
             
             
-            backgroundView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: height)
+            containerView.frame = CGRect(x: adaptConstant(12), y: window.frame.height, width: window.frame.width - adaptConstant(24), height: height)
             
             blackView.frame = window.frame
             blackView.alpha = 0
             
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
                 self.blackView.alpha = 1
-                self.backgroundView.frame = CGRect(x: 0, y: y, width: self.backgroundView.frame.width, height: self.backgroundView.frame.height)
+                self.containerView.frame = CGRect(x: adaptConstant(12), y: y, width: self.containerView.frame.width, height: self.containerView.frame.height)
             }, completion: nil)
         }
     }
@@ -302,7 +310,7 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
             self.blackView.alpha = 0
             
             if let window = UIApplication.shared.keyWindow {
-                self.backgroundView.frame = CGRect(x: 0, y: window.frame.height, width: self.backgroundView.frame.width, height: self.backgroundView.frame.height)
+                self.containerView.frame = CGRect(x: adaptConstant(12), y: window.frame.height, width: self.containerView.frame.width, height: self.containerView.frame.height)
             }
         }) { (completed) in
             
@@ -383,7 +391,7 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
     func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         if scrollView == collectionView {
             let index = targetContentOffset.pointee.x / collectionView.frame.width
-            let indexPath = IndexPath(item: Int(index), section: 0)
+            let indexPath = IndexPath(item: Int(index.rounded()), section: 0)
             menuBar.collectionView.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition())
         }
     }

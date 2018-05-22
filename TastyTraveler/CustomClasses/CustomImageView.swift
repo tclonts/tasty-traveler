@@ -14,10 +14,14 @@ class CustomImageView: UIImageView {
 
     var lastURLUsedToLoadImage: String?
     
-    func loadImage(urlString: String) {
+    func loadImage(urlString: String, placeholder: UIImage?) {
         lastURLUsedToLoadImage = urlString
         
-        self.image = nil
+        if let placeholder = placeholder {
+            self.image = placeholder
+        } else {
+            self.image = nil
+        }
         
         if let cachedImage = imageCache[urlString] {
             self.image = cachedImage

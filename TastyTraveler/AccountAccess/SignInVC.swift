@@ -65,6 +65,7 @@ class SignInVC: UIViewController, UITextFieldDelegate {
         textField.borderStyle = .none
         textField.returnKeyType = .next
         textField.backgroundColor = .clear
+        textField.keyboardType = .emailAddress
         textField.tag = 0
         textField.autocapitalizationType = .none
         textField.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(18))
@@ -338,8 +339,15 @@ class SignInVC: UIViewController, UITextFieldDelegate {
                     
                     if let user = user {
                         print("Signed in as user: \(user)")
+                        self.view.endEditing(true)
                         let mainTabBarController = MainTabBarController()
-                        self.present(mainTabBarController, animated: true, completion: nil)
+                        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+                        
+                        appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
+                        
+                        UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
+                            appDelegate.window?.rootViewController = mainTabBarController
+                        }, completion: nil)
                     }
                 })
             } else {

@@ -27,7 +27,7 @@ class TagCell: BaseCell {
     
     lazy var unselectedBackgroundView: UIView = {
         let backgroundView = UIView()
-        backgroundView.backgroundColor = .white
+        //backgroundView.backgroundColor = .white
         let view = UIView()
         backgroundView.sv(view)
         
@@ -52,10 +52,11 @@ class TagCell: BaseCell {
         view.layer.cornerRadius = adaptConstant(27) / 2
         view.backgroundColor = Color.primaryOrange
         view.layer.masksToBounds = true
-        
+        backgroundView.alpha = 1
+        view.alpha = 1
         return backgroundView
     }()
-    
+        
     override func setUpViews() {
         
         sv(tagLabel)
@@ -63,6 +64,7 @@ class TagCell: BaseCell {
         
         backgroundView = unselectedBackgroundView
         selectedBackgroundView = customSelectedBackgroundView
+        
     }
     
     override var isSelected: Bool {

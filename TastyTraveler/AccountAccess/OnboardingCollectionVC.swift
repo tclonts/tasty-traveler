@@ -82,15 +82,15 @@ class OnboardingCollectionVC: UICollectionViewController, UICollectionViewDelega
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        accountAccessVC.pageControl.currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
+        //accountAccessVC.pageControl.currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
     }
     
     override func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        accountAccessVC.pageControl.currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
+        //accountAccessVC.pageControl.currentPage = Int(scrollView.contentOffset.x) / Int(scrollView.frame.width)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: self.view.frame.width, height: self.view.frame.height)
+        return CGSize(width: collectionView.frame.width, height: collectionView.frame.height)
     }
 
     // MARK: UICollectionViewDelegate

@@ -181,6 +181,14 @@ class CreateRecipeVC: UIViewController {
                     recipeDictionary[Recipe.countryCodeKey] = countryCode
                     recipeDictionary[Recipe.countryKey] = placemark.country
                     
+                    let range = -2...2
+                    let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
+                    let adjustedLatitude = location.coordinate.latitude + (Double(randomDistance) * 0.01)
+                    let adjustedLongitude = location.coordinate.longitude + (Double(randomDistance) * 0.01)
+                    
+                    recipeDictionary["longitude"] = adjustedLongitude
+                    recipeDictionary["latitude"] = adjustedLatitude
+                    
                     // Found state or province; display that instead of city
                     if let administrativeArea = placemark.administrativeArea, let states = self.states {
                         if let matchingState = states.first(where: { $0.country == countryCode && $0.short == administrativeArea}) {
@@ -216,8 +224,16 @@ class CreateRecipeVC: UIViewController {
         }
         ac.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (_) in
             guard let name = ac.textFields![0].text else { return }
-            
-            FirebaseController.shared.uploadTestRecipe(named: name)
+            self.getUserLocation()
+            if let location = self.locationManager.location {
+                
+                let range = -2...2
+                let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
+                let adjustedLatitude = location.coordinate.latitude + (Double(randomDistance) * 0.01)
+                let adjustedLongitude = location.coordinate.longitude + (Double(randomDistance) * 0.01)
+                
+                FirebaseController.shared.uploadTestRecipe(named: name, longitude: adjustedLongitude, latitude: adjustedLatitude)
+            }
             
             self.dismiss(animated: true, completion: nil)
         }))
@@ -255,7 +271,6 @@ extension CreateRecipeVC: CLLocationManagerDelegate {
     
     func getUserLocation() {
         if CLLocationManager.locationServicesEnabled() {
-            locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
             
             // One-time delivery of the user's location
             locationManager.requestLocation()
@@ -407,7 +422,7 @@ extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControlle
         formView.photoImageView.isHidden = false
         formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
         formView.containerView.addConstraint(formView.recipeNameConstraint)
-        self.makeViewDark()
+        //self.makeViewDark()
         
         dismiss(animated: true, completion: nil)
     }
@@ -433,12 +448,17 @@ class TextInputTableViewCell: UITableViewCell, UITextFieldDelegate {
         textField.borderStyle = .none
         textField.returnKeyType = .done
         textField.delegate = self
+        textField.font = ProximaNova.regular.of(size: 16)
+        textField.textColor = Color.darkText
+        textField.contentHorizontalAlignment = .left
         return textField
     }()
     
     let stepLabel: UILabel = {
         let label = UILabel()
         label.isHidden = true
+        label.font = ProximaNova.regular.of(size: 16)
+        label.textColor = Color.darkText
         return label
     }()
     
@@ -451,11 +471,11 @@ class TextInputTableViewCell: UITableViewCell, UITextFieldDelegate {
         if let step = step { stepLabel.isHidden = false; stepLabel.text = "\(step)."}
         
         if stepLabel.isHidden {
-            textField.fillContainer()
+            textField.top(adaptConstant(8)).bottom(adaptConstant(8)).right(0).left(0)
         } else {
             stepLabel.left(0).centerVertically()
             textField.left(adaptConstant(20))
-            textField.top(0).bottom(0).right(0)
+            textField.top(adaptConstant(8)).bottom(adaptConstant(8)).right(0)
         }
     }
     
@@ -467,6 +487,7 @@ class TextInputTableViewCell: UITableViewCell, UITextFieldDelegate {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         sv(stepLabel, textField)
+        
         
     }
     
@@ -518,10 +539,6 @@ class IngredientsDataSource: NSObject, UITableViewDataSource, UITableViewDelegat
         }
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 43
-    }
-    
     func handleEndEditing(text: String, cell: TextInputTableViewCell) {
 //        guard let indexPath = ingredientsTableView?.indexPath(for: cell) else { return }
 //        guard !ingredients.contains(text) else { return }
@@ -555,10 +572,6 @@ class StepsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, Tex
         
         cell.delegate = self
         return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 43
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

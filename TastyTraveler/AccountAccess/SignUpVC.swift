@@ -40,6 +40,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         label.text = "Welcome!"
         label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(28))
         label.textColor = .white
+        label.numberOfLines = 0
+        label.textAlignment = .center
         return label
     }()
     
@@ -222,11 +224,22 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     var isWaitingForKeyboardDismissal = false
     var isTransitioningToSignInVC = false
     var isFromFacebookLogin = false
+    var needsUsername = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setUpViews()
+        
+        if needsUsername {
+            self.welcomeLabel.text = "Finish signing up with Facebook"
+            
+            self.backButton.isHidden = true
+            let attributedString = NSMutableAttributedString(string: "Back to main menu",
+                                                             attributes: [NSAttributedStringKey.font : UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                                                                          NSAttributedStringKey.foregroundColor : UIColor.white.withAlphaComponent(0.8)])
+            self.signInButton.setAttributedTitle(attributedString, for: .normal)
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -304,7 +317,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         
         welcomeMessageView.top(adaptConstant(18)).left(0).right(0)
         welcomeMessageView.Bottom == cardView.Top
-        welcomeLabel.centerInContainer()
+        welcomeLabel.centerVertically().left(adaptConstant(24)).right(adaptConstant(24))
         
         usernameTextField.left(adaptConstant(18)).right(adaptConstant(18)).top(adaptConstant(45))
         equal(widths: [usernameTextField, usernameTextFieldBottomBorder])
@@ -372,12 +385,19 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     }
     
     @objc func signInButtonTapped() {
-        let signInVC = SignInVC()
-        signInVC.isHeroEnabled = true
-        self.isTransitioningToSignInVC = true
-        signInVC.isFromSignUpVC = true
-        applyHeroModifiers()
-        self.present(signInVC, animated: true, completion: nil)
+        if needsUsername {
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+            UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromTop, animations: {
+                appDelegate.window?.rootViewController = AccountAccessVC()
+            }, completion: nil)
+        } else {
+            let signInVC = SignInVC()
+            signInVC.isHeroEnabled = true
+            self.isTransitioningToSignInVC = true
+            signInVC.isFromSignUpVC = true
+            applyHeroModifiers()
+            self.present(signInVC, animated: true, completion: nil)
+        }
     }
     
     @objc func signUpButtonTapped() {
@@ -386,9 +406,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
             return
         }
         
-        while usernameTextField.text!.hasSuffix(" ") {
-            usernameTextField.text = String(usernameTextField.text!.dropLast())
-        }
+        self.usernameTextField.text = self.usernameTextField.text!.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard let usernameText = usernameTextField.text else { return }
         
@@ -432,21 +450,29 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                         return
                     }
                     
-                    Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
-                        guard let uid = user?.uid else { return }
-                        if let error = error {
-                            print(error.localizedDescription)
-                        } else {
-                            FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
-                                if isUnique {
-                                    FirebaseController.shared.storeUsername(usernameText, uid: uid)
-                                    let mainTabBarController = MainTabBarController()
-                                    self.hero_replaceViewController(with: mainTabBarController)
+                    FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
+                        if isUnique {
+                            
+                            Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
+                                guard let uid = user?.uid else { return }
+                                if let error = error {
+                                    print(error.localizedDescription)
                                 } else {
-                                    print("Username is already taken")
-                                    self.showError(type: .username, message: "Username is already taken.")
+                                    FirebaseController.shared.storeUsername(usernameText, uid: uid)
+                                    self.view.endEditing(true)
+                                    let mainTabBarController = MainTabBarController()
+                                    guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+                                    
+                                    appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
+                                    
+                                    UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
+                                        appDelegate.window?.rootViewController = mainTabBarController
+                                    }, completion: nil)
                                 }
                             })
+                        } else {
+                            print("Username is already taken")
+                            self.showError(type: .username, message: "Username is already taken.")
                         }
                     })
                 }
@@ -456,8 +482,15 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
             FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
                 if isUnique {
                     FirebaseController.shared.storeUsername(usernameText, uid: uid)
+                    self.view.endEditing(true)
                     let mainTabBarController = MainTabBarController()
-                    self.hero_replaceViewController(with: mainTabBarController)
+                    guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+                    
+                    appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
+                    
+                    UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
+                        appDelegate.window?.rootViewController = mainTabBarController
+                    }, completion: nil)
                 } else {
                     print("Username is already taken")
                     self.showError(type: .username, message: "Username is already taken.")

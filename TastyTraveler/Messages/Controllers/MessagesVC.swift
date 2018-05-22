@@ -13,12 +13,11 @@ import SVProgressHUD
 class MessagesVC: UITableViewController {
     
     var messages = [Message]()
-    var messagesDictionary = [String:Message]()
+    var messagesDictionary = [String:[String:Message]]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        SVProgressHUD.show()
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.navigationItem.title = "Messages"
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]
@@ -39,6 +38,7 @@ class MessagesVC: UITableViewController {
         let ref = FirebaseController.shared.ref.child("userMessages").child(uid)
         
         ref.observe(.childAdded) { (snapshot) in
+            SVProgressHUD.show()
             let userID = snapshot.key
             FirebaseController.shared.ref.child("userMessages").child(uid).child(userID).observe(.childAdded, with: { (snapshot) in
                 
@@ -61,7 +61,12 @@ class MessagesVC: UITableViewController {
                 let message = Message(dictionary: dictionary)
                 
                 if let chatPartnerID = message.chatPartnerID() {
-                    self.messagesDictionary[chatPartnerID] = message
+                    //self.messagesDictionary[chatPartnerID]![message.recipeID] = message
+                    if self.messagesDictionary[chatPartnerID] == nil {
+                        self.messagesDictionary[chatPartnerID] = [message.recipeID: message]
+                    } else {
+                        self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: message.recipeID)
+                    }
                 }
                 
                 self.attemptReload()
@@ -78,7 +83,14 @@ class MessagesVC: UITableViewController {
     }
     
     @objc func handleReload() {
-        self.messages = Array(self.messagesDictionary.values)
+        // one message for each recipeID.
+        self.messages.removeAll()
+        self.messagesDictionary.forEach { (key, value) in
+            // chatPartnerID: [recipeID: Message, recipeID: Message, recipeID: Message]
+            let recipeIDMessagePairs: [String:Message] = value
+            self.messages.append(contentsOf: recipeIDMessagePairs.values)
+        }
+        
         self.messages.sort { (m1, m2) -> Bool in
             return m1.timestamp.compare(m2.timestamp) == .orderedDescending
         }
@@ -112,7 +124,9 @@ class MessagesVC: UITableViewController {
         guard let chatPartnerID = message.chatPartnerID() else { return }
         SVProgressHUD.show()
         FirebaseController.shared.fetchUserWithUID(uid: chatPartnerID) { (user) in
+            guard let user = user else { return }
             FirebaseController.shared.fetchRecipeWithUID(uid: message.recipeID, completion: { (recipe) in
+                guard let recipe = recipe else { return }
                 let chat = Chat(recipe: recipe, withUser: user)
                 self.showChatControllerForChat(chat)
             })

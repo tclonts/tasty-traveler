@@ -77,6 +77,16 @@ extension MainTabBarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         let index = viewControllers?.index(of: viewController)
         
+        if index == 0 {
+            if let vc = viewController as? UINavigationController, let homeVC = vc.viewControllers[0] as? HomeVC {
+                if homeVC.collectionView!.contentOffset.y > CGFloat(0) {
+                    UIView.animate(withDuration: 0.3, animations: {
+                        homeVC.collectionView?.contentOffset.y = 0
+                    })
+                }
+            }
+        }
+        
         if index == 2 {
             let createRecipeVC = CreateRecipeVC()
             

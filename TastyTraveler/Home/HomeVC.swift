@@ -39,7 +39,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         textField.textColor = Color.darkText
         textField.layer.cornerRadius = 5
         textField.layer.masksToBounds = false
-        textField.layer.shadowRadius = adaptConstant(30)
+        textField.layer.shadowRadius = 16
         textField.layer.shadowOffset = CGSize(width: 0, height: 0)
         textField.layer.shadowOpacity = 0.1
         textField.height(adaptConstant(38))
@@ -138,18 +138,22 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         self.navigationController?.navigationBar.isHidden = true
         self.isHeroEnabled = true
         
+        
         self.view.backgroundColor = .white
         self.collectionView?.backgroundColor = .white
         
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
-        //notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
+        notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("ReviewsLoaded"), object: nil)
         
 //        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
         self.view.sv(loadingRecipesView)
         loadingRecipesView.left(0).right(0)
         loadingRecipesView.centerVertically()
+        
+        self.collectionView?.delaysContentTouches = true
         
         self.view.sv(emptyDataView)
         emptyDataView.centerInContainer()
@@ -301,6 +305,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             let recipe = searchResultRecipes[indexPath.item]
             cell.recipe = recipe
             cell.delegate = self
+            cell.setNeedsLayout()
+            cell.layoutIfNeeded()
         }
         
         return cell
@@ -325,7 +331,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = recipe
         recipeDetailVC.homeVC = self
-        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL)
+        //recipeDetailVC.formatCookButton()
+        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
         // matching IDs for: Photo, favoriteButton, flagImageView, countryLabel, creatorLabel, ratingsStars, numberOfRatingsLabel
         
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
@@ -362,6 +369,9 @@ extension HomeVC {
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         loadingRecipesView.isHidden = (self.collectionView?.refreshControl?.isRefreshing)!
         
+        var incomingRecipes = [Recipe]()
+        
+        
         FirebaseController.shared.ref.child("recipes").observeSingleEvent(of: .value) { (snapshot) in
             
             // Stop refreshing & loading indicators
@@ -370,13 +380,18 @@ extension HomeVC {
             guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
             guard let userID = Auth.auth().currentUser?.uid else { return }
             
+            let group = DispatchGroup()
+            
             recipeIDsDictionary.forEach({ (key, value) in
                 guard let recipeDictionary = value as? [String:Any] else { return }
                 guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String, creatorID != userID else { return }
                 
+                group.enter()
+                
                 FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
-                    var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
+                    guard let creator = creator else { group.leave(); return }
                     
+                    var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
                     
                     FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
                         if (snapshot.value as? Double) != nil {
@@ -385,31 +400,49 @@ extension HomeVC {
                             recipe.hasFavorited = false
                         }
                         
-                        self.recipes.append(recipe)
-                        self.recipes.sort(by: { (r1, r2) -> Bool in
-                            return r1.creationDate.compare(r2.creationDate) == .orderedDescending
-                        })
-                        //                    self.collectionView?.reloadData()
-                        
-                        if self.lastSearchText != "" {
-                            self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
-                                return recipe.name.lowercased().contains(self.lastSearchText.lowercased()) || (recipe.locality?.lowercased().contains(self.lastSearchText.lowercased()))!
+                        FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                            if (snapshot.value as? Double) != nil {
+                                recipe.hasCooked = true
+                                let timestamp = (snapshot.value as! Double)
+                                recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
+                            } else {
+                                recipe.hasCooked = false
                             }
-                        } else {
-                            self.searchResultRecipes = self.recipes
-                        }
+                            
+//                            self.recipes.append(recipe)
+//                            self.recipes.sort(by: { (r1, r2) -> Bool in
+//                                if r1.recipeScore == r2.recipeScore {
+//                                    return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+//                                } else {
+//                                    return r1.recipeScore > r2.recipeScore
+//                                }
+//                            })
+                            
+                            incomingRecipes.append(recipe)
+                            
+                            group.leave()
+                           
+//                            if self.lastSearchText != "" {
+//                                self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
+//                                    return recipe.name.lowercased().contains(self.lastSearchText.lowercased()) || (recipe.locality?.lowercased().contains(self.lastSearchText.lowercased()))!
+//                                }
+//                            } else {
+//                                self.searchResultRecipes = self.recipes
+//                            }
+//
+//                            self.collectionView?.reloadData()
+//                            UIApplication.shared.isNetworkActivityIndicatorVisible = false
+//                            self.loadingRecipesView.isHidden = true
+//
+//                            if self.filtersLauncher.filtersApplied {
+//                                self.filtersLauncher.applyFilters()
+//                                //                        self.filterStatusView.filtersCollectionView.reloadData()
+//                                //                        self.filterStatusView.isHidden = false
+//                            }
+//
+//                            self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
+                        })
                         
-                        self.collectionView?.reloadData()
-                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                        self.loadingRecipesView.isHidden = true
-                        
-                        if self.filtersLauncher.filtersApplied {
-                            self.filtersLauncher.applyFilters()
-                            //                        self.filterStatusView.filtersCollectionView.reloadData()
-                            //                        self.filterStatusView.isHidden = false
-                        }
-                        
-                        self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
                         
                     }, withCancel: { (error) in
                         print("Failed to fetch favorite info for recipe: ", error)
@@ -417,7 +450,46 @@ extension HomeVC {
                     
                 })
             })
+            
+            group.notify(queue: .main) {
+                self.recipes = incomingRecipes
+                self.recipes.sort(by: { (r1, r2) -> Bool in
+                    if r1.recipeScore == r2.recipeScore {
+                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                    } else {
+                        return r1.recipeScore > r2.recipeScore
+                    }
+                })
+                
+                if self.lastSearchText != "" {
+                    self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
+                        return recipe.name.lowercased().contains(self.lastSearchText.lowercased()) || (recipe.locality?.lowercased().contains(self.lastSearchText.lowercased()))!
+                    }
+                } else {
+                    self.searchResultRecipes = self.recipes
+                }
+                
+                self.collectionView?.reloadData()
+                UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                self.loadingRecipesView.isHidden = true
+                
+                if self.filtersLauncher.filtersApplied {
+                    self.filtersLauncher.applyFilters()
+                    //                        self.filterStatusView.filtersCollectionView.reloadData()
+                    //                        self.filterStatusView.isHidden = false
+                }
+                
+                self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
+            }
         }
+    }
+    
+    func openMapView() {
+        let mapView = RecipesMapView()
+        if filtersLauncher.filtersApplied || lastSearchText != "" {
+            mapView.filteredRecipes = self.searchResultRecipes
+        }
+        self.navigationController?.pushViewController(mapView, animated: true)
     }
 }
 

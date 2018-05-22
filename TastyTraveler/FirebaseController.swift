@@ -44,7 +44,7 @@ class FirebaseController {
             if let error = error {
                 print(error.localizedDescription)
             } else {
-                self.ref.child("users").child(uid).setValue(["username": username])
+                self.ref.child("users").child(uid).child("username").setValue(username)
                 self.ref.child("usernames").child(username.lowercased()).setValue(true)
                 
                 let isRegisteredForRemoteNotifications = UIApplication.shared.isRegisteredForRemoteNotifications
@@ -56,31 +56,138 @@ class FirebaseController {
     func saveToken() {
         guard let uid = Auth.auth().currentUser?.uid, let token = Messaging.messaging().fcmToken else { return }
         
-        self.ref.child("users").child(uid).child("notificationToken").child(token).setValue(true)
+        self.ref.child("users").child(uid).child("notificationToken").setValue(token)
     }
     
-    func fetchUserWithUID(uid: String, completion: @escaping (User) -> ()) {
+    func fetchUserWithUID(uid: String, completion: @escaping (TTUser?) -> ()) {
         self.ref.child("users").child(uid).observeSingleEvent(of: .value) { (snapshot) in
-            guard let userDictionary = snapshot.value as? [String:Any] else { return }
+            guard let userDictionary = snapshot.value as? [String:Any] else { completion(nil); return }
             
-            let user = User(uid: uid, dictionary: userDictionary)
+            let user = TTUser(uid: uid, dictionary: userDictionary)
             completion(user)
         }
     }
     
-    func fetchRecipeWithUID(uid: String, completion: @escaping (Recipe) -> ()) {
+    func fetchUserReview(forRecipeID recipeID: String, completion: @escaping (Review?) -> ()) {
+        guard let userID = Auth.auth().currentUser?.uid else { completion(nil); return }
+        
+        //    users > userID > reviewedRecipes > recipeID = reviewID
+        FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").child(recipeID).observeSingleEvent(of: .value) { (snapshot) in
+            guard let reviewID = snapshot.value as? String else { completion(nil); return }
+            
+            FirebaseController.shared.ref.child("reviews").child(reviewID).observeSingleEvent(of: .value, with: { (snapshot) in
+                guard let reviewDictionary = snapshot.value as? [String:Any] else { completion(nil); return }
+                
+                completion(Review(uid: reviewID, dictionary: reviewDictionary))
+            })
+        }
+    }
+    
+    func saveReview(_ review: Review, forRecipeID recipeID: String) {
+        guard let userID = Auth.auth().currentUser?.uid, let reviewID = review.uid else { return }
+        
+        var dictionaryToUpload = [String:Any]()
+        
+        if let title = review.title {
+            dictionaryToUpload["title"] = title
+        }
+        
+        if let text = review.text {
+            dictionaryToUpload["text"] = text
+        }
+        
+        if let rating = review.rating {
+            dictionaryToUpload["rating"] = rating
+        }
+        
+        let timestamp = Date().timeIntervalSince1970
+        dictionaryToUpload["timestamp"] = timestamp
+        
+//        var uid: String!
+//        var title: String?
+//        var text: String?
+//        var rating: Int?
+//        var user: User!
+//        var creationDate: Date!
+        
+        ref.child("reviews").child(reviewID).updateChildValues(dictionaryToUpload) { (_, _) in
+            self.ref.child("users").child(userID).child("reviewedRecipes").updateChildValues([recipeID: reviewID]) { (_,_) in
+                self.ref.child("recipes").child(recipeID).child("reviews").updateChildValues([userID: reviewID]) { (_, _) in
+                    NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
+                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                }
+            }
+        }
+    }
+    
+    func fetchRecipeWithUID(uid: String, completion: @escaping (Recipe?) -> ()) {
         self.ref.child("recipes").child(uid).observeSingleEvent(of: .value) { (snapshot) in
             guard let recipeDictionary = snapshot.value as? [String:Any] else { return }
             guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
             
             self.fetchUserWithUID(uid: creatorID, completion: { (user) in
+                guard let user = user else { completion(nil); return }
                 let recipe = Recipe(uid: uid, creator: user, dictionary: recipeDictionary)
                 completion(recipe)
             })
         }
     }
     
-    func uploadTestRecipe(named name: String) {
+    func uploadProfilePhoto(data: Data) {
+        guard let currentUser = Auth.auth().currentUser else { return }
+        
+        let localData = data
+        let identifier = currentUser.uid
+        let fileRef = storageRef.child("avatars/\(identifier)")
+        
+        let uploadTask = fileRef.putData(localData, metadata: nil) { (metadata, error) in
+            guard let metadata = metadata else {
+                return
+            }
+            // Metadata contains file metadata such as size, content-type, and download URL.
+            guard let downloadURL = metadata.downloadURL()?.absoluteString else { print("No Download URL"); return }
+            
+            // store downloadURL at database
+            self.ref.child("users").child(currentUser.uid).child("avatarURL").setValue(downloadURL)
+            
+            let changeRequest = currentUser.createProfileChangeRequest()
+            changeRequest.photoURL = URL(string: downloadURL)
+            changeRequest.commitChanges { (error) in
+                if let error = error {
+                    print(error.localizedDescription)
+                }
+            }
+        }
+        
+        // Listen for state changes, errors, and completion of the upload.
+        uploadTask.observe(.resume) { (snapshot) in
+            // Upload resumed, also fires when the upload starts
+        }
+        
+        uploadTask.observe(.pause) { (snapshot) in
+            // Upload paused
+        }
+        
+        uploadTask.observe(.progress) { (snapshot) in
+            // Upload reported progress
+            let percentComplete = 100.0 * Double(snapshot.progress!.completedUnitCount) / Double(snapshot.progress!.totalUnitCount)
+            print(percentComplete)
+        }
+        
+        uploadTask.observe(.success) { (snapshot) in
+            // Upload completed successfully
+            // store downloadURL
+            
+        }
+        
+        uploadTask.observe(.failure) { (snapshot) in
+            if let error = snapshot.error {
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func uploadTestRecipe(named name: String, longitude: Double, latitude: Double) {
         guard let currentUser = Auth.auth().currentUser else { return }
         
         let recipeID = UUID().uuidString
@@ -94,6 +201,8 @@ class FirebaseController {
             "timestamp": timestamp,
             Recipe.photoURLKey: photoURL,
             Recipe.creatorIDKey: currentUser.uid,
+            "longitude": longitude,
+            "latitude": latitude,
             Recipe.servingsKey: 4,
             Recipe.timeInMinutesKey: 30,
             Recipe.difficultyKey: "Easy",
@@ -106,6 +215,8 @@ class FirebaseController {
             Recipe.countryKey: "United States",
             Recipe.localityKey: "Florida"
         ]
+        
+        self.ref.child("localities").updateChildValues(["Florida": true])
         
         self.ref.child("recipes").child(recipeID).setValue(dictionaryToUpload)
         self.ref.child("users").child(currentUser.uid).child("uploadedRecipes").child(recipeID).setValue(true)
@@ -159,7 +270,10 @@ class FirebaseController {
                 dictionaryToUpload[Recipe.countryCodeKey] = countryCode
                 dictionaryToUpload[Recipe.localityKey] = locality
                 dictionaryToUpload[Recipe.countryKey] = dictionary[Recipe.countryKey]
+                dictionaryToUpload["longitude"] = dictionary["longitude"]
+                dictionaryToUpload["latitude"] = dictionary["latitude"]
                 
+                self.ref.child("localities").updateChildValues([locality: true])
                 self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).updateChildValues(["countryCode": countryCode])
                 self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).child("recipes").child(recipeID).setValue(true)
             }

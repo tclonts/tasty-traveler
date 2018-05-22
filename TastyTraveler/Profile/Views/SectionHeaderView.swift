@@ -13,6 +13,8 @@ class SectionHeaderView: UICollectionViewCell {
     
     let sectionLabel: UILabel = {
         let label = UILabel()
+        label.text = "Recipes"
+        label.font = ProximaNova.bold.of(size: 22)
         return label
     }()
     
@@ -23,6 +25,8 @@ class SectionHeaderView: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
+        setUpViews()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -30,6 +34,9 @@ class SectionHeaderView: UICollectionViewCell {
     }
     
     func setUpViews() {
-       
+       sv(sectionLabel, numberOfRecipesLabel)
+        
+        sectionLabel.left(adaptConstant(12)).centerVertically()
+        numberOfRecipesLabel.right(adaptConstant(12)).centerVertically()
     }
 }

@@ -42,7 +42,7 @@ class QuestionCell: UITableViewCell {
     
     let timeLabel: UILabel = {
         let label = UILabel()
-        label.font = ProximaNova.regular.of(size: adaptConstant(12))
+        label.font = ProximaNova.regular.of(size: 12)
         label.text = "16:45"
         label.textColor = Color.gray
         return label

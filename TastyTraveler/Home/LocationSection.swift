@@ -109,6 +109,7 @@ class LocationSection: BaseCell, UICollectionViewDelegate, UICollectionViewDataS
     }
     
     func fetchLocations() {
+        self.countries.removeAll()
         FirebaseController.shared.ref.child("locations").observeSingleEvent(of: .value) { (snapshot) in
             guard let locationsDictionary = snapshot.value as? [String:[String:Any]] else { return }
             

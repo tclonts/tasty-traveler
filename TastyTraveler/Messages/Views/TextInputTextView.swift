@@ -28,7 +28,8 @@ class TextInputTextView: UITextView {
         
         sv(placeholderLabel)
         
-        placeholderLabel.left(8).top(8).bottom(0).right(0)
+        //placeholderLabel.left(0).top(0).bottom(0).right(0)
+        placeholderLabel.left(8).centerVertically()
     }
     
     @objc func handleTextChange() {

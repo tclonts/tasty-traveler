@@ -15,11 +15,6 @@ import UserNotifications
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
     
     var window: UIWindow?
-//    var fontModifier: CGFloat = 0
-//    let ScreenHeight = Int(UIScreen.main.bounds.size.height)
-//    let iPhoneSEHeight = 568
-//    let iPhone8Height = 667
-//    let iPhone8PlusHeight = 736
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 //        #if DEBUG
@@ -32,42 +27,78 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             fatalError("Invalid Firebase configuration file.")
         }
         
-        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(options: authOptions, completionHandler: {_, _ in })
-        application.registerForRemoteNotifications()
+        attemptRegisterForNotifications(application: application)
         
         FirebaseApp.configure(options: options)
         
-        let token = Messaging.messaging().fcmToken
-        print("FCM token: \(token ?? "")")
-        
         window = UIWindow()
-//        setFontModifier()
         
-//        do {
-//            try Auth.auth().signOut()
-//
-//        } catch let signOutError as NSError {
-//            print("Error signing out: \(signOutError)")
-//        }
+        window?.rootViewController = LaunchScreenVC()
         
-        if Auth.auth().currentUser == nil {
-            window?.rootViewController = AccountAccessVC()
+        if Auth.auth().currentUser != nil {
+            Auth.auth().currentUser?.reload(completion: { (error) in
+                if let error = error {
+                    let code = (error as NSError).code
+                    if code == AuthErrorCode.userNotFound.rawValue {
+                        do {
+                            try Auth.auth().signOut()
+                        } catch let error {
+                            print(error.localizedDescription)
+                        }
+                    }
+                    self.window?.rootViewController = AccountAccessVC()
+                } else {
+                    FirebaseController.shared.isUsernameStored(uid: Auth.auth().currentUser!.uid, completion: { (result) in
+                        if result {
+                            self.window?.rootViewController = MainTabBarController()
+                        } else {
+                            let signUpVC = SignUpVC()
+                            signUpVC.needsUsername = true
+                            signUpVC.isFromFacebookLogin = true
+                            self.window?.rootViewController = signUpVC
+                        }
+                    })
+                }
+            })
         } else {
-            window?.rootViewController = MainTabBarController()
+            window?.rootViewController = AccountAccessVC()
         }
         
         return true
     }
     
-//    func setFontModifier() {
-//        switch ScreenHeight {
-//        case iPhoneSEHeight:
-//            fontModifier = 2
-//        default:
-//            fontModifier = 0
-//        }
-//    }
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
+        print("Registered with FCM with token:", fcmToken)
+        FirebaseController.shared.saveToken()
+    }
+    
+    private func attemptRegisterForNotifications(application: UIApplication) {
+        
+        Messaging.messaging().delegate = self
+        
+        UNUserNotificationCenter.current().delegate = self
+        
+        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(options: authOptions, completionHandler: {granted, error in
+            if let error = error {
+                print("Failed to request auth:", error)
+                return
+            }
+            
+            if granted {
+                print("Auth granted.")
+            } else {
+                print("Auth denied.")
+            }
+        })
+        
+        application.registerForRemoteNotifications()
+    }
+    
+    // listen for user notifications
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        //completionHandler(.alert)
+    }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken

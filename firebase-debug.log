@@ -1,0 +1,101 @@
+[debug] [2018-05-16T16:59:51.494Z] ----------------------------------------------------------------------
+[debug] [2018-05-16T16:59:51.497Z] Command:       /usr/local/Cellar/node/8.4.0/bin/node /usr/local/bin/firebase deploy --only functions
+[debug] [2018-05-16T16:59:51.497Z] CLI Version:   3.18.4
+[debug] [2018-05-16T16:59:51.497Z] Platform:      darwin
+[debug] [2018-05-16T16:59:51.497Z] Node Version:  v8.4.0
+[debug] [2018-05-16T16:59:51.498Z] Time:          Wed May 16 2018 12:59:51 GMT-0400 (EDT)
+[debug] [2018-05-16T16:59:51.498Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-05-16T16:59:51.521Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-05-16T16:59:51.521Z] > authorizing via signed-in user
+[debug] [2018-05-16T16:59:51.523Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/tasty-traveler  
+  
+ Wed May 16 2018 12:59:51 GMT-0400 (EDT)
+[debug] [2018-05-16T16:59:51.917Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-16T16:59:51.917Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/tasty-traveler/tokens  
+  
+ Wed May 16 2018 12:59:51 GMT-0400 (EDT)
+[debug] [2018-05-16T16:59:52.399Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'tasty-traveler'...
+[info] 
+[info] i  deploying functions
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] ✔  functions: Finished running predeploy script.
+[debug] [2018-05-16T16:59:59.608Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "~5.12.0",
+    "firebase-functions": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.12.0",
+    "eslint-plugin-promise": "^3.6.0"
+  },
+  "private": true
+}
+[info] i  functions: ensuring necessary APIs are enabled...
+[debug] [2018-05-16T16:59:59.611Z] >>> HTTP REQUEST GET https://servicemanagement.googleapis.com/v1/services/cloudfunctions.googleapis.com/projectSettings/tasty-traveler?view=CONSUMER_VIEW  
+  
+ Wed May 16 2018 12:59:59 GMT-0400 (EDT)
+[debug] [2018-05-16T16:59:59.611Z] >>> HTTP REQUEST GET https://servicemanagement.googleapis.com/v1/services/runtimeconfig.googleapis.com/projectSettings/tasty-traveler?view=CONSUMER_VIEW  
+  
+ Wed May 16 2018 12:59:59 GMT-0400 (EDT)
+[debug] [2018-05-16T17:00:00.294Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: all necessary APIs are enabled
+[debug] [2018-05-16T17:00:00.417Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-16T17:00:00.417Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/tasty-traveler  
+  
+ Wed May 16 2018 13:00:00 GMT-0400 (EDT)
+[debug] [2018-05-16T17:00:00.761Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-16T17:00:00.762Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/858401062491:getServerAppConfig  
+  
+ Wed May 16 2018 13:00:00 GMT-0400 (EDT)
+[debug] [2018-05-16T17:00:01.126Z] <<< HTTP RESPONSE 200
+[info] i  functions: preparing functions directory for uploading...
+[debug] [2018-05-16T17:00:01.128Z] >>> HTTP REQUEST GET https://runtimeconfig.googleapis.com/v1beta1/projects/tasty-traveler/configs  
+  
+ Wed May 16 2018 13:00:01 GMT-0400 (EDT)
+[debug] [2018-05-16T17:00:01.389Z] <<< HTTP RESPONSE 200
+[info] i  functions: packaged functions (50.92 KB) for uploading
+[debug] [2018-05-16T17:00:01.920Z] >>> HTTP REQUEST POST https://cloudfunctions.googleapis.com/v1/projects/tasty-traveler/locations/us-central1/functions:generateUploadUrl  
+  
+ Wed May 16 2018 13:00:01 GMT-0400 (EDT)
+[debug] [2018-05-16T17:00:32.296Z] <<< HTTP RESPONSE 503
+[debug] [2018-05-16T17:00:32.296Z] <<< HTTP RESPONSE BODY {
+  "error": {
+    "code": 503,
+    "message": "The service is currently unavailable.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[debug] [2018-05-16T17:00:32.297Z] TypeError: Cannot create property 'error' on string '{
+  "error": {
+    "code": 503,
+    "message": "The service is currently unavailable.",
+    "status": "UNAVAILABLE"
+  }
+}
+'
+    at module.exports (/usr/local/lib/node_modules/firebase-tools/lib/responseToError.js:11:16)
+    at Request._callback (/usr/local/lib/node_modules/firebase-tools/lib/api.js:47:25)
+    at Request.self.callback (/usr/local/lib/node_modules/firebase-tools/node_modules/request/request.js:185:22)
+    at emitTwo (events.js:125:13)
+    at Request.emit (events.js:213:7)
+    at Request.<anonymous> (/usr/local/lib/node_modules/firebase-tools/node_modules/request/request.js:1157:10)
+    at emitOne (events.js:115:13)
+    at Request.emit (events.js:210:7)
+    at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/firebase-tools/node_modules/request/request.js:1079:12)
+    at Object.onceWrapper (events.js:314:30)
+[error] 
+[error] Error: An unexpected error has occurred.

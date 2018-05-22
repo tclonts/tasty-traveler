@@ -14,7 +14,7 @@ struct Question {
     var askerID: String
     var receiverID: String
     
-    var user: User?
+    var user: TTUser?
     var lastMessage: Message?
     
     init(uid: String, dictionary: [String:Any]) {

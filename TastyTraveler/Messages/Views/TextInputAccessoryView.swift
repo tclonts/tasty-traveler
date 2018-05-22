@@ -22,17 +22,17 @@ class TextInputAccessoryView: UIView {
         inputTextView.showPlaceholderLabel()
     }
     
-    fileprivate let inputTextView: TextInputTextView = {
+    let inputTextView: TextInputTextView = {
         let tv = TextInputTextView()
         tv.isScrollEnabled = false
-        let font = ProximaNova.regular.of(size: adaptConstant(16))
+        let font = ProximaNova.regular.of(size: 16)
         tv.font = font
         tv.placeholderLabel.font = font
         tv.layer.borderColor = Color.lightGray.cgColor
         tv.layer.borderWidth = 1
-        tv.layer.cornerRadius = 16
-        tv.textContainerInset.right = 35
-        tv.textContainerInset.left = 4
+        tv.layer.cornerRadius = adaptConstant(16)
+        tv.textContainerInset.right = adaptConstant(35)
+        tv.textContainerInset.left = adaptConstant(4)
         return tv
     }()
     
@@ -58,9 +58,11 @@ class TextInputAccessoryView: UIView {
         
         sv(inputTextView, sendButton)
         
-        inputTextView.top(8).left(8).bottom(8).right(8)
+        inputTextView.top(adaptConstant(8)).left(adaptConstant(8)).right(adaptConstant(8))
+        inputTextView.Bottom == safeAreaLayoutGuide.Bottom - adaptConstant(8)
         
-        sendButton.bottom(12).right(12).width(27).height(27)
+        sendButton.right(adaptConstant(12)).width(adaptConstant(27)).height(adaptConstant(27))
+        sendButton.Bottom == safeAreaLayoutGuide.Bottom - adaptConstant(12)
     }
     
     override var intrinsicContentSize: CGSize {

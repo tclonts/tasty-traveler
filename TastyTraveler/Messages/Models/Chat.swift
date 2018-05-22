@@ -10,5 +10,5 @@ import UIKit
 
 struct Chat {
     var recipe: Recipe
-    var withUser: User
+    var withUser: TTUser
 }

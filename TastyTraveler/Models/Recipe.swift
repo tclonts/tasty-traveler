@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import CoreLocation
+import Firebase
 
 struct Recipe {
     // KEYS
@@ -21,6 +23,7 @@ struct Recipe {
     static let creationDateKey = "creationDate"
     static let overallRatingKey = "overallRating"
     static let ratingsKey = "ratings"
+    static let reviewIDsKey = "reviewIDs"
     static let descriptionKey = "description"
     static let servingsKey = "servings"
     static let timeInMinutesKey = "timeInMinutes"
@@ -42,13 +45,15 @@ struct Recipe {
     var locality: String?
     var countryCode: String?
     var country: String?
+    var coordinate: CLLocationCoordinate2D?
     
     var name: String
-    var creator: User
+    var creator: TTUser
     var creationDate: Date
     
-    var overallRating: Double?
-    var ratings: [Int]?
+    var reviewsDictionary: [String:String]?
+    var recipeScore: Double = 0
+    var averageRating: Double?
     
     var description: String?
     var servings: Int
@@ -69,23 +74,33 @@ struct Recipe {
     var hasCooked = false
     var cookedDate: Date?
     
-    init(uid: String, creator: User, dictionary: [String:Any]) {
+    init(uid: String, creator: TTUser, dictionary: [String:Any]) {
         self.uid = uid
         self.creator = creator
         self.meal = dictionary[Recipe.mealKey] as? String
         self.locality = dictionary[Recipe.localityKey] as? String
         self.countryCode = dictionary[Recipe.countryCodeKey] as? String
         self.country = dictionary[Recipe.countryKey] as? String
-        self.name = dictionary[Recipe.nameKey] as? String ?? ""
-        let timestamp = dictionary["timestamp"] as? Double ?? 0
-        self.creationDate = Date(timeIntervalSince1970: timestamp)
-        self.ratings = dictionary[Recipe.ratingsKey] as? [Int]
-        self.difficulty = dictionary[Recipe.difficultyKey] as? String ?? "Easy"
         
-        if let ratings = self.ratings {
-            self.overallRating = averageRating(ratings)
+        if let longitude = dictionary["longitude"] as? Double, let latitude = dictionary["latitude"] as? Double {
+            self.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         }
         
+        self.name = dictionary[Recipe.nameKey] as? String ?? ""
+        
+        let timestamp = dictionary["timestamp"] as? Double ?? 0
+        self.creationDate = Date(timeIntervalSince1970: timestamp)
+        
+        if let reviewIDsDict = dictionary["reviews"] as? [String:String] {
+            self.reviewsDictionary = reviewIDsDict
+        }
+        
+        self.difficulty = dictionary[Recipe.difficultyKey] as? String ?? "Easy"
+        
+//        if let ratings = self.ratings {
+//            self.overallRating = averageRating(ratings)
+//        }
+        self.recipeScore = dictionary["recipeScore"] as? Double ?? 0
         self.description = dictionary[Recipe.descriptionKey] as? String
         self.servings = dictionary[Recipe.servingsKey] as? Int ?? 0
         self.timeInMinutes = dictionary[Recipe.timeInMinutesKey] as? Int ?? 0
@@ -98,7 +113,34 @@ struct Recipe {
             self.tags = tags.map { return Tag(rawValue: $0)! }
         }
     }
+    
+    func averageRating(completion: @escaping (Double) -> ()) {
+        
+        var reviews = [Review]()
+        
+        guard let reviewIDsValues = self.reviewsDictionary?.values else { completion(0.0); return }
+        
+        let reviewIDs = Array(reviewIDsValues)
+        
+        let lastReviewID = reviewIDs.last!
+        
+        reviewIDs.forEach({ (reviewID) in
+            FirebaseController.shared.ref.child("reviews").child(reviewID).observeSingleEvent(of: .value, with: { (snapshot) in
+                guard let reviewDictionary = snapshot.value as? [String:Any] else { return }
+                
+                reviews.append(Review(uid: reviewID, dictionary: reviewDictionary))
+                
+                if reviewID == lastReviewID {
+                    let ratings = reviews.flatMap { $0.rating }
+                    let sumOfRatings = ratings.reduce(0, +)
+                    // average = sumOfRatings / ratings.count
+                    completion(Double(sumOfRatings) / Double(ratings.count))
+                }
+            })
+        })
+    }
 }
+
 
 func averageRating(_ ratings: [Int]) -> Double {
     let sumRatings = ratings.reduce(0, +)

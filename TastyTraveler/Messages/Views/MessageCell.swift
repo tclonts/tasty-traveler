@@ -48,7 +48,7 @@ class MessageCell: UITableViewCell {
     
     let timeLabel: UILabel = {
         let label = UILabel()
-        label.font = ProximaNova.regular.of(size: adaptConstant(12))
+        label.font = ProximaNova.regular.of(size: 12)
         label.text = ""
         label.textColor = Color.gray
         return label
@@ -58,7 +58,7 @@ class MessageCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.image = #imageLiteral(resourceName: "disclosureIndicator")
         imageView.contentMode = .scaleAspectFit
-        imageView.height(14).width(9)
+        imageView.height(adaptConstant(14)).width(adaptConstant(9))
         return imageView
     }()
     
@@ -71,7 +71,7 @@ class MessageCell: UITableViewCell {
                     self.textLabel?.text = dictionary["username"] as? String
                     
                     if let profileImageURL = dictionary["avatarURL"] as? String {
-                        self.profileImageView.loadImage(urlString: profileImageURL)
+                        self.profileImageView.loadImage(urlString: profileImageURL, placeholder: #imageLiteral(resourceName: "avatar"))
                     }
                 }
             })
@@ -81,11 +81,11 @@ class MessageCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        textLabel?.frame = CGRect(x: adaptConstant(75), y: textLabel!.frame.origin.y - 2, width: textLabel!.frame.width, height: textLabel!.frame.height)
+        textLabel?.frame = CGRect(x: adaptConstant(75), y: textLabel!.frame.origin.y - adaptConstant(2), width: textLabel!.frame.width, height: textLabel!.frame.height)
         timeLabel.CenterY == textLabel!.CenterY
-        timeLabel.Right == disclosureIndicator.Left - 12
+        timeLabel.Right == disclosureIndicator.Left - adaptConstant(12)
         disclosureIndicator.CenterY == timeLabel.CenterY
-        detailTextLabel?.frame = CGRect(x: adaptConstant(75), y: detailTextLabel!.frame.origin.y + 2, width: detailTextLabel!.frame.width, height: detailTextLabel!.frame.height)
+        detailTextLabel?.frame = CGRect(x: adaptConstant(75), y: detailTextLabel!.frame.origin.y + adaptConstant(2), width: detailTextLabel!.frame.width, height: detailTextLabel!.frame.height)
     }
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {

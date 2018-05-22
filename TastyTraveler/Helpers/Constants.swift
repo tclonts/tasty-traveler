@@ -28,6 +28,9 @@ struct Color {
     static let primaryOrange = UIColor(hexString: "FF8200")
     static let gray          = UIColor(hexString: "999999")
     static let lightGray     = UIColor(hexString: "CECECE")
+    
+    static let emptyBar      = UIColor(hexString: "E9E9EB")
+    static let filledBar     = UIColor(hexString: "86868A")
 }
 
 enum ProximaNova: String {

@@ -38,5 +38,11 @@ target 'TastyTraveler' do
   
   # Popover view
   pod 'Popover'
+  
+  pod 'GSKStretchyHeaderView'
+  
+  pod 'TagCellLayout', :git => 'https://github.com/riteshhgupta/TagCellLayout.git'
+  
+  pod 'Eureka'
 
 end
