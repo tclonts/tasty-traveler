@@ -39,6 +39,14 @@ class CreateRecipeForm: UIView {
         return textView
     }()
     
+    let recipeNameErrorLabel = ErrorLabel()
+    let photoErrorLabel = ErrorLabel()
+    let mealTypeErrorLabel = ErrorLabel()
+    let servingsErrorLabel = ErrorLabel()
+    let timeErrorLabel = ErrorLabel()
+    let ingredientsErrorLabel = ErrorLabel()
+    let stepsErrorLabel = ErrorLabel()
+    
     lazy var cameraButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "cameraButton"), for: .normal)
@@ -240,6 +248,7 @@ class CreateRecipeForm: UIView {
         tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0)
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 43
+        tableView.allowsSelection = false
         tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: "ingredientCell")
         return tableView
     }()
@@ -271,6 +280,7 @@ class CreateRecipeForm: UIView {
         tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0)
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 43
+        tableView.allowsSelection = false
         tableView.register(TextInputTableViewCell.self, forCellReuseIdentifier: "stepCell")
         return tableView
     }()
@@ -362,23 +372,30 @@ class CreateRecipeForm: UIView {
         
         containerView.sv(
             photoImageView,
+            photoErrorLabel,
             nameAndCameraView,
+            recipeNameErrorLabel,
             descriptionTextInputView,
             mealTypeLabel,
+            mealTypeErrorLabel,
             mealTypeButton,
             tutorialVideoLabel,
             tutorialVideoButton,
             tutorialVideoImageView,
             servingsLabel,
+            servingsErrorLabel,
             servingsTextField,
             timeLabel,
+            timeErrorLabel,
             timeTextField,
             difficultyLabel,
             difficultyControl,
             ingredientsLabel,
+            ingredientsErrorLabel,
             ingredientsTableView,
             addIngredientButton,
             stepsLabel,
+            stepsErrorLabel,
             stepsTableView,
             addStepButton,
             tagsLabel,
@@ -388,10 +405,16 @@ class CreateRecipeForm: UIView {
         // Photo
         photoImageView.top(0).left(0).right(0)
         photoImageView.Height == photoImageView.Width * 0.75
+        photoErrorLabel.Left == nameAndCameraView.Right + adaptConstant(4)
+        photoErrorLabel.Top == nameAndCameraView.Top + adaptConstant(4)
         
         // Recipe name and camera button
         containerView.addConstraint(recipeNameConstraintNoImage)
         nameAndCameraView.left(margin).right(margin)
+        
+        recipeNameErrorLabel.Top == nameAndCameraView.Top + adaptConstant(4)
+        recipeNameErrorLabel.Right == nameAndCameraView.Left - adaptConstant(4)
+        
         recipeNameTextInputView.height(40)
         nameAndCameraView.Height == recipeNameTextInputView.Height
         recipeNameTextInputView.Right == cameraButton.Left - adaptConstant(20)
@@ -406,6 +429,10 @@ class CreateRecipeForm: UIView {
         // Meal
         mealTypeLabel.Top == descriptionTextInputView.Bottom + adaptConstant(27)
         mealTypeLabel.left(margin)
+        
+        mealTypeErrorLabel.CenterY == mealTypeLabel.CenterY + adaptConstant(4)
+        mealTypeErrorLabel.Right == mealTypeLabel.Left - adaptConstant(4)
+        
         mealTypeButton.CenterY == mealTypeLabel.CenterY
         mealTypeButton.right(margin)
         mealTypeButton.Left == mealTypeLabel.Right
@@ -423,6 +450,10 @@ class CreateRecipeForm: UIView {
         // Servings
         containerView.addConstraint(servingsConstraintNoVideo)
         servingsLabel.left(margin)
+        
+        servingsErrorLabel.CenterY == servingsLabel.CenterY + adaptConstant(4)
+        servingsErrorLabel.Right == servingsLabel.Left - adaptConstant(4)
+        
         servingsTextField.right(margin)
         servingsTextField.CenterY == servingsLabel.CenterY
         servingsTextField.Left == servingsLabel.Right
@@ -430,6 +461,10 @@ class CreateRecipeForm: UIView {
         // Time
         timeLabel.Top == servingsLabel.Bottom + adaptConstant(27)
         timeLabel.left(margin)
+        
+        timeErrorLabel.CenterY == timeLabel.CenterY + adaptConstant(4)
+        timeErrorLabel.Right == timeLabel.Left - adaptConstant(4)
+        
         timeTextField.right(margin)
         timeTextField.CenterY == timeLabel.CenterY
         timeTextField.Left == timeLabel.Right
@@ -443,6 +478,10 @@ class CreateRecipeForm: UIView {
         // Ingredients
         ingredientsLabel.Top == difficultyLabel.Bottom + adaptConstant(27)
         ingredientsLabel.left(margin)
+        
+        ingredientsErrorLabel.CenterY == ingredientsLabel.CenterY + adaptConstant(4)
+        ingredientsErrorLabel.Right == ingredientsLabel.Left - adaptConstant(4)
+        
         ingredientsTableView.Top == ingredientsLabel.Bottom + adaptConstant(10)
         ingredientsTableView.left(margin).right(margin)
         ingredientsTableView.height(adaptConstant(39))
@@ -452,6 +491,10 @@ class CreateRecipeForm: UIView {
         // Steps
         stepsLabel.Top == addIngredientButton.Bottom + adaptConstant(27)
         stepsLabel.left(margin)
+        
+        stepsErrorLabel.CenterY == stepsLabel.CenterY + adaptConstant(4)
+        stepsErrorLabel.Right == stepsLabel.Left - adaptConstant(4)
+        
         stepsTableView.Top == stepsLabel.Bottom + adaptConstant(10)
         stepsTableView.left(margin).right(margin)
         stepsTableView.height(adaptConstant(39))
@@ -585,11 +628,65 @@ class CreateRecipeForm: UIView {
         
         self.recipeNameTextInputView.textView.text = self.recipeNameTextInputView.textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard let name = self.recipeNameTextInputView.textView.text else { return }
+        if hasErrors() {
+            let ac = UIAlertController(title: nil, message: "Missing required fields.", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: nil))
+            createRecipeVC?.present(ac, animated: true, completion: nil)
+            return
+        }
         
-        if name == "" || name == "Name this recipe" { return }
-                
         self.createRecipeVC?.submitRecipe()
+    }
+    
+    func hasErrors() -> Bool {
+        var errors = false
+        // photo, name, meal, servings, time, ingredients, steps
+        if photoImageView.image == nil { photoErrorLabel.show(withText: "Photo required."); errors = true }
+        
+        if self.recipeNameTextInputView.textView.text == nil ||
+            self.recipeNameTextInputView.textView.text == "" ||
+            self.recipeNameTextInputView.textView.text == "Name this recipe" {
+            errors = true
+            recipeNameErrorLabel.show(withText: "Name required.")
+        }
+        
+        if self.mealTypeButton.titleLabel?.text == nil || self.mealTypeButton.titleLabel?.text == "Choose meal type" {
+            errors = true
+            mealTypeErrorLabel.show(withText: "Meal type required.")
+        }
+        
+        if self.servingsTextField.text == nil || self.timeTextField.text == "" {
+            errors = true
+            servingsErrorLabel.show(withText: "Number of servings required.")
+        }
+        
+        if self.timeTextField.text == nil || self.timeTextField.text == "" {
+            errors = true
+            timeErrorLabel.show(withText: "Time required.")
+        }
+        
+        if createRecipeVC!.ingredientsDataSource.ingredients.isEmpty {
+            
+            let ingredientsIndexPath = IndexPath(row: self.createRecipeVC!.ingredientsDataSource.ingredients.count, section: 0)
+            if let ingredientCell = self.ingredientsTableView.cellForRow(at: ingredientsIndexPath) as? TextInputTableViewCell {
+                if ingredientCell.textField.text == nil || ingredientCell.textField.text == "" {
+                    errors = true
+                    self.ingredientsErrorLabel.show(withText: "Ingredients required.")
+                }
+            }
+        }
+        
+        if createRecipeVC!.stepsDataSource.steps.isEmpty {
+            let stepsIndexPath = IndexPath(row: self.createRecipeVC!.stepsDataSource.steps.count, section: 0)
+            if let stepCell = self.stepsTableView.cellForRow(at: stepsIndexPath) as? TextInputTableViewCell {
+                if stepCell.textField.text == nil || stepCell.textField.text == "" {
+                    errors = true
+                    self.stepsErrorLabel.show(withText: "Steps required.")
+                }
+            }
+        }
+        
+        return errors
     }
     
     @objc fileprivate func createTestRecipe() {

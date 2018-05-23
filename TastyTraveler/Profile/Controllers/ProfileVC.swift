@@ -28,6 +28,14 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return button
     }()
     
+    lazy var backButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "closeButton"), for: .normal)
+        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        button.isHidden = true
+        return button
+    }()
+    
     lazy var notificationsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
@@ -89,6 +97,10 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         self.setUpViews()
     }
     
+    @objc func backButtonTapped() {
+        delegate?.didTapBackButton()
+    }
+    
     override func didChangeStretchFactor(_ stretchFactor: CGFloat) {
         super.didChangeStretchFactor(stretchFactor)
         
@@ -131,7 +143,10 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         stackView.axis = .horizontal
         stackView.spacing = 8
         
-        self.contentView.sv(settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, separatorLine)
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, separatorLine)
+        
+        backButton.left(20)
+        backButton.Top == safeAreaLayoutGuide.Top + 12
         
         settingsButton.left(20)
         settingsButton.Top == safeAreaLayoutGuide.Top + 12
@@ -183,6 +198,7 @@ protocol ProfileHeaderViewDelegate: class {
     func didTapSettingsButton()
     func didTapNotificationsButton()
     func didTapProfilePhotoButton()
+    func didTapBackButton()
 }
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -234,8 +250,6 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             imagePicker = UIImagePickerController()
             imagePicker!.delegate = self
             imagePicker!.sourceType = .photoLibrary
-        } else {
-            
         }
         
         NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
@@ -328,6 +342,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             headerView.contentExpands = false
             headerView.delegate = self
             collectionView?.addSubview(self.headerView)
+            
+            if !isMyProfile {
+                headerView.profilePhotoButton.isHidden = true
+                headerView.settingsButton.isHidden = true
+                headerView.notificationsButton.isHidden = true
+                
+                headerView.backButton.isHidden = false
+            }
         }
         
     }
@@ -422,62 +444,74 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         guard let recipe = cell.recipe else { return }
         
-        let ac = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        ac.addAction(UIAlertAction(title: "View", style: .default, handler: { (_) in
+        if isMyProfile {
+            let ac = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+            ac.addAction(UIAlertAction(title: "View", style: .default, handler: { (_) in
+                
+                let recipeDetailVC = RecipeDetailVC()
+                recipeDetailVC.recipe = recipe
+                recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
+                
+                let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
+                recipeNavigationController.navigationBar.isHidden = true
+                recipeDetailVC.isMyRecipe = true
+                recipeDetailVC.isFromFavorites = true
+                
+                self.present(recipeNavigationController, animated: true, completion: nil)
+            }))
             
+            ac.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (_) in
+                
+                FirebaseController.shared.ref.child("recipes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
+                    guard let recipeDictionary = snapshot.value as? [String:Any] else { return }
+                    
+                    if let favoritedByDictionary = recipeDictionary["favoritedBy"] as? [String:Any] {
+                        let favoritedByIDs = Array(favoritedByDictionary.keys)
+                        
+                        favoritedByIDs.forEach { FirebaseController.shared.ref.child("users").child($0).child("favorites").child(recipe.uid).removeValue() }
+                    }
+                    
+                    FirebaseController.shared.ref.child("users").child(recipe.creator.uid).child("uploadedRecipes").child(recipe.uid).removeValue()
+                    FirebaseController.shared.ref.child("recipes").child(recipe.uid).removeValue()
+                    if let country = recipe.country { FirebaseController.shared.ref.child("locations").child(country).child("recipes").child(recipe.uid).removeValue() }
+                    
+                    FirebaseController.shared.ref.child("messages").observeSingleEvent(of: .value, with: { (snapshot) in
+                        guard let messagesDictionary = snapshot.value as? [String:Any] else { return }
+                        
+                        messagesDictionary.forEach({ (key, value) in
+                            if let messageRecipeID = (value as! [String:Any])["recipeID"] as? String {
+                                if messageRecipeID == recipe.uid { FirebaseController.shared.ref.child("messages").child(key).removeValue() }
+                            }
+                        })
+                    })
+                    
+                    recipe.reviewsDictionary?.forEach({ (userID, reviewID) in
+                        FirebaseController.shared.ref.child("reviews").child(reviewID).removeValue()
+                        FirebaseController.shared.ref.child(userID).child("cookedRecipes").child(recipe.uid).removeValue()
+                        FirebaseController.shared.ref.child(userID).child("reviewedRecipes").child(recipe.uid).removeValue()
+                    })
+                })
+                self.recipes.remove(at: indexPath.item)
+                self.collectionView!.deleteItems(at: [indexPath])
+                
+                ac.dismiss(animated: true, completion: nil)
+            }))
+            
+            ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            
+            self.present(ac, animated: true, completion: nil)
+        } else {
             let recipeDetailVC = RecipeDetailVC()
             recipeDetailVC.recipe = recipe
             recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
+            recipeDetailVC.previousCreatorID = self.userID!
             
             let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
             recipeNavigationController.navigationBar.isHidden = true
-            recipeDetailVC.isMyRecipe = true
             recipeDetailVC.isFromFavorites = true
             
             self.present(recipeNavigationController, animated: true, completion: nil)
-        }))
-        
-        ac.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (_) in
-
-            FirebaseController.shared.ref.child("recipes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
-                guard let recipeDictionary = snapshot.value as? [String:Any] else { return }
-                
-                if let favoritedByDictionary = recipeDictionary["favoritedBy"] as? [String:Any] {
-                    let favoritedByIDs = Array(favoritedByDictionary.keys)
-                    
-                    favoritedByIDs.forEach { FirebaseController.shared.ref.child("users").child($0).child("favorites").child(recipe.uid).removeValue() }
-                }
-                
-                FirebaseController.shared.ref.child("users").child(recipe.creator.uid).child("uploadedRecipes").child(recipe.uid).removeValue()
-                FirebaseController.shared.ref.child("recipes").child(recipe.uid).removeValue()
-                if let country = recipe.country { FirebaseController.shared.ref.child("locations").child(country).child("recipes").child(recipe.uid).removeValue() }
-                
-                FirebaseController.shared.ref.child("messages").observeSingleEvent(of: .value, with: { (snapshot) in
-                    guard let messagesDictionary = snapshot.value as? [String:Any] else { return }
-                    
-                    messagesDictionary.forEach({ (key, value) in
-                        if let messageRecipeID = (value as! [String:Any])["recipeID"] as? String {
-                            if messageRecipeID == recipe.uid { FirebaseController.shared.ref.child("messages").child(key).removeValue() }
-                        }
-                    })
-                })
-                
-                recipe.reviewsDictionary?.forEach({ (userID, reviewID) in
-                    FirebaseController.shared.ref.child("reviews").child(reviewID).removeValue()
-                    FirebaseController.shared.ref.child(userID).child("cookedRecipes").child(recipe.uid).removeValue()
-                    FirebaseController.shared.ref.child(userID).child("reviewedRecipes").child(recipe.uid).removeValue()
-                })
-            })
-            self.recipes.remove(at: indexPath.item)
-            self.collectionView!.deleteItems(at: [indexPath])
-            
-            ac.dismiss(animated: true, completion: nil)
-        }))
-        
-        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        self.present(ac, animated: true, completion: nil)
-        
+        }
     }
 }
 
@@ -540,5 +574,7 @@ extension ProfileVC: ProfileHeaderViewDelegate {
         self.present(navController, animated: true, completion: nil)
     }
     
-    
+    func didTapBackButton() {
+        self.dismiss(animated: true, completion: nil)
+    }
 }

@@ -16,6 +16,10 @@ private let reuseIdentifier = "recipeCell"
 
 class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
+    var filteredByCountry = [Recipe]()
+    var filteredByRecipeName = [Recipe]()
+    var filteredByLocality = [Recipe]()
+    
     lazy var tapGesture: UITapGestureRecognizer = {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         return gesture
@@ -39,6 +43,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         textField.textColor = Color.darkText
         textField.layer.cornerRadius = 5
         textField.layer.masksToBounds = false
+        
         textField.layer.shadowRadius = 16
         textField.layer.shadowOffset = CGSize(width: 0, height: 0)
         textField.layer.shadowOpacity = 0.1
@@ -126,6 +131,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.collectionView?.keyboardDismissMode = .interactive
         let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
         let statusBarColor = UIColor.white
         statusBarView.backgroundColor = statusBarColor
@@ -462,8 +468,28 @@ extension HomeVC {
                 })
                 
                 if self.lastSearchText != "" {
+                    let splitText = self.lastSearchText.lowercased().split(separator: " ")
+                    
                     self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
-                        return recipe.name.lowercased().contains(self.lastSearchText.lowercased()) || (recipe.locality?.lowercased().contains(self.lastSearchText.lowercased()))!
+                        var containsSearch = false
+                        
+                        if let country = recipe.country?.lowercased() {
+                            splitText.forEach { searchTerm in
+                                if country.contains(searchTerm) { containsSearch = true }
+                            }
+                        }
+                        
+                        if let locality = recipe.locality?.lowercased() {
+                            splitText.forEach { searchTerm in
+                                if locality.contains(searchTerm) { containsSearch = true }
+                            }
+                        }
+                        
+                        splitText.forEach { searchTerm in
+                            if recipe.name.lowercased().contains(searchTerm) { containsSearch = true }
+                        }
+                        
+                        return containsSearch
                     }
                 } else {
                     self.searchResultRecipes = self.recipes
@@ -528,13 +554,39 @@ extension HomeVC: UITextFieldDelegate {
                 isCancelButtonShowing = true
             }
             
+            let splitText = text.lowercased().split(separator: " ")
+            
             self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
-                return recipe.name.lowercased().contains(text.lowercased()) || (recipe.locality?.lowercased().contains(text.lowercased()))!
+                var containsSearch = false
+                
+                if let country = recipe.country?.lowercased() {
+                    splitText.forEach { searchTerm in
+                        if country.contains(searchTerm) { containsSearch = true }
+                    }
+                }
+                
+                if let locality = recipe.locality?.lowercased() {
+                    splitText.forEach { searchTerm in
+                        if locality.contains(searchTerm) { containsSearch = true }
+                    }
+                }
+                
+                splitText.forEach { searchTerm in
+                    if recipe.name.lowercased().contains(searchTerm) { containsSearch = true }
+                }
+                
+                return containsSearch
             }
             self.collectionView?.reloadSections([1])
             self.lastSearchText = text
             self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
         }
+    }
+    
+    func filterRecipesByCountry(recipes: [Recipe]?, text: [String.SubSequence]) -> [Recipe] {
+        var recipesByCountry = [Recipe]()
+        
+        return recipesByCountry
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {

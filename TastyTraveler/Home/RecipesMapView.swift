@@ -95,7 +95,7 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
                             guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
                             
                             FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
-                                guard let creator = creator else { return }
+                                guard let creator = creator else { count += 1; return }
                                 count += 1
                                 let recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
                                 

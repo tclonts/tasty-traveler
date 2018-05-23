@@ -261,6 +261,7 @@ class RecipeDetailVC: UIViewController {
     var isMyRecipe = false
     var isFromChatLogVC = false
     var didSubmitReview = false
+    var previousCreatorID: String?
     
     var ratings: [Int]?
     var averageRating: Double?
@@ -314,6 +315,25 @@ class RecipeDetailVC: UIViewController {
         recipeHeaderView.countryLabel.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showMapView))
         self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
+        
+        if !isMyRecipe {
+            let profileGesture = UITapGestureRecognizer(target: self, action: #selector(showProfileView))
+            self.recipeHeaderView.creatorNameLabel.isUserInteractionEnabled = true
+            self.recipeHeaderView.creatorNameLabel.addGestureRecognizer(profileGesture)
+        }
+    }
+    
+    @objc func showProfileView() {
+        guard let uid = recipe?.creator.uid else { return }
+        if let previousCreatorID = previousCreatorID, previousCreatorID == uid {
+            self.dismiss(animated: true, completion: nil)
+        } else {
+            
+            let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
+            profileVC.isMyProfile = false
+            profileVC.userID = uid
+            self.present(profileVC, animated: true, completion: nil)
+        }
     }
     
     @objc func showMapView() {
@@ -393,6 +413,7 @@ class RecipeDetailVC: UIViewController {
                 var review = Review(uid: value, dictionary: reviewDictionary)
                 
                 FirebaseController.shared.fetchUserWithUID(uid: key, completion: { (user) in
+                    guard let user = user else { group.leave(); return }
                     review.user = user
                     
                     incomingReviews.append(review)

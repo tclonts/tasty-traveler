@@ -132,20 +132,22 @@ class RecipeCalloutView: UIView {
         return cosmosView
     }()
 
-    lazy var viewRecipeButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("View Recipe", for: .normal)
-        button.setTitleColor(Color.gray, for: .normal)
-        button.layer.borderColor = Color.gray.cgColor
-        button.layer.cornerRadius = adaptConstant(3)
-        button.layer.borderWidth = 1
-        button.titleLabel?.font = ProximaNova.regular.of(size: 10)
-        button.addTarget(self, action: #selector(viewRecipeTapped), for: .touchUpInside)
-        return button
-    }()
+//    lazy var viewRecipeButton: UIButton = {
+//        let button = UIButton(type: .system)
+//        button.setTitle("View Recipe", for: .normal)
+//        button.setTitleColor(Color.gray, for: .normal)
+//        button.layer.borderColor = Color.gray.cgColor
+//        button.layer.cornerRadius = adaptConstant(3)
+//        button.layer.borderWidth = 1
+//        button.titleLabel?.font = ProximaNova.regular.of(size: 10)
+//        button.addTarget(self, action: #selector(viewRecipeTapped), for: .touchUpInside)
+//        return button
+//    }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
+        self.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(viewRecipeTapped)))
 
         backgroundColor = .white
         layer.cornerRadius = adaptConstant(10)
@@ -154,7 +156,7 @@ class RecipeCalloutView: UIView {
 
         self.height(adaptConstant(80)).width(adaptConstant(240))
 
-        sv(recipePhoto, recipeNameLabel, starsRatingView, viewRecipeButton)
+        sv(recipePhoto, recipeNameLabel, starsRatingView)
         
         recipePhoto.left(0).top(0).bottom(0)
         recipePhoto.width(adaptConstant(120))
@@ -163,7 +165,7 @@ class RecipeCalloutView: UIView {
         recipeNameLabel.Left == recipePhoto.Right + 8
         starsRatingView.Top == recipeNameLabel.Bottom + 8
         starsRatingView.Left == recipePhoto.Right + 8
-        viewRecipeButton.bottom(8).right(8).width(adaptConstant(70)).height(adaptConstant(15))
+//        viewRecipeButton.bottom(8).right(8).width(adaptConstant(70)).height(adaptConstant(15))
     }
 
     @objc func viewRecipeTapped() {

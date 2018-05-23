@@ -68,6 +68,7 @@
 		2A805AE92049BF45004BEEF3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A805AE72049BF45004BEEF3 /* Main.storyboard */; };
 		2A805AEE2049BF45004BEEF3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A805AEC2049BF45004BEEF3 /* LaunchScreen.storyboard */; };
 		2A8D899720978E5A009505B4 /* CookedItAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8D899620978E5A009505B4 /* CookedItAlertView.swift */; };
+		2A8FE11620B5C71B008BA9F4 /* ErrorLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A8FE11520B5C71B008BA9F4 /* ErrorLabel.swift */; };
 		2A9BA3242099FE7C00AC3E42 /* MessagesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A9BA3232099FE7C00AC3E42 /* MessagesVC.swift */; };
 		2A9BA326209A00F800AC3E42 /* MessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A9BA325209A00F800AC3E42 /* MessageCell.swift */; };
 		2A9BA328209A23DE00AC3E42 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A9BA327209A23DE00AC3E42 /* Chat.swift */; };
@@ -156,6 +157,7 @@
 		2A805AEF2049BF45004BEEF3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A8133C8205067ED0009016B /* TastyTraveler.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TastyTraveler.entitlements; sourceTree = "<group>"; };
 		2A8D899620978E5A009505B4 /* CookedItAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookedItAlertView.swift; sourceTree = "<group>"; };
+		2A8FE11520B5C71B008BA9F4 /* ErrorLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorLabel.swift; sourceTree = "<group>"; };
 		2A9BA3232099FE7C00AC3E42 /* MessagesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesVC.swift; sourceTree = "<group>"; };
 		2A9BA325209A00F800AC3E42 /* MessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCell.swift; sourceTree = "<group>"; };
 		2A9BA327209A23DE00AC3E42 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 				2A665AD3206D8BBB0014A464 /* MenuBar.swift */,
 				2A476AF720937EE7009C5005 /* GradientView.swift */,
 				2ABEE58620B360BA0000519A /* LaunchScreenVC.swift */,
+				2A8FE11520B5C71B008BA9F4 /* ErrorLabel.swift */,
 			);
 			path = CustomClasses;
 			sourceTree = "<group>";
@@ -790,6 +793,7 @@
 				2A2D480620A204BE00705D70 /* ComposeReviewVC.swift in Sources */,
 				2A54A96C20508408008255A9 /* OnboardingCollectionVC.swift in Sources */,
 				2A2D480C20A3986D00705D70 /* RecipeAnnotationView.swift in Sources */,
+				2A8FE11620B5C71B008BA9F4 /* ErrorLabel.swift in Sources */,
 				2AC67E2B2086A2F700C0E828 /* FiltersLauncher.swift in Sources */,
 				2A35F5A820A0DC14009899AA /* InfoBox.swift in Sources */,
 				2A0B4DF7205988510056F7D5 /* Constants.swift in Sources */,

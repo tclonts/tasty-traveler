@@ -224,23 +224,6 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     var showPassword = false
     var showEmail = false
     var facebookLinked = false
-    var numberOfFalse = 0
-
-    var allFieldsValid = true {
-        didSet {
-            if allFieldsValid && oldValue == false {
-                numberOfFalse -= 1
-                self.navigationItem.rightBarButtonItem?.isEnabled = false
-            } else if allFieldsValid == false && oldValue == true {
-                numberOfFalse += 1
-                self.navigationItem.rightBarButtonItem?.isEnabled = false
-            } else {
-                if numberOfFalse == 0 {
-                    self.navigationItem.rightBarButtonItem?.isEnabled = true
-                }
-            }
-        }
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -268,21 +251,20 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                         cell.textField.tag = 0
                         
                         cell.contentView.sv(self.usernameErrorLabel)
-                        self.usernameErrorLabel.Top == cell.contentView.Bottom + 8
+                        self.usernameErrorLabel.Bottom == cell.contentView.Top - 8
                         self.usernameErrorLabel.centerHorizontally()
                     }.cellUpdate { cell, row in
                         cell.textField.text = row.value
                         cell.textField.clearButtonMode = .always
                         
                         if !row.isValid {
-                            
-                            self.allFieldsValid = false
+                            self.navigationItem.rightBarButtonItem?.isEnabled = false
                             self.usernameErrorLabel.text = "Username is too long."
                             UIView.animate(withDuration: 0.2, animations: {
                                 self.usernameErrorLabel.alpha = 1
                             })
                         } else {
-                            self.allFieldsValid = true
+                            self.navigationItem.rightBarButtonItem?.isEnabled = true
                             UIView.animate(withDuration: 0.2, animations: {
                                 self.usernameErrorLabel.alpha = 0
                             })
@@ -325,27 +307,27 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                 +++ Section("Email")
                 <<< TextRow("Email") {
                         $0.add(rule: RuleEmail())
-                        $0.validationOptions = .validatesOnChange
+                        $0.validationOptions = .validatesOnDemand
                     }.cellSetup { cell, row in
                         cell.textField.placeholder = "Your email address"
                         cell.textField.tag = 1
                         cell.textField.keyboardType = .emailAddress
                         
                         cell.contentView.sv(self.emailErrorLabel)
-                        self.emailErrorLabel.Top == cell.contentView.Bottom + 8
+                        self.emailErrorLabel.Bottom == cell.contentView.Top - 8
                         self.emailErrorLabel.centerHorizontally()
                     }.cellUpdate { cell, row in
                         cell.textField.text = row.value
                         cell.textField.clearButtonMode = .always
                         
                         if !row.isValid {
-                            self.allFieldsValid = false
+                            //self.navigationItem.rightBarButtonItem?.isEnabled = false
                             self.emailErrorLabel.text = "Must be a valid email address."
                             UIView.animate(withDuration: 0.2, animations: {
                                 self.emailErrorLabel.alpha = 1
                             })
                         } else {
-                            self.allFieldsValid = true
+                            //self.navigationItem.rightBarButtonItem?.isEnabled = true
                             UIView.animate(withDuration: 0.2, animations: {
                                 self.emailErrorLabel.alpha = 0
                             })
@@ -406,6 +388,10 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     
     @objc func saveAccountInfo() {
         guard let user = Auth.auth().currentUser else { return }
+        
+        if let emailRow = form.rowBy(tag: "Email") {
+            if !emailRow.validate().isEmpty { return }
+        }
         
         if let newUsername = newUsername {
             FirebaseController.shared.verifyUniqueUsername(newUsername, completion: { (result) in
