@@ -79,6 +79,13 @@ class HomeHeaderView: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(hideFilterStatus), name: Notification.Name("RemoveAllFiltersNotification"), object: nil)
+    }
+    
+    @objc func hideFilterStatus() {
+        self.filterStatusView.filtersCollectionView.reloadData()
+        self.filterStatusView.isHidden = true
     }
     
     required init?(coder aDecoder: NSCoder) {

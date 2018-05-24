@@ -123,6 +123,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     var searchResultRecipes = [Recipe]()
     var recipes = [Recipe]()
     var lastSearchText = ""
+    var isSearching = false
     
     var cancelledSearch = false
     var isCancelButtonShowing = false
@@ -177,6 +178,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func showFilters() {
+        if self.searchField.isFirstResponder { self.searchField.resignFirstResponder() }
+        
         filtersLauncher.showFilters()
     }
     
@@ -196,12 +199,14 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     @objc func clearFilters() {
         filtersLauncher.clearFilters()
         filtersLauncher.filtersApplied = false
-        //collectionView?.reloadSections([0])
+//        collectionView?.reloadSections([0])
+        
         hideEmptyView()
         handleRefresh()
     }
     
     @objc func handleRefresh() {
+        hideEmptyView()
         print("Handling refresh..")
         recipes.removeAll()
         //collectionView?.reloadData()
@@ -210,10 +215,17 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     @objc func cancelSearch() {
         print("canceled search")
+        isSearching = false
         searchField.text = ""
         lastSearchText = ""
         searchField.resignFirstResponder()
-        self.searchResultRecipes = recipes
+        
+        if self.filtersLauncher.filtersApplied {
+            self.filtersLauncher.applyFilters()
+        } else {
+            self.searchResultRecipes = self.recipes
+        }
+        
         self.hideEmptyView()
         UIView.animate(withDuration: 0.3, animations: {
             self.cancelButton.alpha = 0
@@ -415,38 +427,10 @@ extension HomeVC {
                                 recipe.hasCooked = false
                             }
                             
-//                            self.recipes.append(recipe)
-//                            self.recipes.sort(by: { (r1, r2) -> Bool in
-//                                if r1.recipeScore == r2.recipeScore {
-//                                    return r1.creationDate.compare(r2.creationDate) == .orderedDescending
-//                                } else {
-//                                    return r1.recipeScore > r2.recipeScore
-//                                }
-//                            })
-                            
                             incomingRecipes.append(recipe)
                             
                             group.leave()
-                           
-//                            if self.lastSearchText != "" {
-//                                self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
-//                                    return recipe.name.lowercased().contains(self.lastSearchText.lowercased()) || (recipe.locality?.lowercased().contains(self.lastSearchText.lowercased()))!
-//                                }
-//                            } else {
-//                                self.searchResultRecipes = self.recipes
-//                            }
-//
-//                            self.collectionView?.reloadData()
-//                            UIApplication.shared.isNetworkActivityIndicatorVisible = false
-//                            self.loadingRecipesView.isHidden = true
-//
-//                            if self.filtersLauncher.filtersApplied {
-//                                self.filtersLauncher.applyFilters()
-//                                //                        self.filterStatusView.filtersCollectionView.reloadData()
-//                                //                        self.filterStatusView.isHidden = false
-//                            }
-//
-//                            self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
+                        
                         })
                         
                         
@@ -468,29 +452,7 @@ extension HomeVC {
                 })
                 
                 if self.lastSearchText != "" {
-                    let splitText = self.lastSearchText.lowercased().split(separator: " ")
-                    
-                    self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
-                        var containsSearch = false
-                        
-                        if let country = recipe.country?.lowercased() {
-                            splitText.forEach { searchTerm in
-                                if country.contains(searchTerm) { containsSearch = true }
-                            }
-                        }
-                        
-                        if let locality = recipe.locality?.lowercased() {
-                            splitText.forEach { searchTerm in
-                                if locality.contains(searchTerm) { containsSearch = true }
-                            }
-                        }
-                        
-                        splitText.forEach { searchTerm in
-                            if recipe.name.lowercased().contains(searchTerm) { containsSearch = true }
-                        }
-                        
-                        return containsSearch
-                    }
+                    self.searchRecipes(text: self.lastSearchText)
                 } else {
                     self.searchResultRecipes = self.recipes
                 }
@@ -524,9 +486,9 @@ extension HomeVC: UITextFieldDelegate {
         if let text = textField.text {
             print(text)
             if text.isEmpty {
-                self.lastSearchText = text
-                self.searchResultRecipes = self.recipes
-                self.collectionView?.reloadSections([1])
+                //isSearching = false
+                
+                //self.collectionView?.reloadSections([1])
                 
                 if textField.subviews.contains(cancelButton) {
                     UIView.animate(withDuration: 0.3, animations: {
@@ -553,48 +515,89 @@ extension HomeVC: UITextFieldDelegate {
                 })
                 isCancelButtonShowing = true
             }
-            
-            let splitText = text.lowercased().split(separator: " ")
-            
-            self.searchResultRecipes = self.recipes.filter { (recipe) -> Bool in
-                var containsSearch = false
-                
-                if let country = recipe.country?.lowercased() {
-                    splitText.forEach { searchTerm in
-                        if country.contains(searchTerm) { containsSearch = true }
-                    }
-                }
-                
-                if let locality = recipe.locality?.lowercased() {
-                    splitText.forEach { searchTerm in
-                        if locality.contains(searchTerm) { containsSearch = true }
-                    }
-                }
-                
-                splitText.forEach { searchTerm in
-                    if recipe.name.lowercased().contains(searchTerm) { containsSearch = true }
-                }
-                
-                return containsSearch
-            }
-            self.collectionView?.reloadSections([1])
-            self.lastSearchText = text
-            self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
+           
         }
     }
     
-    func filterRecipesByCountry(recipes: [Recipe]?, text: [String.SubSequence]) -> [Recipe] {
-        var recipesByCountry = [Recipe]()
+    func calculateSearchScore(recipe: Recipe, text: [String]) -> Int {
+        var nameCount = 0
+        var countryCount = 0
+        var localityCount = 0
         
-        return recipesByCountry
+        text.forEach { word in
+            let nameWords = recipe.name.lowercased().components(separatedBy: " ")
+            let nameMatches = nameWords.filter { $0 == word }.count
+            nameCount += nameMatches
+            
+//            let nameDifference = nameWords.count - nameMatches
+//            if nameDifference > 0 { nameCount -= nameDifference }
+            
+            if recipe.country != nil {
+                let countryWords = recipe.country!.lowercased().components(separatedBy: " ")
+                let countryMatches = countryWords.filter { $0 == word }.count
+                countryCount += countryMatches
+                
+//                let countryDifference = countryWords.count - countryMatches
+//                if countryDifference > 0 { countryCount -= countryDifference }
+            }
+            
+            if recipe.locality != nil {
+                let localityWords = recipe.locality!.lowercased().components(separatedBy: " ")
+                let localityMatches = localityWords.filter { $0 == word }.count
+                localityCount += localityMatches
+                
+//                let localityDifference = localityWords.count - localityMatches
+//                if localityDifference > 0 { localityCount -= localityDifference }
+            }
+        }
+        
+        return nameCount + countryCount + localityCount
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         print("RETURN: " + textField.text!)
         textField.resignFirstResponder()
         textField.layoutIfNeeded()
+        if let text = textField.text, text != "" {
+            isSearching = true
+            searchRecipes(text: text)
+        } else {
+            self.hideEmptyView()
+            self.lastSearchText = ""
+            isSearching = false
+            if self.filtersLauncher.filtersApplied {
+                self.filtersLauncher.applyFilters()
+            } else {
+                self.searchResultRecipes = self.recipes
+            }
+        }
         
         return true
+    }
+    
+    func searchRecipes(text: String) {
+        
+        let splitText = text.lowercased().components(separatedBy: " ")
+        
+        if filtersLauncher.filtersApplied {
+            let matchingRecipes = searchResultRecipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
+            
+            self.searchResultRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
+                calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
+            })
+            
+        } else {
+            let matchingRecipes = recipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
+            
+            self.searchResultRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
+                calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
+            })
+
+        }
+        
+        self.collectionView?.reloadSections([1])
+        self.lastSearchText = text
+        self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {

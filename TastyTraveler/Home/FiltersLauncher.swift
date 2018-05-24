@@ -257,19 +257,21 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         guard homeVC != nil else { return }
         guard !selectedFilters.isEmpty else { handleDismiss(); filtersApplied = false; homeVC?.handleRefresh(); return }
         
+        let data = homeVC!.isSearching ? homeVC!.searchResultRecipes : homeVC!.recipes
+        
         if !selectedMeals.isEmpty {
-            homeVC?.searchResultRecipes = homeVC!.searchResultRecipes.filter { selectedMeals.contains($0.meal!) }
+            homeVC?.searchResultRecipes = data.filter { selectedMeals.contains($0.meal!) }
         }
         
         if !selectedLocations.isEmpty {
-            homeVC?.searchResultRecipes = homeVC!.searchResultRecipes.filter { recipe in
+            homeVC?.searchResultRecipes = data.filter { recipe in
                 guard let country = recipe.country else { return false }
                 return selectedLocations.contains(country)
             }
         }
         
         if !selectedTags.isEmpty {
-            homeVC?.searchResultRecipes = homeVC!.searchResultRecipes.filter { recipe in
+            homeVC?.searchResultRecipes = data.filter { recipe in
                 guard let recipeTags = recipe.tags else { return false }
                 let selectedTagsSet = Set(selectedTags)
                 let tagsArray = recipeTags.map { $0.rawValue }
@@ -297,7 +299,6 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         self.selectedTags = []
         self.selectedLocations = []
         self.selectedFiltersCollectionView.reloadData()
-        //self.filtersApplied = false
         NotificationCenter.default.post(name: Notification.Name("RemoveAllFiltersNotification"), object: nil)
     }
     
