@@ -15,6 +15,8 @@ class FirebaseController {
     let ref = Database.database().reference()
     let storageRef = Storage.storage().reference()
     
+    var userNotifications = [UserNotification]()
+    
     func verifyUniqueUsername(_ username: String, completion: @escaping (Bool) -> Void) {
         let usernamesRef = self.ref.child("usernames")
         usernamesRef.observeSingleEvent(of: .value) { (snapshot) in
@@ -27,12 +29,16 @@ class FirebaseController {
         }
     }
     
-    func isUsernameStored(uid: String, completion: @escaping (Bool) -> Void) {
-        
-        self.ref.child("users").child(uid).observeSingleEvent(of: .value) { (snapshot) in
+    func isUsernameStored(uid: String, completion: @escaping (Bool) -> ()) {
+        print("Verifying username exists.")
+        self.ref.child("users").child(uid).child("username").observeSingleEvent(of: .value) { (snapshot) in
             // Get value
-            let value = snapshot.value as? NSDictionary
-            completion(value?["username"] != nil)
+            if let value = snapshot.value as? String {
+                print(value)
+                completion(true)
+            } else {
+                completion(false)
+            }
         }
     }
     
@@ -66,6 +72,10 @@ class FirebaseController {
             let user = TTUser(uid: uid, dictionary: userDictionary)
             completion(user)
         }
+    }
+    
+    func observeNotifications() {
+        
     }
     
     func fetchUserReview(forRecipeID recipeID: String, completion: @escaping (Review?) -> ()) {

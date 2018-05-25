@@ -51,6 +51,27 @@ class MessagesVC: UITableViewController {
             self.messagesDictionary.removeValue(forKey: snapshot.key)
             self.attemptReload()
         }
+        
+        ref.observe(.childChanged) { (snapshot) in
+            let userID = snapshot.key
+            FirebaseController.shared.ref.child("userMessages").child(uid).child(userID).observe(.childAdded, with: { (snapshot) in
+                
+                let messageID = snapshot.key
+                self.fetchMessage(withID: messageID)
+            })
+        }
+        
+        FirebaseController.shared.ref.child("users").child(uid).child("undreadMessagesCount").observe(.childChanged) { (snapshot) in
+            if let count = snapshot.value as? Int {
+                if count == 0 {
+                    self.navigationItem.title = "Messages"
+                    self.tabBarController?.tabBar.items?[3].badgeValue = nil
+                } else {
+                    self.navigationItem.title = "Messages (\(count))"
+                    self.tabBarController?.tabBar.items?[3].badgeValue = "\(count)"
+                }
+            }
+        }
     }
     
     func fetchMessage(withID messageID: String) {

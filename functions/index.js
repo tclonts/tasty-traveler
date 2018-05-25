@@ -30,6 +30,13 @@ exports.observeReviews = functions.database
               .once('value', snapshot => {
                 const recipeCreator = snapshot.val();
 
+                const newBadgeValue = recipeCreator.badgeCount + 1;
+
+                admin
+                  .database()
+                  .ref('/users/' + reviewedRecipe.creatorID + '/badgeCount')
+                  .set(newBadgeValue);
+
                 const payload = {
                   notification: {
                     title: '',
@@ -37,7 +44,8 @@ exports.observeReviews = functions.database
                       reviewer.username +
                       ' cooked your ' +
                       reviewedRecipe.name +
-                      ' recipe!'
+                      ' recipe!',
+                    badge: String(newBadgeValue)
                   },
                   data: {
                     recipeID: recipeID
@@ -85,10 +93,18 @@ exports.observeMessages = functions.database
               .once('value', snapshot => {
                 const sender = snapshot.val();
 
+                const newBadgeValue = recipient.badgeCount + 1;
+
+                admin
+                  .database()
+                  .ref('/users/' + recipientID + '/badgeCount')
+                  .set(newBadgeValue);
+
                 const payload = {
                   notification: {
                     title: '',
-                    body: sender.username + ' sent you a message.'
+                    body: sender.username + ' sent you a message.',
+                    badge: String(newBadgeValue)
                   },
                   data: {
                     recipeID: message.recipeID,

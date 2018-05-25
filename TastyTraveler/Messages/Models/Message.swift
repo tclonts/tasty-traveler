@@ -16,7 +16,7 @@ struct Message {
     var text: String
     var recipeID: String
     
-    var isUnread: Bool = false
+    var isUnread: Bool
     
     init(dictionary: [String:Any]) {
         self.fromID = dictionary["fromID"] as! String
@@ -25,6 +25,7 @@ struct Message {
         self.timestamp = Date(timeIntervalSince1970: timeInterval)
         self.text = dictionary["text"] as! String
         self.recipeID = dictionary["recipeID"] as! String
+        self.isUnread = dictionary["unread"] as! Bool
     }
     
     func chatPartnerID() -> String? {

@@ -12,6 +12,7 @@ import CoreLocation
 import Firebase
 import StoreKit
 import Stevia
+import FacebookLogin
 import SVProgressHUD
 
 class SettingsVC: FormViewController {
@@ -106,16 +107,18 @@ class SettingsVC: FormViewController {
             if let providers = providers {
                 if providers.count == 1 && providers.contains("facebook.com") {
                     // using facebook
-                    self.accountVC.showPassword = false
+                    // show username
                     self.accountVC.showEmail = false
                 } else if providers.count == 2 {
                     // using facebook and email
-                    // show password and change password
-                    self.accountVC.showPassword = true
+                    // show username, email, password, and change password
+                    self.accountVC.showEmail = true
+                    self.accountVC.facebookLinked = true
                 } else {
                     // using email
-                    // show email, link facebook,password, and change password
+                    // show username, email, link facebook, password, and change password
                     self.accountVC.showEmail = true
+                    self.accountVC.facebookLinked = false
                 }
             }
             
@@ -191,6 +194,9 @@ class AccountVC: FormViewController, UITextFieldDelegate {
         }
     }
     
+    var changingPassword = false
+    
+    
     let usernameErrorLabel: UILabel = {
         let label = UILabel()
         label.text = "Username is required."
@@ -211,6 +217,16 @@ class AccountVC: FormViewController, UITextFieldDelegate {
         return label
     }()
     
+    let newPasswordErrorLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Username is required."
+        label.textColor = .red
+        label.font = ProximaNova.regular.of(size: 11)
+        label.textAlignment = .center
+        label.alpha = 0
+        return label
+    }()
+    
     let emailErrorLabel: UILabel = {
         let label = UILabel()
         label.text = "Username is required."
@@ -221,7 +237,6 @@ class AccountVC: FormViewController, UITextFieldDelegate {
         return label
     }()
     
-    var showPassword = false
     var showEmail = false
     var facebookLinked = false
     
@@ -270,44 +285,21 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                             })
                         }
                     }.onChange { row in
-                        self.newUsername = row.value
+                        if row.value != self.username! {
+                            self.newUsername = row.value
+                        }
                     }
         
         let currentUser = Auth.auth().currentUser!
         
         if let username = currentUser.displayName { self.username = username }
         
-        if showPassword {
-            self.form
-                +++ Section("Password")
-                <<< TextRow("Password").cellSetup { cell, row in
-                    cell.textField.placeholder = "Current password"
-                    cell.textField.tag = 1
-                    row.add(rule: RuleRequired())
-                    cell.textField.isSecureTextEntry = true
-                    row.validationOptions = .validatesOnDemand
-                    }.cellUpdate { cell, row in
-                        if !row.isValid {
-                            
-                        }
-                        row.evaluateHidden()
-                }
-                <<< TextRow("NewPassword") {
-                    $0.hidden = true
-                    }.cellSetup { cell, row in
-                        cell.textField.placeholder = "New password"
-                        cell.textField.tag = 2
-                        cell.textField.isSecureTextEntry = true
-            }
-        }
-        
         if showEmail {
-
             self.form
                 +++ Section("Email")
                 <<< TextRow("Email") {
-                        $0.add(rule: RuleEmail())
-                        $0.validationOptions = .validatesOnDemand
+                    $0.add(rule: RuleEmail())
+                    $0.validationOptions = .validatesOnDemand
                     }.cellSetup { cell, row in
                         cell.textField.placeholder = "Your email address"
                         cell.textField.tag = 1
@@ -333,37 +325,97 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                             })
                         }
                     }.onChange { row in
-                        self.newEmail = row.value
-                    }
+                        if row.value != self.email! {
+                            self.newEmail = row.value
+                        }
+                }
                 +++ Section()
                 <<< ButtonRow("Link Facebook account") { row in
-                    row.title = row.tag
+                        if self.facebookLinked {
+                            row.title = "Facebook account linked"
+                            row.disabled = true
+                        } else {
+                            row.title = "Link Facebook account"
+                            row.disabled = false
+                        }
                     }.cellUpdate { cell, row in
                         cell.textLabel?.textAlignment = .center
+                        
                     }.onCellSelection { cell, row in
-                        print("LINK FACEBOOK")
+                        self.facebookLogin()
                 }
                 +++ Section("Password")
                 <<< TextRow("Password").cellSetup { cell, row in
-                    cell.textField.placeholder = "Current password"
-                    cell.textField.tag = 2
-                    row.add(rule: RuleRequired())
-                    cell.textField.isSecureTextEntry = true
-                    row.validationOptions = .validatesOnDemand
+                        cell.textField.placeholder = "Current password"
+                        cell.textField.tag = 2
+                        row.add(rule: RuleRequired())
+                        cell.textField.isSecureTextEntry = true
+                        row.validationOptions = .validatesOnDemand
+                    
+                        cell.contentView.sv(self.passwordErrorLabel)
+                        self.passwordErrorLabel.Bottom == cell.contentView.Top - 8
+                        self.passwordErrorLabel.centerHorizontally()
                     }.cellUpdate { cell, row in
                         if !row.isValid {
-                            
+                            self.passwordErrorLabel.text = "Password is required."
+                            UIView.animate(withDuration: 0.2, animations: {
+                                self.passwordErrorLabel.alpha = 1
+                            })
+                        } else {
+                            UIView.animate(withDuration: 0.2, animations: {
+                                self.passwordErrorLabel.alpha = 0
+                            })
                         }
-                        row.evaluateHidden()
-                }
+                    }.onChange { row in
+                        self.currentPassword = row.value
+                    }
                 <<< TextRow("NewPassword") {
-                    $0.hidden = true
+                        $0.hidden = true
                     }.cellSetup { cell, row in
                         cell.textField.placeholder = "New password"
                         cell.textField.tag = 3
                         cell.textField.isSecureTextEntry = true
-            }
-            
+                        
+                        row.add(rule: RuleMinLength(minLength: 6))
+                        row.validationOptions = .validatesOnDemand
+                        
+                        cell.contentView.sv(self.newPasswordErrorLabel)
+                        self.newPasswordErrorLabel.Top == cell.contentView.Top
+                        self.newPasswordErrorLabel.centerHorizontally()
+                    }.cellUpdate { cell, row in
+                        if !row.isValid {
+                            self.newPasswordErrorLabel.text = "Must be at least 6 characters."
+                            UIView.animate(withDuration: 0.2, animations: {
+                                self.newPasswordErrorLabel.alpha = 1
+                            })
+                        } else {
+                            UIView.animate(withDuration: 0.2, animations: {
+                                self.newPasswordErrorLabel.alpha = 0
+                            })
+                        }
+                    }.onChange { row in
+                        self.newPassword = row.value
+                    }
+                <<< ButtonRow("Change password") { row in
+                    row.title = row.tag
+                    }.cellUpdate { cell, row in
+                        cell.textLabel?.textAlignment = .center
+                    }.onCellSelection { cell, row in
+                        self.changingPassword = !self.changingPassword
+                        let newPasswordRow = self.form.rowBy(tag: "NewPassword")
+                        
+                        if self.changingPassword {
+                            newPasswordRow?.hidden = false
+                            newPasswordRow?.evaluateHidden()
+                            row.title = "Cancel password change"
+                            row.updateCell()
+                        } else {
+                            newPasswordRow?.hidden = true
+                            newPasswordRow?.evaluateHidden()
+                            row.title = "Change password"
+                            row.updateCell()
+                        }
+                }
             if let email = currentUser.email { self.email = email }
         }
     }
@@ -389,9 +441,75 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     @objc func saveAccountInfo() {
         guard let user = Auth.auth().currentUser else { return }
         
-        if let emailRow = form.rowBy(tag: "Email") {
-            if !emailRow.validate().isEmpty { return }
+        if facebookLinked && !showEmail{
+            self.saveNewUsername(completion: { (result) in
+                if result {
+                    SVProgressHUD.showSuccess(withStatus: "Saved")
+                }
+            })
+            
+        } else {
+            guard let passwordRow = form.rowBy(tag: "Password") else { return }
+            if !passwordRow.validate().isEmpty { return }
+            
+            guard let email = email, let currentPassword = currentPassword else { return }
+            let emailCredential = EmailAuthProvider.credential(withEmail: email, password: currentPassword)
+            
+            user.reauthenticate(with: emailCredential, completion: { (error) in
+                if let error = error {
+                    print(error)
+                    self.passwordErrorLabel.text = "Password is invalid."
+                    UIView.animate(withDuration: 0.2, animations: {
+                        self.passwordErrorLabel.alpha = 1
+                    })
+                    return
+                }
+                
+                self.saveNewUsername(completion: { (result) in
+                    if !result { return }
+                })
+                
+                if let emailRow = self.form.rowBy(tag: "Email") {
+                    if !emailRow.validate().isEmpty { return }
+                    
+                    if let newEmail = self.newEmail {
+                        user.updateEmail(to: newEmail, completion: { (error) in
+                            if let error = error {
+                                print(error)
+                                return
+                            }
+                            self.email = newEmail
+                            self.newEmail = nil
+                        })
+                        
+                    }
+                }
+                
+                if let newPasswordRow = self.form.rowBy(tag: "NewPassword") {
+                    if !newPasswordRow.validate().isEmpty { return }
+                    
+                    if let newPassword = self.newPassword {
+                        user.updatePassword(to: newPassword, completion: { (error) in
+                            if let error = error {
+                                print(error)
+                                return
+                            }
+                            
+                            self.currentPassword = newPassword
+                            self.newPassword = nil
+                        })
+                    }
+                }
+                
+                SVProgressHUD.showSuccess(withStatus: "Saved")
+                SVProgressHUD.dismiss(withDelay: 2)
+                self.navigationController?.popViewController(animated: true)
+            })
         }
+    }
+    
+    func saveNewUsername(completion: @escaping(Bool) ->()) {
+        guard let user = Auth.auth().currentUser else { completion(false); return }
         
         if let newUsername = newUsername {
             FirebaseController.shared.verifyUniqueUsername(newUsername, completion: { (result) in
@@ -399,13 +517,67 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     let usernameToRemove = self.username?.lowercased()
                     FirebaseController.shared.ref.child("usernames").child(usernameToRemove!).removeValue()
                     FirebaseController.shared.storeUsername(newUsername, uid: user.uid)
+                    
+                    self.username = newUsername
+                    self.newUsername = nil
+                    completion(true)
                 } else {
                     self.usernameErrorLabel.text = "Username is already taken."
                     UIView.animate(withDuration: 0.2, animations: {
                         self.usernameErrorLabel.alpha = 1
                     })
+                    completion(false)
                 }
             })
+        }
+    }
+    
+    func facebookLogin() {
+        let loginManager = LoginManager()
+        loginManager.loginBehavior = .native
+        loginManager.logIn(readPermissions: [.email], viewController: self) { (loginResult) in
+            switch loginResult {
+            case .failed(let error):
+                print(error)
+            case .cancelled:
+                print("User cancelled login.")
+            case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                print("Logged in!")
+                
+                SVProgressHUD.show()
+                let credential = FacebookAuthProvider.credential(withAccessToken: accessToken.authenticationToken)
+                
+                guard let user = Auth.auth().currentUser else { return }
+                
+                user.link(with: credential, completion: { (user, error) in
+                    if let error = error {
+                        print(error)
+                        if (error as NSError).code == AuthErrorCode.credentialAlreadyInUse.rawValue {
+                            let ac = UIAlertController(title: "Already Linked", message: "This Facebook account is already linked with an account on Tasty Traveler.", preferredStyle: .alert)
+                            
+                            ac.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: nil))
+                            
+                            self.present(ac, animated: true, completion: nil)
+                        }
+                        SVProgressHUD.dismiss()
+                        return
+                    }
+                    
+                    self.facebookLinked = true
+                    let facebookRow = self.form.rowBy(tag: "Link Facebook account")
+                    
+                    if self.facebookLinked {
+                        facebookRow?.title = "Facebook account linked"
+                        facebookRow?.disabled = true
+                    } else {
+                        facebookRow?.title = "Link Facebook account"
+                        facebookRow?.disabled = false
+                    }
+                    facebookRow?.updateCell()
+                    
+                    SVProgressHUD.dismiss()
+                })
+            }
         }
     }
 }

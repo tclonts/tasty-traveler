@@ -34,6 +34,15 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 guard let dictionary = snapshot.value as? [String:Any] else { return }
                 let message = Message(dictionary: dictionary)
                 if message.recipeID == self.chat!.recipe.uid {
+                    if message.isUnread == true {
+                        FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").observeSingleEvent(of: .value) { (snapshot) in
+                            if let count = snapshot.value as? Int {
+                                let newCount = count - 1
+                                FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").setValue(newCount)
+                            }
+                        }
+                    }
+                    messagesRef.child("unread").setValue(false)
                     self.messages.append(message)
                     
                     DispatchQueue.main.async {
@@ -164,7 +173,17 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                                     "fromID": fromID,
                                     "timestamp": timestamp,
                                     "recipeID": recipeID,
-                                    "text": message]
+                                    "text": message,
+                                    "unread": true]
+        
+        FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").observeSingleEvent(of: .value) { (snapshot) in
+            if let count = snapshot.value as? Int {
+                let newCount = count + 1
+                FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").setValue(newCount)
+            } else {
+                FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").setValue(1)
+            }
+        }
         
         childRef.updateChildValues(values) { (error, ref) in
             if let error = error { print(error); return }

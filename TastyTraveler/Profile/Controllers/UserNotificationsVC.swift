@@ -9,9 +9,7 @@
 import UIKit
 
 class UserNotificationsVC: UITableViewController {
-    
-    var userNotifications = [UserNotification]()
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -25,10 +23,6 @@ class UserNotificationsVC: UITableViewController {
         // Configure tableView
         tableView.contentInsetAdjustmentBehavior = .never
         tableView.register(UserNotificationCell.self, forCellReuseIdentifier: "userNotificationCell")
-        
-    }
-    
-    func observeUserNotifications() {
         
     }
     
@@ -51,7 +45,7 @@ class UserNotificationsVC: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return userNotifications.count
+        return 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

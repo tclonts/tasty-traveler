@@ -20,6 +20,10 @@ class MessageCell: UITableViewCell {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "hh:mm a"
             
+            if message!.isUnread {
+                unreadIndicatorView.isHidden = false
+            }
+            
             if let date = message?.timestamp {
                 timeLabel.text = dateFormatter.string(from: date)
             }

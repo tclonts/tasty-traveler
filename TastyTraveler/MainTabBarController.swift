@@ -16,6 +16,8 @@ class MainTabBarController: UITabBarController {
         self.delegate = self
         
         setUpViewControllers()
+        
+        FirebaseController.shared.observeNotifications()
     }
     
     let shadowView = UIView()

@@ -385,7 +385,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 extension HomeVC {
     func fetchAllRecipes() {
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
-        loadingRecipesView.isHidden = (self.collectionView?.refreshControl?.isRefreshing)!
+        //loadingRecipesView.isHidden = (self.collectionView?.refreshControl?.isRefreshing)!
         
         var incomingRecipes = [Recipe]()
         
@@ -459,7 +459,7 @@ extension HomeVC {
                 
                 self.collectionView?.reloadData()
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                self.loadingRecipesView.isHidden = true
+                //self.loadingRecipesView.isHidden = true
                 
                 if self.filtersLauncher.filtersApplied {
                     self.filtersLauncher.applyFilters()
@@ -570,6 +570,7 @@ extension HomeVC: UITextFieldDelegate {
             } else {
                 self.searchResultRecipes = self.recipes
             }
+            self.collectionView?.reloadSections([1])
         }
         
         return true
