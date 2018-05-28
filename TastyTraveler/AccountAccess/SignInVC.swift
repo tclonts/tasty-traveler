@@ -137,6 +137,7 @@ class SignInVC: UIViewController, UITextFieldDelegate {
                                                          attributes: [NSAttributedStringKey.font : UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(14))!,
                                                                       NSAttributedStringKey.foregroundColor : UIColor(hexString: "#FF6322")])
         button.setAttributedTitle(attributedString, for: .normal)
+        button.addTarget(self, action: #selector(forgotPassword), for: .touchUpInside)
         return button
     }()
     
@@ -356,6 +357,32 @@ class SignInVC: UIViewController, UITextFieldDelegate {
                 self.present(ac, animated: true, completion: nil)
             }
         }
+    }
+    
+    @objc func forgotPassword() {
+        let ac = UIAlertController(title: "Forgot password?", message: "Enter your email address below to receive a link to reset your password.", preferredStyle: .alert)
+        ac.addTextField { (textField) in
+            textField.placeholder = "Enter email address"
+            textField.keyboardType = .emailAddress
+        }
+        ac.addAction(UIAlertAction(title: "Reset Password", style: .default, handler: { (_) in
+            let resetEmail = ac.textFields?.first?.text
+            Auth.auth().sendPasswordReset(withEmail: resetEmail!, completion: { (error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        let resetFailedAlert = UIAlertController(title: "Reset failed", message: "Error: \(error.localizedDescription)", preferredStyle: .alert)
+                        resetFailedAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        self.present(resetFailedAlert, animated: true, completion: nil)
+                    } else {
+                        let resetEmailSentAlert = UIAlertController(title: "Reset email sent successfully", message: "Check your email", preferredStyle: .alert)
+                        resetEmailSentAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        self.present(resetEmailSentAlert, animated: true, completion: nil)
+                    }
+                }
+            })
+        }))
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        self.present(ac, animated: true, completion: nil)
     }
     
     // MARK: - TextFieldDelegate Functions
