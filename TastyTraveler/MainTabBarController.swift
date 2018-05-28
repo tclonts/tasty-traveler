@@ -18,6 +18,20 @@ class MainTabBarController: UITabBarController {
         setUpViewControllers()
         
         FirebaseController.shared.observeNotifications()
+        FirebaseController.shared.observeMessages()
+        FirebaseController.shared.observeUnreadMessagesCount()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTabBadge), name: Notification.Name("UpdateTabBadge"), object: nil)
+    }
+    
+    @objc func updateTabBadge() {
+        if FirebaseController.shared.unreadMessagesCount > 0 {
+            self.tabBar.items![3].badgeValue = "\(FirebaseController.shared.unreadMessagesCount)"
+        } else {
+            self.tabBar.items![3].badgeValue = nil
+        }
+        
+        
     }
     
     let shadowView = UIView()

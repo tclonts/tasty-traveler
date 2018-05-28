@@ -12,14 +12,10 @@ import SVProgressHUD
 
 class MessagesVC: UITableViewController {
     
-    var messages = [Message]()
-    var messagesDictionary = [String:[String:Message]]()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.tableView.contentInsetAdjustmentBehavior = .never
-        self.navigationItem.title = "Messages"
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]
         self.navigationController?.navigationBar.isTranslucent = false
         self.navigationController?.navigationBar.backgroundColor = .white
@@ -29,101 +25,27 @@ class MessagesVC: UITableViewController {
         footerView.backgroundColor = .white
         footerView.height(1)
         self.tableView.tableFooterView = footerView
-        observeMessages()
+        
+        updateTitle()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadMessages), name: Notification.Name("ReloadMessages"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTitle), name: Notification.Name("UpdateTitle"), object: nil)
     }
     
-    func observeMessages() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        
-        let ref = FirebaseController.shared.ref.child("userMessages").child(uid)
-        
-        ref.observe(.childAdded) { (snapshot) in
-            SVProgressHUD.show()
-            let userID = snapshot.key
-            FirebaseController.shared.ref.child("userMessages").child(uid).child(userID).observe(.childAdded, with: { (snapshot) in
-                
-                let messageID = snapshot.key
-                self.fetchMessage(withID: messageID)
-            })
-        }
-        
-        ref.observe(.childRemoved) { (snapshot) in
-            self.messagesDictionary.removeValue(forKey: snapshot.key)
-            self.attemptReload()
-        }
-        
-        ref.observe(.childChanged) { (snapshot) in
-            let userID = snapshot.key
-            FirebaseController.shared.ref.child("userMessages").child(uid).child(userID).observe(.childAdded, with: { (snapshot) in
-                
-                let messageID = snapshot.key
-                self.fetchMessage(withID: messageID)
-            })
-        }
-        
-        FirebaseController.shared.ref.child("users").child(uid).child("undreadMessagesCount").observe(.childChanged) { (snapshot) in
-            if let count = snapshot.value as? Int {
-                if count == 0 {
-                    self.navigationItem.title = "Messages"
-                    self.tabBarController?.tabBar.items?[3].badgeValue = nil
-                } else {
-                    self.navigationItem.title = "Messages (\(count))"
-                    self.tabBarController?.tabBar.items?[3].badgeValue = "\(count)"
-                }
-            }
+    @objc func updateTitle() {
+        if FirebaseController.shared.unreadMessagesCount > 0 {
+            self.navigationItem.title = "Messages (\(FirebaseController.shared.unreadMessagesCount))"
+        } else {
+            self.navigationItem.title = "Messages"
         }
     }
     
-    func fetchMessage(withID messageID: String) {
-        let messagesRef = FirebaseController.shared.ref.child("messages").child(messageID)
-        
-        messagesRef.observeSingleEvent(of: .value) { (snapshot) in
-            if let dictionary = snapshot.value as? [String:Any] {
-                let message = Message(dictionary: dictionary)
-                
-                if let chatPartnerID = message.chatPartnerID() {
-                    //self.messagesDictionary[chatPartnerID]![message.recipeID] = message
-                    if self.messagesDictionary[chatPartnerID] == nil {
-                        self.messagesDictionary[chatPartnerID] = [message.recipeID: message]
-                    } else {
-                        self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: message.recipeID)
-                    }
-                }
-                
-                self.attemptReload()
-            }
-        }
-    }
-    
-    var timer: Timer?
-    
-    func attemptReload() {
-        self.timer?.invalidate()
-        
-        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(handleReload), userInfo: nil, repeats: false)
-    }
-    
-    @objc func handleReload() {
-        // one message for each recipeID.
-        self.messages.removeAll()
-        self.messagesDictionary.forEach { (key, value) in
-            // chatPartnerID: [recipeID: Message, recipeID: Message, recipeID: Message]
-            let recipeIDMessagePairs: [String:Message] = value
-            self.messages.append(contentsOf: recipeIDMessagePairs.values)
-        }
-        
-        self.messages.sort { (m1, m2) -> Bool in
-            return m1.timestamp.compare(m2.timestamp) == .orderedDescending
-        }
-        
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
-            SVProgressHUD.dismiss()
-        }
+    @objc func reloadMessages() {
+        self.tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messages.count
+        return FirebaseController.shared.messages.count
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -133,14 +55,14 @@ class MessagesVC: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "messageCell", for: indexPath) as! MessageCell
         
-        let message = messages[indexPath.row]
+        let message = FirebaseController.shared.messages[indexPath.row]
         cell.message = message
         
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let message = messages[indexPath.row]
+        let message = FirebaseController.shared.messages[indexPath.row]
         
         guard let chatPartnerID = message.chatPartnerID() else { return }
         SVProgressHUD.show()

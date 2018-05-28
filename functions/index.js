@@ -4,6 +4,84 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+exports.observeFavorites = functions.database
+  .ref('/recipes/{recipeID}/favoritedBy/{userID}')
+  .onCreate((change, context) => {
+    const recipeID = context.params.recipeID;
+    const userID = context.params.userID;
+
+    return admin
+      .database()
+      .ref('/recipes/' + recipeID)
+      .once('value', snapshot => {
+        const recipe = snapshot.val();
+
+        return admin
+          .database()
+          .ref('/users/' + userID)
+          .once('value', snapshot => {
+            const user = snapshot.val();
+
+            return admin
+              .database()
+              .ref('/users/' + recipe.creatorID)
+              .once('value', snapshot => {
+                const creator = snapshot.val();
+
+                const newBadgeValue = creator.badgeCount + 1;
+
+                admin
+                  .database()
+                  .ref('/users/' + recipe.creatorID + '/badgeCount')
+                  .set(newBadgeValue);
+
+                const notification = {
+                  message:
+                    user.username +
+                    ' favorited your ' +
+                    recipe.name +
+                    ' recipe.',
+                  recipeID: recipeID,
+                  type: 'favorited',
+                  photoURL: recipe.photoURL,
+                  userID: userID
+                };
+
+                admin
+                  .database()
+                  .ref('/users/' + recipe.creatorID + '/notifications')
+                  .push(notification);
+
+                const payload = {
+                  notification: {
+                    title: '',
+                    body:
+                      user.username +
+                      ' favorited your ' +
+                      recipe.name +
+                      ' recipe.',
+                    badge: String(newBadgeValue)
+                  },
+                  data: {
+                    recipeID: recipeID
+                  }
+                };
+
+                admin
+                  .messaging()
+                  .sendToDevice(creator.notificationToken, payload)
+                  .then(response => {
+                    console.log('Successfully sent message: ', response);
+                    return null;
+                  })
+                  .catch(error => {
+                    console.log('Error sending message: ', error);
+                  });
+              });
+          });
+      });
+  });
+
 // Listen for new reviews and then trigger a push notification
 exports.observeReviews = functions.database
   .ref('/recipes/{recipeID}/reviews/{reviewerID}')
@@ -37,6 +115,23 @@ exports.observeReviews = functions.database
                   .ref('/users/' + reviewedRecipe.creatorID + '/badgeCount')
                   .set(newBadgeValue);
 
+                const notification = {
+                  message:
+                    reviewer.username +
+                    ' cooked your ' +
+                    reviewedRecipe.name +
+                    ' recipe!',
+                  recipeID: recipeID,
+                  type: 'cooked',
+                  photoURL: reviewedRecipe.photoURL,
+                  userID: reviewerID
+                };
+
+                admin
+                  .database()
+                  .ref('/users/' + reviewedRecipe.creatorID + '/notifications')
+                  .push(notification);
+
                 const payload = {
                   notification: {
                     title: '',
@@ -69,59 +164,61 @@ exports.observeReviews = functions.database
 
 // Listen for new messages and then trigger a push notification
 exports.observeMessages = functions.database
-  .ref('/userMessages/{recipientID}/{senderID}/{messageID}')
-  .onCreate((change, context) => {
-    const recipientID = context.params.recipientID;
-    const senderID = context.params.senderID;
+  .ref('/messages/{messageID}')
+  .onCreate((snap, context) => {
     const messageID = context.params.messageID;
+    const message = snap.val();
+
+    const recipientID = message.toID;
+    const senderID = message.fromID;
 
     return admin
       .database()
-      .ref('/messages/' + messageID)
+      .ref('/users/' + recipientID)
       .once('value', snapshot => {
-        const message = snapshot.val();
+        const recipient = snapshot.val();
 
         return admin
           .database()
-          .ref('/users/' + recipientID)
+          .ref('/users/' + senderID)
           .once('value', snapshot => {
-            const recipient = snapshot.val();
+            const sender = snapshot.val();
 
-            return admin
+            const newBadgeValue = recipient.badgeCount + 1;
+
+            const unreadMessagesCount = recipient.unreadMessagesCount + 1;
+
+            admin
               .database()
-              .ref('/users/' + senderID)
-              .once('value', snapshot => {
-                const sender = snapshot.val();
+              .ref('/users/' + recipientID + '/unreadMessagesCount')
+              .set(unreadMessagesCount);
 
-                const newBadgeValue = recipient.badgeCount + 1;
+            admin
+              .database()
+              .ref('/users/' + recipientID + '/badgeCount')
+              .set(newBadgeValue);
 
-                admin
-                  .database()
-                  .ref('/users/' + recipientID + '/badgeCount')
-                  .set(newBadgeValue);
+            const payload = {
+              notification: {
+                title: '',
+                body: sender.username + ' sent you a message.',
+                badge: String(newBadgeValue)
+              },
+              data: {
+                recipeID: message.recipeID,
+                withUserID: senderID
+              }
+            };
 
-                const payload = {
-                  notification: {
-                    title: '',
-                    body: sender.username + ' sent you a message.',
-                    badge: String(newBadgeValue)
-                  },
-                  data: {
-                    recipeID: message.recipeID,
-                    withUserID: senderID
-                  }
-                };
-
-                admin
-                  .messaging()
-                  .sendToDevice(recipient.notificationToken, payload)
-                  .then(response => {
-                    console.log('Successfully sent message: ', response);
-                    return null;
-                  })
-                  .catch(error => {
-                    console.log('Error sending message: ', error);
-                  });
+            admin
+              .messaging()
+              .sendToDevice(recipient.notificationToken, payload)
+              .then(response => {
+                console.log('Successfully sent message: ', response);
+                return null;
+              })
+              .catch(error => {
+                console.log('Error sending message: ', error);
               });
           });
       });

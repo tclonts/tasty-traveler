@@ -15,10 +15,12 @@ struct Message {
     var timestamp: Date
     var text: String
     var recipeID: String
+    var uid: String
     
-    var isUnread: Bool
+    var isUnread = true
     
-    init(dictionary: [String:Any]) {
+    init(uid: String, dictionary: [String:Any]) {
+        self.uid = uid
         self.fromID = dictionary["fromID"] as! String
         self.toID = dictionary["toID"] as! String
         let timeInterval = dictionary["timestamp"] as! Double

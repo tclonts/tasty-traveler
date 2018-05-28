@@ -22,8 +22,16 @@ class UserNotificationsVC: UITableViewController {
         
         // Configure tableView
         tableView.contentInsetAdjustmentBehavior = .never
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 50
+        
         tableView.register(UserNotificationCell.self, forCellReuseIdentifier: "userNotificationCell")
         
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadNotifications), name: Notification.Name("ReloadNotifications"), object: nil)
+    }
+    
+    @objc func reloadNotifications() {
+        self.tableView.reloadData()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -45,11 +53,23 @@ class UserNotificationsVC: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return FirebaseController.shared.userNotifications.count
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let user = FirebaseController.shared.userNotifications[indexPath.row].user
+        
+        let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
+        profileVC.isMyProfile = false
+        profileVC.userID = user.uid
+        self.present(profileVC, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "userNotificationCell", for: indexPath) as! UserNotificationCell
+        
+        let notification = FirebaseController.shared.userNotifications[indexPath.row]
+        cell.notification = notification
         
         return cell
     }

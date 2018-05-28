@@ -458,6 +458,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                                 if let error = error {
                                     print(error.localizedDescription)
                                 } else {
+                                    FirebaseController.shared.ref.child("users").child(uid).child("badgeCount").setValue(0)
+                                    FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount").setValue(0)
                                     FirebaseController.shared.storeUsername(usernameText, uid: uid)
                                     self.view.endEditing(true)
                                     let mainTabBarController = MainTabBarController()
@@ -481,6 +483,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
             guard let uid = Auth.auth().currentUser?.uid else { print("No user id for Facebook user."); return }
             FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
                 if isUnique {
+                    FirebaseController.shared.ref.child("users").child(uid).child("badgeCount").setValue(0)
+                    FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount").setValue(0)
                     FirebaseController.shared.storeUsername(usernameText, uid: uid)
                     self.view.endEditing(true)
                     let mainTabBarController = MainTabBarController()

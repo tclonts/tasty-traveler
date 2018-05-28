@@ -84,7 +84,7 @@ class QuestionsVC: UITableViewController {
                     chatLogRef.child(snapshot.key).observeSingleEvent(of: .value, with: { (snapshot) in
                         guard let messageDictionary = snapshot.value as? [String:Any] else { return }
                         
-                        var message = Message(dictionary: messageDictionary)
+                        var message = Message(uid: snapshot.key, dictionary: messageDictionary)
                         
                         if message.toID == userID { message.isUnread = true }
 

@@ -8,6 +8,7 @@
 
 import UIKit
 import Stevia
+import FirebaseAuth
 
 class MessageCell: UITableViewCell {
     
@@ -20,8 +21,12 @@ class MessageCell: UITableViewCell {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "hh:mm a"
             
-            if message!.isUnread {
-                unreadIndicatorView.isHidden = false
+            if message!.toID == Auth.auth().currentUser!.uid  {
+                if message!.isUnread {
+                    unreadIndicatorView.isHidden = false
+                } else {
+                    unreadIndicatorView.isHidden = true
+                }
             }
             
             if let date = message?.timestamp {
@@ -107,4 +112,10 @@ class MessageCell: UITableViewCell {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+//    override func prepareForReuse() {
+//        super.prepareForReuse()
+//
+//        self.unreadIndicatorView.isHidden = true
+//    }
 }

@@ -20,6 +20,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     }
     
     var messages = [Message]()
+    var isViewingChat = false
     
     func observeMessages() {
         guard let uid = Auth.auth().currentUser?.uid, let toID = chat?.withUser.uid else { return }
@@ -32,17 +33,33 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             messagesRef.observeSingleEvent(of: .value, with: { (snapshot) in
                 
                 guard let dictionary = snapshot.value as? [String:Any] else { return }
-                let message = Message(dictionary: dictionary)
-                if message.recipeID == self.chat!.recipe.uid {
-                    if message.isUnread == true {
-                        FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").observeSingleEvent(of: .value) { (snapshot) in
-                            if let count = snapshot.value as? Int {
-                                let newCount = count - 1
-                                FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").setValue(newCount)
-                            }
+                var message = Message(uid: snapshot.key, dictionary: dictionary)
+                
+                if let isUnread = dictionary["unread"] as? Bool, isUnread, message.toID == uid, self.isViewingChat {
+                    message.isUnread = false
+                    
+                    FirebaseController.shared.ref.child("messages").child(messageID).child("unread").setValue(false)
+                    
+                    let unreadMessagesCountRef = FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount")
+                    unreadMessagesCountRef.runTransactionBlock({ (currentCount) -> TransactionResult in
+                        if var count = currentCount.value as? Int, count != 0 {
+                            count -= 1
+                            
+                            currentCount.value = count
+                            
+                            return TransactionResult.success(withValue: currentCount)
+                        } else {
+                            return TransactionResult.success(withValue: currentCount)
                         }
-                    }
-                    messagesRef.child("unread").setValue(false)
+                    }, andCompletionBlock: { (error, committed, snapshot) in
+                        if let error = error {
+                            print(error.localizedDescription)
+                        }
+                    })
+                }
+                
+                if message.recipeID == self.chat!.recipe.uid {
+                    
                     self.messages.append(message)
                     
                     DispatchQueue.main.async {
@@ -119,21 +136,27 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         if !isFromRecipeDetailView {
             tabBarController?.tabBar.isHidden = true
         }
+        isViewingChat = true
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .default
     }
+
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        
         if !isFromRecipeDetailView {
             tabBarController?.tabBar.isHidden = false
         }
+        
+        isViewingChat = false
     }
     
     @objc func closeButtonTapped() {
         self.inputAccessoryView?.isHidden = true
+        
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -175,15 +198,6 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                                     "recipeID": recipeID,
                                     "text": message,
                                     "unread": true]
-        
-        FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").observeSingleEvent(of: .value) { (snapshot) in
-            if let count = snapshot.value as? Int {
-                let newCount = count + 1
-                FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").setValue(newCount)
-            } else {
-                FirebaseController.shared.ref.child("users").child(toID).child("unreadMessagesCount").setValue(1)
-            }
-        }
         
         childRef.updateChildValues(values) { (error, ref) in
             if let error = error { print(error); return }

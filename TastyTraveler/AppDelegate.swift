@@ -98,6 +98,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // listen for user notifications
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         //completionHandler(.alert)
+        print("WILL PRESENT NOTIFICATION CALLED")
+        
+        let application = UIApplication.shared
+        if application.applicationState == .active {
+            application.applicationIconBadgeNumber = 0
+            FirebaseController.shared.resetBadgeCount()
+        }
+        
+        
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
@@ -120,6 +129,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        application.applicationIconBadgeNumber = 0
+        FirebaseController.shared.resetBadgeCount()
     }
     
     func applicationWillTerminate(_ application: UIApplication) {

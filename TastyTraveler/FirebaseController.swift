@@ -17,6 +17,103 @@ class FirebaseController {
     
     var userNotifications = [UserNotification]()
     
+    var unreadMessagesCount = 0
+    var messages = [Message]()
+    var messagesDictionary = [String:[String:Message]]()
+    
+    func observeMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let userMessagesRef = self.ref.child("userMessages").child(uid)
+        
+        userMessagesRef.observe(.childAdded) { (snapshot) in
+            let userID = snapshot.key
+            userMessagesRef.child(userID).observe(.childAdded, with: { (snapshot) in
+                
+                let messageID = snapshot.key
+                self.fetchMessage(withID: messageID)
+            })
+        }
+        
+        userMessagesRef.observe(.childRemoved) { (snapshot) in
+            self.messagesDictionary.removeValue(forKey: snapshot.key)
+            self.attemptReload()
+        }
+        
+        let messagesRef = self.ref.child("messages")
+        
+        messagesRef.observe(.childChanged) { (snapshot) in
+            if let messageDict = snapshot.value as? [String:Any] {
+                let message = Message(uid: snapshot.key, dictionary: messageDict)
+                
+                guard message.toID == uid else { return }
+                
+                if let chatPartnerID = message.chatPartnerID() {
+                    if let existingMessage = self.messagesDictionary[chatPartnerID]?[message.recipeID],
+                            existingMessage.uid == message.uid {
+                        self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: message.recipeID)
+                        self.attemptReload()
+                    }
+                }
+            }
+        }
+    }
+    
+    func fetchMessage(withID messageID: String) {
+        let messagesRef = ref.child("messages").child(messageID)
+        
+        messagesRef.observeSingleEvent(of: .value) { (snapshot) in
+            if let dictionary = snapshot.value as? [String:Any] {
+                let message = Message(uid: snapshot.key, dictionary: dictionary)
+                
+                if let chatPartnerID = message.chatPartnerID() {
+                    //self.messagesDictionary[chatPartnerID]![message.recipeID] = message
+                    if self.messagesDictionary[chatPartnerID] == nil {
+                        self.messagesDictionary[chatPartnerID] = [message.recipeID: message]
+                    } else {
+                        self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: message.recipeID)
+                    }
+                }
+                self.attemptReload()
+            }
+        }
+    }
+    
+    var timer: Timer?
+    
+    @objc func attemptReload() {
+        self.timer?.invalidate()
+        
+        self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(handleReload), userInfo: nil, repeats: false)
+    }
+    
+    @objc func handleReload() {
+        // one message for each recipeID.
+        self.messages.removeAll()
+        self.messagesDictionary.forEach { (key, value) in
+            // chatPartnerID: [recipeID: Message, recipeID: Message, recipeID: Message]
+            let recipeIDMessagePairs: [String:Message] = value
+            self.messages.append(contentsOf: recipeIDMessagePairs.values)
+        }
+        
+        self.messages.sort { (m1, m2) -> Bool in
+            return m1.timestamp.compare(m2.timestamp) == .orderedDescending
+        }
+        
+        NotificationCenter.default.post(name: Notification.Name("ReloadMessages"), object: nil)
+    }
+    
+    func observeUnreadMessagesCount() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        ref.child("users").child(userID).child("unreadMessagesCount").observe(.value) { (snapshot) in
+            guard let value = snapshot.value as? Int else { print("unreadMessagesCount not found."); return }
+            
+            self.unreadMessagesCount = value
+            NotificationCenter.default.post(name: Notification.Name("UpdateTabBadge"), object: nil)
+            NotificationCenter.default.post(name: Notification.Name("UpdateTitle"), object: nil)
+        }
+    }
+    
     func verifyUniqueUsername(_ username: String, completion: @escaping (Bool) -> Void) {
         let usernamesRef = self.ref.child("usernames")
         usernamesRef.observeSingleEvent(of: .value) { (snapshot) in
@@ -40,6 +137,12 @@ class FirebaseController {
                 completion(false)
             }
         }
+    }
+    
+    func resetBadgeCount() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        //badgeCount = 0
+        self.ref.child("users").child(uid).child("badgeCount").setValue(0)
     }
     
     func storeUsername(_ username: String, uid: String) {
@@ -75,7 +178,22 @@ class FirebaseController {
     }
     
     func observeNotifications() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
         
+        let last25NotificationsQuery = self.ref.child("users").child(userID).child("notifications").queryLimited(toLast: 25)
+        last25NotificationsQuery.observe(.childAdded) { (snapshot) in
+            guard let notificationDict = snapshot.value as? [String:Any] else { return }
+            
+            let userID = notificationDict["userID"] as! String
+            self.fetchUserWithUID(uid: userID, completion: { (user) in
+                guard let user = user else { print("Could not retrieve user data"); return }
+                
+                let userNotification = UserNotification(uid: snapshot.key, user: user, dictionary: notificationDict)
+                
+                self.userNotifications.append(userNotification)
+                NotificationCenter.default.post(name: Notification.Name("ReloadNotifications"), object: nil)
+            })
+        }
     }
     
     func fetchUserReview(forRecipeID recipeID: String, completion: @escaping (Review?) -> ()) {
