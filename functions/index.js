@@ -13,7 +13,7 @@ exports.observeWrittenReview = functions.database
 
     return admin
       .database()
-      .ref('/reviews/{reviewID}')
+      .ref('/reviews/' + reviewID)
       .once('value', snapshot => {
         const review = snapshot.val();
 
@@ -46,13 +46,13 @@ exports.observeWrittenReview = functions.database
                     const notification = {
                       message:
                         reviewer.username +
-                        'wrote a review of your' +
+                        ' wrote a review of your ' +
                         recipe.name +
-                        'recipe.',
+                        ' recipe.',
                       recipeID: review.recipeID,
                       type: 'review',
                       photoURL: recipe.photoURL,
-                      userID: reviewerID,
+                      userID: review.reviewerID,
                       isUnread: true,
                       timestamp: timestamp
                     };
@@ -67,9 +67,9 @@ exports.observeWrittenReview = functions.database
                         title: '',
                         body:
                           reviewer.username +
-                          'wrote a review of your' +
+                          ' wrote a review of your ' +
                           recipe.name +
-                          'recipe.',
+                          ' recipe.',
                         badge: String(newBadgeValue)
                       },
                       data: {

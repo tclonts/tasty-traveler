@@ -233,6 +233,9 @@ class FirebaseController {
             dictionaryToUpload["rating"] = rating
         }
         
+        dictionaryToUpload["reviewerID"] = review.reviewerID
+        dictionaryToUpload["recipeID"] = review.recipeID
+        
         let timestamp = Date().timeIntervalSince1970
         dictionaryToUpload["timestamp"] = timestamp
         

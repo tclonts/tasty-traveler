@@ -157,7 +157,7 @@ class CookedItAlertView: UIViewController {
             FirebaseController.shared.saveReview(self.review!, forRecipeID: recipeID)
         } else {
             let uid = UUID().uuidString
-            let review = Review(uid: uid, dictionary: ["rating": rating])
+            let review = Review(uid: uid, dictionary: ["rating": rating, "reviewerID": userID, "recipeID": recipeID])
             FirebaseController.shared.saveReview(review, forRecipeID: recipeID)
         }
         
