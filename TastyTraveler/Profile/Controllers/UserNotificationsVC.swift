@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class UserNotificationsVC: UITableViewController {
+    
+    var updatedNotifications = [UserNotification]()
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,11 +30,33 @@ class UserNotificationsVC: UITableViewController {
         
         tableView.register(UserNotificationCell.self, forCellReuseIdentifier: "userNotificationCell")
         
+        reloadNotifications()
+        
         NotificationCenter.default.addObserver(self, selector: #selector(reloadNotifications), name: Notification.Name("ReloadNotifications"), object: nil)
     }
     
     @objc func reloadNotifications() {
-        self.tableView.reloadData()
+        
+        updatedNotifications.removeAll()
+        
+        FirebaseController.shared.unreadNotificationsCount = 0
+        NotificationCenter.default.post(name: Notification.Name("UpdateTabBadge"), object: nil)
+        
+        guard let userID = Auth.auth().currentUser?.uid else { print("User is not logged in."); return }
+        
+        
+        FirebaseController.shared.userNotifications.forEach { (notification) in
+            var newNotification = notification
+            newNotification.isUnread = false
+            
+            self.updatedNotifications.append(newNotification)
+            self.updatedNotifications.sort(by: { (n1, n2) -> Bool in
+                n1.creationDate > n2.creationDate
+            })
+            self.tableView.reloadData()
+            
+            FirebaseController.shared.ref.child("users").child(userID).child("notifications").child(notification.uid).child("isUnread").setValue(false)
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -53,11 +78,11 @@ class UserNotificationsVC: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return FirebaseController.shared.userNotifications.count
+        return updatedNotifications.count
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = FirebaseController.shared.userNotifications[indexPath.row].user
+        let user = updatedNotifications[indexPath.row].user
         
         let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
         profileVC.isMyProfile = false
@@ -68,7 +93,7 @@ class UserNotificationsVC: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "userNotificationCell", for: indexPath) as! UserNotificationCell
         
-        let notification = FirebaseController.shared.userNotifications[indexPath.row]
+        let notification = updatedNotifications[indexPath.row]
         cell.notification = notification
         
         return cell

@@ -18,6 +18,7 @@ class FirebaseController {
     var userNotifications = [UserNotification]()
     
     var unreadMessagesCount = 0
+    var unreadNotificationsCount = 0
     var messages = [Message]()
     var messagesDictionary = [String:[String:Message]]()
     
@@ -191,6 +192,10 @@ class FirebaseController {
                 let userNotification = UserNotification(uid: snapshot.key, user: user, dictionary: notificationDict)
                 
                 self.userNotifications.append(userNotification)
+//                self.userNotifications.sort(by: { (n1, n2) -> Bool in
+//                    n1.creationDate > n2.creationDate
+//                })
+                if userNotification.isUnread { self.unreadNotificationsCount += 1; NotificationCenter.default.post(name: Notification.Name("UpdateTabBadge"), object: nil) }
                 NotificationCenter.default.post(name: Notification.Name("ReloadNotifications"), object: nil)
             })
         }
@@ -358,7 +363,7 @@ class FirebaseController {
     func uploadRecipe(dictionary: [String:Any]) {
         guard let currentUser = Auth.auth().currentUser else { return }
         
-        let localData = dictionary[Recipe.photoKey] as! Data
+        guard let localData = dictionary[Recipe.photoKey] as? Data else { return }
         
         let recipeID = UUID().uuidString
         let imageFileRef = storageRef.child("images/\(recipeID)")

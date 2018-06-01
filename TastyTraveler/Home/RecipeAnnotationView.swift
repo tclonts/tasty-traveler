@@ -155,16 +155,20 @@ class RecipeCalloutView: UIView {
         clipsToBounds = true
 
         self.height(adaptConstant(80)).width(adaptConstant(240))
+        
+        let stackView = UIStackView(arrangedSubviews: [recipeNameLabel, starsRatingView])
+        stackView.spacing = adaptConstant(8)
+        stackView.axis = .vertical
 
-        sv(recipePhoto, recipeNameLabel, starsRatingView)
+        sv(recipePhoto, stackView)
         
         recipePhoto.left(0).top(0).bottom(0)
         recipePhoto.width(adaptConstant(120))
         
-        recipeNameLabel.top(8).right(8)
-        recipeNameLabel.Left == recipePhoto.Right + 8
-        starsRatingView.Top == recipeNameLabel.Bottom + 8
-        starsRatingView.Left == recipePhoto.Right + 8
+        stackView.Left == recipePhoto.Right + adaptConstant(8)
+        stackView.right(adaptConstant(8))
+        stackView.centerVertically()
+        
 //        viewRecipeButton.bottom(8).right(8).width(adaptConstant(70)).height(adaptConstant(15))
     }
 

@@ -78,7 +78,7 @@ class RecipeCell: BaseCell {
         recipeHeaderView.countryLabel.CenterY == recipeHeaderView.countryFlag.CenterY
         
         recipeHeaderView.recipeNameLabel.left(adaptConstant(10)).right(adaptConstant(10))
-        recipeHeaderView.recipeNameLabel.Top == recipeHeaderView.countryFlag.Bottom
+        recipeHeaderView.recipeNameLabel.Top == recipeHeaderView.countryFlag.Bottom + adaptConstant(8)
         
         recipeHeaderView.creatorNameLabel.left(adaptConstant(10))
         recipeHeaderView.creatorNameLabel.Top == recipeHeaderView.recipeNameLabel.Bottom

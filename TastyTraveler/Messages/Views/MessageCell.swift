@@ -113,9 +113,9 @@ class MessageCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-//    override func prepareForReuse() {
-//        super.prepareForReuse()
-//
-//        self.unreadIndicatorView.isHidden = true
-//    }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        self.profileImageView.image = #imageLiteral(resourceName: "avatar")
+    }
 }

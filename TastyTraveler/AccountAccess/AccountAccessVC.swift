@@ -314,7 +314,7 @@ class AccountAccessVC: UIViewController {
     
     @objc func facebookButtonTapped() {
         let loginManager = LoginManager()
-        loginManager.loginBehavior = .native
+        loginManager.loginBehavior = .browser
         loginManager.logIn(readPermissions: [.email], viewController: self) { (loginResult) in
             switch loginResult {
             case .failed(let error):

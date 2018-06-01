@@ -91,6 +91,8 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return view
     }()
     
+    let unreadIndicator = UIView()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -143,7 +145,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         stackView.axis = .horizontal
         stackView.spacing = 8
         
-        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, separatorLine)
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, separatorLine, unreadIndicator)
         
         backButton.left(20)
         backButton.Top == safeAreaLayoutGuide.Top + 12
@@ -174,6 +176,15 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         stackView.centerHorizontally()
         
         separatorLine.left(0).bottom(0).right(0)
+        
+        unreadIndicator.layer.cornerRadius = 3
+        unreadIndicator.clipsToBounds = true
+        unreadIndicator.backgroundColor = .red
+        unreadIndicator.layer.masksToBounds = true
+        unreadIndicator.Top == notificationsButton.Top - 3
+        unreadIndicator.Right == notificationsButton.Right + 3
+        unreadIndicator.height(6).width(6)
+        unreadIndicator.isHidden = true
     }
     
     @objc func didTapSettingsButton() {
@@ -342,6 +353,8 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             headerView.contentExpands = false
             headerView.delegate = self
             collectionView?.addSubview(self.headerView)
+
+            
             
             if !isMyProfile {
                 headerView.profilePhotoButton.isHidden = true
@@ -352,6 +365,12 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             }
         }
         
+        if FirebaseController.shared.unreadNotificationsCount > 0 {
+            self.headerView.unreadIndicator.isHidden = false
+        } else {
+            self.headerView.unreadIndicator.isHidden = true
+        }
+//
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -360,6 +379,16 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         navigationController?.setNavigationBarHidden(true, animated: false)
         
 //        refreshRecipes()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if FirebaseController.shared.unreadNotificationsCount > 0 {
+            self.headerView.unreadIndicator.isHidden = false
+        } else {
+            self.headerView.unreadIndicator.isHidden = true
+        }
     }
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -545,8 +574,44 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
         self.headerView.profilePhotoImageView.image = croppedImage
         dismiss(animated: true, completion: nil)
         
-        let imageData = UIImagePNGRepresentation(croppedImage)
+        let imageData = resize(croppedImage)
         FirebaseController.shared.uploadProfilePhoto(data: imageData!)
+    }
+    
+    func resize(_ image: UIImage) -> Data? {
+        var actualHeight = Float(image.size.height)
+        var actualWidth = Float(image.size.width)
+        let maxHeight: Float = 255.0//933.0
+        let maxWidth: Float = 255.0//1242.0
+        var imgRatio: Float = actualWidth / actualHeight
+        let maxRatio: Float = maxWidth / maxHeight
+        let compressionQuality: Float = 0.4
+        
+        if actualHeight > maxHeight || actualWidth > maxWidth {
+            if imgRatio < maxRatio {
+                //adjust width according to maxHeight
+                imgRatio = maxHeight / actualHeight
+                actualWidth = imgRatio * actualWidth
+                actualHeight = maxHeight
+            }
+            else if imgRatio > maxRatio {
+                //adjust height according to maxWidth
+                imgRatio = maxWidth / actualWidth
+                actualHeight = imgRatio * actualHeight
+                actualWidth = maxWidth
+            }
+            else {
+                actualHeight = maxHeight
+                actualWidth = maxWidth
+            }
+        }
+        let rect = CGRect(x: 0.0, y: 0.0, width: CGFloat(actualWidth), height: CGFloat(actualHeight))
+        UIGraphicsBeginImageContext(rect.size)
+        image.draw(in: rect)
+        let img = UIGraphicsGetImageFromCurrentImageContext()
+        let imageData = UIImageJPEGRepresentation(img!, CGFloat(compressionQuality))
+        UIGraphicsEndImageContext()
+        return imageData
     }
     
     func imageCropViewControllerDidCancelCrop(_ controller: RSKImageCropViewController) {

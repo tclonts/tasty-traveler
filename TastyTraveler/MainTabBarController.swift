@@ -31,7 +31,11 @@ class MainTabBarController: UITabBarController {
             self.tabBar.items![3].badgeValue = nil
         }
         
-        
+        if FirebaseController.shared.unreadNotificationsCount > 0 {
+            self.tabBar.items![4].badgeValue = "\(FirebaseController.shared.unreadNotificationsCount)"
+        } else {
+            self.tabBar.items![4].badgeValue = nil
+        }
     }
     
     let shadowView = UIView()

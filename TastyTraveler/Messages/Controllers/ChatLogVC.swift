@@ -21,7 +21,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     
     var messages = [Message]()
     var isViewingChat = false
-    
+        
     func observeMessages() {
         guard let uid = Auth.auth().currentUser?.uid, let toID = chat?.withUser.uid else { return }
         
@@ -35,7 +35,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 guard let dictionary = snapshot.value as? [String:Any] else { return }
                 var message = Message(uid: snapshot.key, dictionary: dictionary)
                 
-                if let isUnread = dictionary["unread"] as? Bool, isUnread, message.toID == uid, self.isViewingChat {
+                if message.isUnread, message.toID == uid, self.isViewingChat {
                     message.isUnread = false
                     
                     FirebaseController.shared.ref.child("messages").child(messageID).child("unread").setValue(false)

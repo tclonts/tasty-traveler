@@ -795,11 +795,11 @@ extension CreateRecipeForm: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         var size: CGSize
         if textView == recipeNameTextInputView.textView {
-            size = CGSize(width: self.frame.width - cameraButton.frame.width - 12, height: .infinity)
+            size = CGSize(width: textView.frame.width, height: .infinity)
             let estimatedSize = textView.sizeThatFits(size)
             recipeNameTextInputView.heightConstraint?.constant = estimatedSize.height
         } else {
-            size = CGSize(width: self.frame.width, height: .infinity)
+            size = CGSize(width: textView.frame.width, height: .infinity)
             let estimatedSize = textView.sizeThatFits(size)
             descriptionTextInputView.heightConstraint?.constant = estimatedSize.height
         }

@@ -86,7 +86,9 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
             let dictionary: [String:Any] = ["title": titleTextField.text!,
                                             "text": reviewTextView.text,
                                             "timestamp": timestamp,
-                                            "rating": ratingControl.rating]
+                                            "rating": ratingControl.rating,
+                                            "reviewerID": userID,
+                                            "recipeID": recipeID]
             
             FirebaseController.shared.ref.child("reviews").child(uid).setValue(dictionary)
             FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").updateChildValues([recipeID: uid])

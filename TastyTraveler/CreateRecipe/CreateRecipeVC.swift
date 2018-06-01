@@ -141,7 +141,7 @@ class CreateRecipeVC: UIViewController {
         let servingsInt = Int(servings)
         let timeInMinutesInt = Int(timeInMinutes)
         
-        var recipeDictionary: [String:Any] = [Recipe.photoKey: UIImageJPEGRepresentation(photo, 0.8)!,
+        var recipeDictionary: [String:Any] = [Recipe.photoKey: resize(photo),
                                               Recipe.nameKey: name,
                                               Recipe.creatorIDKey: Auth.auth().currentUser!.uid,
                                               Recipe.servingsKey: servingsInt!,
@@ -215,6 +215,42 @@ class CreateRecipeVC: UIViewController {
         }
         
         self.dismiss(animated: true, completion: nil)
+    }
+    
+    func resize(_ image: UIImage) -> Data? {
+        var actualHeight = Float(image.size.height)
+        var actualWidth = Float(image.size.width)
+        let maxHeight: Float = 933.0
+        let maxWidth: Float = 1242.0
+        var imgRatio: Float = actualWidth / actualHeight
+        let maxRatio: Float = maxWidth / maxHeight
+        let compressionQuality: Float = 0.4
+
+        if actualHeight > maxHeight || actualWidth > maxWidth {
+            if imgRatio < maxRatio {
+                //adjust width according to maxHeight
+                imgRatio = maxHeight / actualHeight
+                actualWidth = imgRatio * actualWidth
+                actualHeight = maxHeight
+            }
+            else if imgRatio > maxRatio {
+                //adjust height according to maxWidth
+                imgRatio = maxWidth / actualWidth
+                actualHeight = imgRatio * actualHeight
+                actualWidth = maxWidth
+            }
+            else {
+                actualHeight = maxHeight
+                actualWidth = maxWidth
+            }
+        }
+        let rect = CGRect(x: 0.0, y: 0.0, width: CGFloat(actualWidth), height: CGFloat(actualHeight))
+        UIGraphicsBeginImageContext(rect.size)
+        image.draw(in: rect)
+        let img = UIGraphicsGetImageFromCurrentImageContext()
+        let imageData = UIImageJPEGRepresentation(img!, CGFloat(compressionQuality))
+        UIGraphicsEndImageContext()
+        return imageData
     }
     
     func submitTestRecipe() {
@@ -335,7 +371,7 @@ extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControlle
             imageCropViewController.delegate = self
             imageCropViewController.dataSource = self
             imageCropViewController.cropMode = .custom
-            
+            print("ORIGINAL IMAGE SIZE: \(image.size)")
             photoImagePicker.pushViewController(imageCropViewController, animated: true)
         }
         
@@ -423,6 +459,8 @@ extension CreateRecipeVC: UIImagePickerControllerDelegate, UINavigationControlle
         formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
         formView.containerView.addConstraint(formView.recipeNameConstraint)
         //self.makeViewDark()
+        print(croppedImage.size)
+        print(cropRect.size)
         
         dismiss(animated: true, completion: nil)
     }

@@ -355,6 +355,7 @@ class RecipeDetailVC: UIViewController {
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
         }
+        
     }
     
     @objc func reloadRecipe() {
@@ -617,6 +618,9 @@ class RecipeDetailVC: UIViewController {
     
     override func viewDidLayoutSubviews() {
         print("layed out")
+        print(recipeHeaderView.photoImageView.image?.size)
+        
+        print(recipeHeaderView.photoImageView.frame.size)
     }
     
     @objc func favoriteButtonTapped() {
@@ -773,6 +777,17 @@ class RecipeDetailVC: UIViewController {
                 collectionView
             )
         )
+        
+        recipeHeaderView.countryLabel.textColor = Color.primaryOrange
+        
+        let globeIcon = UIImageView()
+        globeIcon.image = #imageLiteral(resourceName: "mapIcon")
+        recipeHeaderView.sv(globeIcon)
+        globeIcon.Left == recipeHeaderView.countryLabel.Right + 8
+        globeIcon.CenterY == recipeHeaderView.countryLabel.CenterY
+        globeIcon.isUserInteractionEnabled = true
+        globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
+        globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showMapView)))
         
         containerView.fillContainer()
         containerView.Width == scrollView.Width

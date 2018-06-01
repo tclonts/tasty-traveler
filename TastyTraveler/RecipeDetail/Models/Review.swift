@@ -14,6 +14,8 @@ struct Review {
     var text: String?
     var rating: Int?
     var user: TTUser!
+    var reviewerID: String
+    var recipeID: String
     var creationDate: Date!
     var commentsDictionary: [String:String]?  // user:commentID
     var upvotes = 0
@@ -28,5 +30,7 @@ struct Review {
         self.upvotes = dictionary["upvotes"] as? Int ?? 0
         self.text = dictionary["text"] as? String
         self.rating = dictionary["rating"] as? Int
+        self.reviewerID = dictionary["reviewerID"] as! String
+        self.recipeID = dictionary["recipeID"] as! String
     }
 }
