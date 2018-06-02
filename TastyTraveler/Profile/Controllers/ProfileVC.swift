@@ -84,6 +84,18 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return label
     }()
     
+    lazy var bioLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 14)
+        label.textColor = Color.primaryOrange
+        label.numberOfLines = 2
+        label.textAlignment = .center
+        label.text = "Edit Bio"
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(goToAccountInfo)))
+        return label
+    }()
+    
     let separatorLine: UIView = {
         let view = UIView()
         view.height(0.5)
@@ -97,6 +109,10 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         super.init(frame: frame)
         
         self.setUpViews()
+    }
+    
+    @objc func goToAccountInfo() {
+        delegate?.goToAccountInfo()
     }
     
     @objc func backButtonTapped() {
@@ -119,6 +135,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         self.usernameLabel.alpha = alphaAmount
         self.countryFlagImageView.alpha = alphaAmount
         self.countryLabel.alpha = alphaAmount
+        self.bioLabel.alpha = alphaAmount
         
         self.profilePhotoImageView.widthConstraint?.constant = size
         self.profilePhotoImageView.layer.cornerRadius = size / 2
@@ -145,7 +162,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         stackView.axis = .horizontal
         stackView.spacing = 8
         
-        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, separatorLine, unreadIndicator)
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, bioLabel, separatorLine, unreadIndicator)
         
         backButton.left(20)
         backButton.Top == safeAreaLayoutGuide.Top + 12
@@ -174,6 +191,9 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         
         stackView.Top == usernameLabel.Bottom + 8
         stackView.centerHorizontally()
+        
+        bioLabel.Top == stackView.Bottom + 12
+        bioLabel.left(adaptConstant(40)).right(adaptConstant(40))
         
         separatorLine.left(0).bottom(0).right(0)
         
@@ -210,6 +230,7 @@ protocol ProfileHeaderViewDelegate: class {
     func didTapNotificationsButton()
     func didTapProfilePhotoButton()
     func didTapBackButton()
+    func goToAccountInfo()
 }
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -236,6 +257,15 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     var user: TTUser? {
         didSet {
             headerView.usernameLabel.text = user!.username
+
+            if let bio = user?.bio, bio != "" {
+                self.headerView.bioLabel.text = bio
+                self.headerView.bioLabel.textColor = Color.darkText
+                self.headerView.bioLabel.isUserInteractionEnabled = false
+            }
+            
+            //self.headerView.bioLabel.text = "123456789123456789123456789123456789123456789123456789123456789123456789123456789"
+            //headerView.bioLabel.text = user!.bio
             if let urlString = user!.avatarURL {
                 self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
             }
@@ -346,10 +376,10 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         if headerView == nil {
             let heightAdded: CGFloat = screenHeight == iPhoneXScreenHeight ? 20 : 0
-            let headerSize = CGSize(width: self.view.frame.size.width, height: (210 + heightAdded))
+            let headerSize = CGSize(width: self.view.frame.size.width, height: (245 + heightAdded))
             headerView = ProfileHeaderView(frame: CGRect(x: 0, y: 0, width: headerSize.width, height: headerSize.height))
             headerView.minimumContentHeight = view.safeAreaInsets.top + 44
-            headerView.maximumContentHeight = 210 + heightAdded
+            headerView.maximumContentHeight = 245 + heightAdded
             headerView.contentExpands = false
             headerView.delegate = self
             collectionView?.addSubview(self.headerView)
@@ -628,6 +658,7 @@ extension ProfileVC: ProfileHeaderViewDelegate {
     func didTapSettingsButton() {
         print("settings")
         let settingsVC = SettingsVC()
+        settingsVC.bioToSet = self.user?.bio ?? ""
         let navController = UINavigationController(rootViewController: settingsVC)
         self.present(navController, animated: true, completion: nil)
     }
@@ -641,5 +672,14 @@ extension ProfileVC: ProfileHeaderViewDelegate {
     
     func didTapBackButton() {
         self.dismiss(animated: true, completion: nil)
+    }
+    
+    func goToAccountInfo() {
+        let settingsVC = SettingsVC()
+        let navController = UINavigationController(rootViewController: settingsVC)
+        self.present(navController, animated: true) {
+            settingsVC.accountVC.bio = self.user?.bio ?? ""
+            navController.pushViewController(settingsVC.accountVC, animated: true)
+        }
     }
 }

@@ -17,12 +17,15 @@ import SVProgressHUD
 
 class SettingsVC: FormViewController {
     
+    var bioToSet = ""
     let accountVC = AccountVC()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         fetchProviders()
+        
+        accountVC.bioToSet = bioToSet
         
         self.navigationItem.title = "Settings"
         self.view.backgroundColor = UIColor(hexString: "F8F8FB")
@@ -158,6 +161,14 @@ class SettingsVC: FormViewController {
 
 class AccountVC: FormViewController, UITextFieldDelegate {
     
+    var bio: String? {
+        didSet {
+            let bioRow = form.rowBy(tag: "Bio")
+            bioRow?.baseValue = bio
+            bioRow?.updateCell()
+        }
+    }
+    
     lazy var rightBarButton = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveAccountInfo))
     
     var username: String? {
@@ -187,7 +198,15 @@ class AccountVC: FormViewController, UITextFieldDelegate {
             checkForNewValues()
         }
     }
+    
+    var newBio: String? {
+        didSet {
+            checkForNewValues()
+        }
+    }
+    
     var currentPassword: String?
+    var bioToSet: String?
     var newPassword: String? {
         didSet {
             checkForNewValues()
@@ -230,6 +249,16 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     let emailErrorLabel: UILabel = {
         let label = UILabel()
         label.text = "Username is required."
+        label.textColor = .red
+        label.font = ProximaNova.regular.of(size: 11)
+        label.textAlignment = .center
+        label.alpha = 0
+        return label
+    }()
+    
+    let bioErrorLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Exceeded maximum character limit. (80)"
         label.textColor = .red
         label.font = ProximaNova.regular.of(size: 11)
         label.textAlignment = .center
@@ -289,10 +318,36 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                             self.newUsername = row.value
                         }
                     }
+            +++ Section("Bio")
+                <<< TextAreaRow("Bio") {
+                        $0.add(rule: RuleMaxLength(maxLength: 80))
+                        $0.validationOptions = .validatesOnChange
+                    }.cellSetup { cell, row in
+                        cell.contentView.sv(self.bioErrorLabel)
+                        self.bioErrorLabel.Bottom == cell.contentView.Top - 8
+                        self.bioErrorLabel.centerHorizontally()
+                    }.cellUpdate { cell, row in
+                        if !row.isValid {
+                            self.navigationItem.rightBarButtonItem?.isEnabled = false
+                            UIView.animate(withDuration: 0.2, animations: {
+                                self.bioErrorLabel.alpha = 1
+                            })
+                        } else {
+                            self.navigationItem.rightBarButtonItem?.isEnabled = true
+                            UIView.animate(withDuration: 0.2, animations: {
+                                self.bioErrorLabel.alpha = 0
+                            })
+                        }
+                    }.onChange { row in
+                        if row.value != self.bio! {
+                            self.newBio = row.value
+                        }
+                    }
         
         let currentUser = Auth.auth().currentUser!
         
         if let username = currentUser.displayName { self.username = username }
+        if let bio = bioToSet { self.bio = bio }
         
         if showEmail {
             self.form
@@ -426,6 +481,7 @@ class AccountVC: FormViewController, UITextFieldDelegate {
         if newUsername != nil && newUsername != username { newValues = true }
         if newEmail != nil && newEmail != email { newValues = true }
         if newPassword != nil && currentPassword != nil { newValues = true }
+        if newBio != nil && newBio != bio { newValues = true }
         
         if newValues {
             self.navigationItem.setRightBarButton(rightBarButton, animated: true)
@@ -441,12 +497,23 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     @objc func saveAccountInfo() {
         guard let user = Auth.auth().currentUser else { return }
         
+        if let bioRow = self.form.rowBy(tag: "Bio") {
+            if let newBio = self.newBio {
+                FirebaseController.shared.ref.child("users").child(user.uid).updateChildValues(["bio": newBio])
+                
+                self.bio = newBio
+                self.newBio = nil
+            }
+        }
+        
         if facebookLinked && !showEmail{
             self.saveNewUsername(completion: { (result) in
                 if result {
                     SVProgressHUD.showSuccess(withStatus: "Saved")
                 }
             })
+            self.navigationController?.popViewController(animated: true)
+
             
         } else {
             guard let passwordRow = form.rowBy(tag: "Password") else { return }
@@ -500,6 +567,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                         })
                     }
                 }
+                
+                
                 
                 SVProgressHUD.showSuccess(withStatus: "Saved")
                 SVProgressHUD.dismiss(withDelay: 2)

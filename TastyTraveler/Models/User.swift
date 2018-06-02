@@ -13,6 +13,7 @@ struct TTUser {
     var avatarURL: String?
 //    var country: String?
     var username: String
+    var bio: String?
     
 //    var cookedRecipes: [String]?   // recipe IDs
 //    var favoriteRecipes: [String]? // recipe IDs
@@ -23,5 +24,6 @@ struct TTUser {
         self.uid = uid
         self.username = dictionary["username"] as? String ?? ""
         self.avatarURL = dictionary["avatarURL"] as? String
+        self.bio = dictionary["bio"] as? String
     }
 }
