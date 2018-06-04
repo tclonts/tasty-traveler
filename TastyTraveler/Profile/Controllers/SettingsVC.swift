@@ -111,17 +111,18 @@ class SettingsVC: FormViewController {
                 if providers.count == 1 && providers.contains("facebook.com") {
                     // using facebook
                     // show username
+                    self.accountVC.facebookLinked = true
                     self.accountVC.showEmail = false
                 } else if providers.count == 2 {
                     // using facebook and email
                     // show username, email, password, and change password
-                    self.accountVC.showEmail = true
                     self.accountVC.facebookLinked = true
+                    self.accountVC.showEmail = true
                 } else {
                     // using email
                     // show username, email, link facebook, password, and change password
-                    self.accountVC.showEmail = true
                     self.accountVC.facebookLinked = false
+                    self.accountVC.showEmail = true
                 }
             }
             
@@ -500,7 +501,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
         if let bioRow = self.form.rowBy(tag: "Bio") {
             if let newBio = self.newBio {
                 FirebaseController.shared.ref.child("users").child(user.uid).updateChildValues(["bio": newBio])
-                
+                NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
+
                 self.bio = newBio
                 self.newBio = nil
             }
@@ -512,6 +514,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     SVProgressHUD.showSuccess(withStatus: "Saved")
                 }
             })
+            SVProgressHUD.showSuccess(withStatus: "Saved")
+            SVProgressHUD.dismiss(withDelay: 2)
             self.navigationController?.popViewController(animated: true)
 
             
@@ -545,6 +549,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                                 print(error)
                                 return
                             }
+                            NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
+
                             self.email = newEmail
                             self.newEmail = nil
                         })
@@ -562,6 +568,7 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                                 return
                             }
                             
+                            NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
                             self.currentPassword = newPassword
                             self.newPassword = nil
                         })
@@ -587,6 +594,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     FirebaseController.shared.ref.child("usernames").child(usernameToRemove!).removeValue()
                     FirebaseController.shared.storeUsername(newUsername, uid: user.uid)
                     
+                    NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
+
                     self.username = newUsername
                     self.newUsername = nil
                     completion(true)

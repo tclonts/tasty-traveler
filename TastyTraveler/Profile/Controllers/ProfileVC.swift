@@ -275,17 +275,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if isMyProfile {
-            userID = Auth.auth().currentUser?.uid
-        }
-        if let uid = userID {
-            FirebaseController.shared.fetchUserWithUID(uid: uid, completion: { (user) in
-                self.user = user
-                
-                
-                self.fetchRecipes()
-            })
-        }
+        fetchUserInfo()
         
         if isMyProfile {
             imagePicker = UIImagePickerController()
@@ -294,6 +284,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         }
         
         NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
         
         self.navigationController?.navigationBar.isTranslucent = false
         
@@ -308,6 +299,20 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
     }
     
+    @objc func fetchUserInfo() {
+        if isMyProfile {
+            userID = Auth.auth().currentUser?.uid
+        }
+        if let uid = userID {
+            FirebaseController.shared.fetchUserWithUID(uid: uid, completion: { (user) in
+                self.user = user
+                
+                
+                self.fetchRecipes()
+            })
+        }
+    }
+    
     @objc func refreshRecipes() {
         self.recipes.removeAll()
         fetchRecipes()
@@ -317,7 +322,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         guard let userID = userID else { return }
         
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
-        SVProgressHUD.show()
+        //SVProgressHUD.show()
         
         var incomingRecipes = [Recipe]()
         
@@ -326,7 +331,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.collectionView!.reloadData()
                 //self.recipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                SVProgressHUD.dismiss()
+                //SVProgressHUD.dismiss()
                 //self.loadingRecipesView.isHidden = true
                 return
             }
@@ -366,7 +371,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 
                 self.collectionView!.reloadData()
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                SVProgressHUD.dismiss()
+                //SVProgressHUD.dismiss()
             }
         }
     }
