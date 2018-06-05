@@ -82,12 +82,34 @@ class UserNotificationsVC: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = updatedNotifications[indexPath.row].user
+        let notification = updatedNotifications[indexPath.row]
+        if notification.type == .review {
+            guard let recipeID = notification.recipeID else { return }
+            
+            FirebaseController.shared.fetchRecipeWithUID(uid: recipeID, completion: { (recipe) in
+                guard let recipe = recipe else { return }
+                
+                let recipeDetailVC = RecipeDetailVC()
+                recipeDetailVC.recipe = recipe
+                recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
+                
+                let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
+                recipeNavigationController.navigationBar.isHidden = true
+                recipeDetailVC.isMyRecipe = true
+                recipeDetailVC.isFromFavorites = true
+                
+                self.present(recipeNavigationController, animated: true, completion: nil)
+            })
+        } else {
+            
+            let user = updatedNotifications[indexPath.row].user
+            
+            let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
+            profileVC.isMyProfile = false
+            profileVC.userID = user.uid
+            self.present(profileVC, animated: true, completion: nil)
+        }
         
-        let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
-        profileVC.isMyProfile = false
-        profileVC.userID = user.uid
-        self.present(profileVC, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

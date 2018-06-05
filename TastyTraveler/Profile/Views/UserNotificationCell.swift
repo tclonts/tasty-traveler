@@ -72,8 +72,8 @@ class UserNotificationCell: UITableViewCell {
         
         sv(avatarImageView, notificationText, recipePhotoImageView)
         
-        avatarImageView.left(12).centerVertically()
-        notificationText.top(12).bottom(12).centerVertically()
+        avatarImageView.left(12).centerVertically().top(12).bottom(12)
+        notificationText.centerVertically()
         notificationText.Left == avatarImageView.Right + 8
         notificationText.Right == recipePhotoImageView.Left - 8
         

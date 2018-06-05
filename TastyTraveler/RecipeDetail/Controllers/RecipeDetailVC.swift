@@ -269,7 +269,10 @@ class RecipeDetailVC: UIViewController {
         didSet {
             // we need number of reviews and average rating from reviews
             self.ratings = reviews.flatMap { $0.rating }
-            guard let ratings = self.ratings else { return }
+            guard let ratings = self.ratings else {
+                NotificationCenter.default.post(name: Notification.Name("ReviewsLoaded"), object: nil)
+                return
+            }
             let sumOfRatings = ratings.reduce(0, +)
             // average = sumOfRatings / ratings.count
             self.averageRating = Double(sumOfRatings) / Double(ratings.count)

@@ -18,7 +18,11 @@ class FirebaseController {
     var userNotifications = [UserNotification]()
     
     var unreadMessagesCount = 0
-    var unreadNotificationsCount = 0
+    var unreadNotificationsCount = 0 {
+        didSet {
+            NotificationCenter.default.post(name: Notification.Name("UnreadNotification"), object: nil)
+        }
+    }
     var messages = [Message]()
     var messagesDictionary = [String:[String:Message]]()
     

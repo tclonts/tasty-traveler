@@ -285,6 +285,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
         
         self.navigationController?.navigationBar.isTranslucent = false
         
@@ -416,9 +417,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
 //        refreshRecipes()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
+    @objc func toggleIndicator() {
         if FirebaseController.shared.unreadNotificationsCount > 0 {
             self.headerView.unreadIndicator.isHidden = false
         } else {

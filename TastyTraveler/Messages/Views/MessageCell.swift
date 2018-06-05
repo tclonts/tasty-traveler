@@ -21,13 +21,7 @@ class MessageCell: UITableViewCell {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "hh:mm a"
             
-            if message!.toID == Auth.auth().currentUser!.uid  {
-                if message!.isUnread {
-                    unreadIndicatorView.isHidden = false
-                } else {
-                    unreadIndicatorView.isHidden = true
-                }
-            }
+            toggleUnreadIndicator()
             
             if let date = message?.timestamp {
                 timeLabel.text = dateFormatter.string(from: date)
@@ -113,9 +107,20 @@ class MessageCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func toggleUnreadIndicator() {
+        if message!.toID == Auth.auth().currentUser!.uid  {
+            if message!.isUnread {
+                unreadIndicatorView.isHidden = false
+            } else {
+                unreadIndicatorView.isHidden = true
+            }
+        }
+    }
+    
     override func prepareForReuse() {
         super.prepareForReuse()
 
         self.profileImageView.image = #imageLiteral(resourceName: "avatar")
+        self.unreadIndicatorView.isHidden = true
     }
 }
