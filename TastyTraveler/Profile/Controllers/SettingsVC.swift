@@ -317,6 +317,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     }.onChange { row in
                         if row.value != self.username! {
                             self.newUsername = row.value
+                        } else {
+                            self.newUsername = nil
                         }
                     }
             +++ Section("Bio")
@@ -488,10 +490,37 @@ class AccountVC: FormViewController, UITextFieldDelegate {
             self.navigationItem.setRightBarButton(rightBarButton, animated: true)
         } else {
             self.navigationItem.setRightBarButton(nil, animated: true)
+            clearErrorLabels()
         }
     }
     
+    func clearErrorLabels() {
+        self.usernameErrorLabel.alpha = 0
+        self.passwordErrorLabel.alpha = 0
+        self.bioErrorLabel.alpha = 0
+        self.emailErrorLabel.alpha = 0
+        self.newPasswordErrorLabel.alpha = 0
+    }
+    
     @objc func cancelAccountEdit() {
+        guard let currentUser = Auth.auth().currentUser else { return }
+        if let username = currentUser.displayName { self.username = username }
+        if let bio = bioToSet { self.bio = bio }
+        if let email = currentUser.email { self.email = email }
+        
+        clearErrorLabels()
+
+        if let passwordRow = form.rowBy(tag: "Password") {
+            passwordRow.baseValue = nil
+            self.currentPassword = nil
+        }
+        
+        if let newPasswordRow = self.form.rowBy(tag: "NewPassword"), changingPassword, let changeRow = self.form.rowBy(tag: "Change password") {
+            newPasswordRow.hidden = true
+            newPasswordRow.evaluateHidden()
+            changeRow.title = "Change password"
+            changeRow.updateCell()
+        }
         self.navigationController?.popViewController(animated: true)
     }
     
@@ -499,12 +528,20 @@ class AccountVC: FormViewController, UITextFieldDelegate {
         guard let user = Auth.auth().currentUser else { return }
         
         if let bioRow = self.form.rowBy(tag: "Bio") {
+            
             if let newBio = self.newBio {
                 FirebaseController.shared.ref.child("users").child(user.uid).updateChildValues(["bio": newBio])
                 NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
 
                 self.bio = newBio
                 self.newBio = nil
+                
+                if self.newEmail == nil && self.newUsername == nil && self.newPassword == nil {
+                    SVProgressHUD.showSuccess(withStatus: "Saved")
+                    SVProgressHUD.dismiss(withDelay: 2)
+                    self.navigationController?.popViewController(animated: true)
+                    return
+                }
             }
         }
         
@@ -521,7 +558,13 @@ class AccountVC: FormViewController, UITextFieldDelegate {
             
         } else {
             guard let passwordRow = form.rowBy(tag: "Password") else { return }
-            if !passwordRow.validate().isEmpty { return }
+            if !passwordRow.validate().isEmpty {
+                self.navigationItem.setRightBarButton(rightBarButton, animated: true)
+                passwordRow.updateCell()
+                SVProgressHUD.showError(withStatus: "Missing Fields")
+                SVProgressHUD.dismiss(withDelay: 2)
+                return
+            }
             
             guard let email = email, let currentPassword = currentPassword else { return }
             let emailCredential = EmailAuthProvider.credential(withEmail: email, password: currentPassword)
@@ -533,6 +576,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     UIView.animate(withDuration: 0.2, animations: {
                         self.passwordErrorLabel.alpha = 1
                     })
+                    SVProgressHUD.showError(withStatus: "Missing Fields")
+                    SVProgressHUD.dismiss(withDelay: 2)
                     return
                 }
                 
@@ -541,7 +586,11 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                 })
                 
                 if let emailRow = self.form.rowBy(tag: "Email") {
-                    if !emailRow.validate().isEmpty { return }
+                    if !emailRow.validate().isEmpty {
+                        SVProgressHUD.showError(withStatus: "Missing Fields")
+                        SVProgressHUD.dismiss(withDelay: 2)
+                        return
+                    }
                     
                     if let newEmail = self.newEmail {
                         user.updateEmail(to: newEmail, completion: { (error) in
@@ -559,7 +608,11 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                 }
                 
                 if let newPasswordRow = self.form.rowBy(tag: "NewPassword") {
-                    if !newPasswordRow.validate().isEmpty { return }
+                    if !newPasswordRow.validate().isEmpty {
+                        SVProgressHUD.showError(withStatus: "Missing Fields")
+                        SVProgressHUD.dismiss(withDelay: 2)
+                        return
+                    }
                     
                     if let newPassword = self.newPassword {
                         user.updatePassword(to: newPassword, completion: { (error) in
@@ -574,8 +627,6 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                         })
                     }
                 }
-                
-                
                 
                 SVProgressHUD.showSuccess(withStatus: "Saved")
                 SVProgressHUD.dismiss(withDelay: 2)
@@ -600,6 +651,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     self.newUsername = nil
                     completion(true)
                 } else {
+                    SVProgressHUD.showError(withStatus: "Missing Fields")
+                    SVProgressHUD.dismiss(withDelay: 2)
                     self.usernameErrorLabel.text = "Username is already taken."
                     UIView.animate(withDuration: 0.2, animations: {
                         self.usernameErrorLabel.alpha = 1
