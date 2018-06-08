@@ -41,5 +41,6 @@ enum UserNotificationType: String {
     case favorited
     case cooked
     case review
+    case message
 }
 

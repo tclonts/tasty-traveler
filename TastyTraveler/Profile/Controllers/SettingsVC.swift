@@ -24,6 +24,7 @@ class SettingsVC: FormViewController {
         super.viewDidLoad()
         
         fetchProviders()
+        fetchNotificationSettings()
         
         accountVC.bioToSet = bioToSet
         
@@ -48,6 +49,43 @@ class SettingsVC: FormViewController {
                             return self.accountVC
                         }), onDismiss: nil)
                     }
+        +++ Section("Push Notifications")
+                <<< SwitchRow(UserNotificationType.message.rawValue) { row in
+                        row.title = "New messages"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+                    }
+                <<< SwitchRow(UserNotificationType.cooked.rawValue) { row in
+                        row.title = "Recipe was cooked"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+            }
+                <<< SwitchRow(UserNotificationType.favorited.rawValue) { row in
+                        row.title = "Recipe was favorited"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+            }
+                <<< SwitchRow(UserNotificationType.review.rawValue) { row in
+                        row.title = "Recipe was reviewed"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+            }
         +++ Section()
                 <<< ButtonRow("Rate Tasty Traveler") { row in
                         row.title = row.tag
@@ -129,6 +167,53 @@ class SettingsVC: FormViewController {
             if let accountRow = self.form.rowBy(tag: "Account") {
                 accountRow.disabled = false
                 accountRow.evaluateDisabled()
+            }
+        }
+    }
+    
+    func fetchNotificationSettings() {
+        let isRegisteredForRemoteNotifications = UIApplication.shared.isRegisteredForRemoteNotifications
+        guard isRegisteredForRemoteNotifications else { return }
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+
+        let ref = FirebaseController.shared.ref.child("users").child(userID).child("notificationSettings")
+        ref.observeSingleEvent(of: .value) { (snapshot) in
+            if let notificationSettingsDict = snapshot.value as? [String:Bool] {
+                notificationSettingsDict.forEach({ (key, value) in
+                    let row = self.form.rowBy(tag: key)
+                    row?.baseValue = value
+                    row?.updateCell()
+                })
+            }
+        }
+        
+    }
+    
+    func isRegisteredForNotifications(completion: @escaping (Bool) -> ()) {
+        let isRegisteredForRemoteNotifications = UIApplication.shared.isRegisteredForRemoteNotifications
+        
+        if !isRegisteredForRemoteNotifications {
+            let application = UIApplication.shared
+            attemptRegisterForNotifications(application: application, completion: { (completed) in
+                completion(completed)
+            })
+        } else {
+            completion(true)
+        }
+    }
+    
+    func toggleNotifications(enabled: Bool, for notification: UserNotificationType) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        let ref = FirebaseController.shared.ref.child("users").child(userID).child("notificationSettings")
+        
+        isRegisteredForNotifications { (isRegistered) in
+            if isRegistered {
+                ref.child(notification.rawValue).setValue(enabled)
+            } else {
+                let row = self.form.rowBy(tag: notification.rawValue)
+                row?.baseValue = false
+                row?.updateCell()
             }
         }
     }

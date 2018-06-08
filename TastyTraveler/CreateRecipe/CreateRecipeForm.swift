@@ -343,8 +343,8 @@ class CreateRecipeForm: UIView {
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
         
         //TESTING
-        let longGesture = UILongPressGestureRecognizer(target: self, action: #selector(createTestRecipe))
-        button.addGestureRecognizer(longGesture)
+//        let longGesture = UILongPressGestureRecognizer(target: self, action: #selector(createTestRecipe))
+//        button.addGestureRecognizer(longGesture)
         
         return button
     }()
@@ -689,9 +689,9 @@ class CreateRecipeForm: UIView {
         return errors
     }
     
-    @objc fileprivate func createTestRecipe() {
-        self.createRecipeVC?.submitTestRecipe()
-    }
+//    @objc fileprivate func createTestRecipe() {
+//        self.createRecipeVC?.submitTestRecipe()
+//    }
     
     @objc fileprivate func addIngredientTapped() {
         var previousIngredient: String?

@@ -68,7 +68,12 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
     }
     
     @objc func doneTapped() {
-        guard titleTextField.text != "", reviewTextView.text != "", ratingControl.rating != 0 else { return }
+        guard titleTextField.text != "", reviewTextView.text != "", ratingControl.rating != 0 else {
+            let ac = UIAlertController(title: "Missing Fields", message: "Review must include a rating, title, and text.", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(ac, animated: true, completion: nil)
+            return
+        }
         
         let newRating = Int(ratingControl.rating)
         let newTitle = titleTextField.text

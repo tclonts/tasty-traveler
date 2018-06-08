@@ -40,7 +40,6 @@ class MainTabBarController: UITabBarController {
     
     let shadowView = UIView()
     
-
     func setUpViewControllers() {
         // Home
         let homeNavController = templateNavController(image: #imageLiteral(resourceName: "home"), selectedImage: #imageLiteral(resourceName: "homeSelected"), viewController: HomeVC(collectionViewLayout: UICollectionViewFlowLayout()))

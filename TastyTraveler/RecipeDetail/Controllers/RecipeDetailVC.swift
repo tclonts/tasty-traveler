@@ -386,6 +386,10 @@ class RecipeDetailVC: UIViewController {
                     }
                     
                     self.recipe = updatedRecipe
+                    if !self.isFromFavorites {
+                        self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                        self.homeVC?.recipeDataHasChanged = true
+                    }
                 })
             })
         }
@@ -478,6 +482,7 @@ class RecipeDetailVC: UIViewController {
             self.present(popup, animated: false) {
                 popup.showAlertView()
             }
+            
         } else {
             let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (_) in
@@ -488,8 +493,14 @@ class RecipeDetailVC: UIViewController {
                 NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
                 NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                 
+                
                 self.recipe?.cookedDate = nil
                 self.recipe?.hasCooked = false
+                
+                if !self.isFromFavorites {
+                    self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                    self.homeVC?.recipeDataHasChanged = true
+                }
 
                 ac.dismiss(animated: true, completion: nil)
             }))

@@ -34,6 +34,7 @@ struct Color {
 }
 
 enum ProximaNova: String {
+    case light = "ProximaNova-Light"
     case regular = "ProximaNova-Regular"
     case semibold = "ProximaNova-SemiBold"
     case bold = "ProximaNova-Bold"

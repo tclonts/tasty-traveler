@@ -253,30 +253,30 @@ class CreateRecipeVC: UIViewController {
         return imageData
     }
     
-    func submitTestRecipe() {
-        let ac = UIAlertController(title: "Submit Test Recipe", message: "Generate and submit a recipe for testing.", preferredStyle: .alert)
-        ac.addTextField { (textField) in
-            textField.placeholder = "Enter recipe name"
-        }
-        ac.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (_) in
-            guard let name = ac.textFields![0].text else { return }
-            self.getUserLocation()
-            if let location = self.locationManager.location {
-                
-                let range = -2...2
-                let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
-                let adjustedLatitude = location.coordinate.latitude + (Double(randomDistance) * 0.01)
-                let adjustedLongitude = location.coordinate.longitude + (Double(randomDistance) * 0.01)
-                
-                FirebaseController.shared.uploadTestRecipe(named: name, longitude: adjustedLongitude, latitude: adjustedLatitude)
-            }
-            
-            self.dismiss(animated: true, completion: nil)
-        }))
-        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        self.present(ac, animated: true, completion: nil)
-    }
+//    func submitTestRecipe() {
+//        let ac = UIAlertController(title: "Submit Test Recipe", message: "Generate and submit a recipe for testing.", preferredStyle: .alert)
+//        ac.addTextField { (textField) in
+//            textField.placeholder = "Enter recipe name"
+//        }
+//        ac.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (_) in
+//            guard let name = ac.textFields![0].text else { return }
+//            self.getUserLocation()
+//            if let location = self.locationManager.location {
+//                
+//                let range = -2...2
+//                let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
+//                let adjustedLatitude = location.coordinate.latitude + (Double(randomDistance) * 0.01)
+//                let adjustedLongitude = location.coordinate.longitude + (Double(randomDistance) * 0.01)
+//                
+//                FirebaseController.shared.uploadTestRecipe(named: name, longitude: adjustedLongitude, latitude: adjustedLatitude)
+//            }
+//            
+//            self.dismiss(animated: true, completion: nil)
+//        }))
+//        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+//        
+//        self.present(ac, animated: true, completion: nil)
+//    }
     
     @objc func handleTap() {
         self.view.endEditing(true)

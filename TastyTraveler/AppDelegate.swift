@@ -27,13 +27,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             fatalError("Invalid Firebase configuration file.")
         }
         
-        attemptRegisterForNotifications(application: application)
-        
         FirebaseApp.configure(options: options)
         
-        window = UIWindow()
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
         
-        window?.rootViewController = LaunchScreenVC()
+        window = UIWindow()
+        let launchVC = LaunchScreenVC()
+        
+        window?.rootViewController = launchVC
         
         if Auth.auth().currentUser != nil {
             Auth.auth().currentUser?.reload(completion: { (error) in
@@ -46,7 +48,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                             print(error.localizedDescription)
                         }
                     }
-                    self.window?.rootViewController = AccountAccessVC()
+                    let accountAccessVC = AccountAccessVC()
+                    self.window?.rootViewController = accountAccessVC
                 } else {
                     FirebaseController.shared.isUsernameStored(uid: Auth.auth().currentUser!.uid, completion: { (result) in
                         if result {
@@ -61,7 +64,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 }
             })
         } else {
-            window?.rootViewController = AccountAccessVC()
+            let accountAccessVC = AccountAccessVC()
+            window?.rootViewController = accountAccessVC
         }
         
         return true
@@ -69,30 +73,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
         print("Registered with FCM with token:", fcmToken)
-        FirebaseController.shared.saveToken()
-    }
-    
-    private func attemptRegisterForNotifications(application: UIApplication) {
-        
-        Messaging.messaging().delegate = self
-        
-        UNUserNotificationCenter.current().delegate = self
-        
-        let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
-        UNUserNotificationCenter.current().requestAuthorization(options: authOptions, completionHandler: {granted, error in
-            if let error = error {
-                print("Failed to request auth:", error)
-                return
-            }
-            
-            if granted {
-                print("Auth granted.")
-            } else {
-                print("Auth denied.")
-            }
-        })
-        
-        application.registerForRemoteNotifications()
     }
     
     // listen for user notifications
@@ -105,12 +85,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             application.applicationIconBadgeNumber = 0
             FirebaseController.shared.resetBadgeCount()
         }
-        
-        
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
+        FirebaseController.shared.saveToken()
     }
     
     func applicationWillResignActive(_ application: UIApplication) {
@@ -129,6 +108,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        let defaults = UserDefaults.standard
+        var numberOfTimesLaunched = defaults.object(forKey: "TimesLaunched") as? Int ?? 0
+        numberOfTimesLaunched += 1
+        defaults.set(numberOfTimesLaunched, forKey: "TimesLaunched")
+        
+        if numberOfTimesLaunched >= 3 {
+            attemptRegisterForNotifications(application: application, completion: { (complete) in
+                if complete { print("Registered for notifications.") }
+            })
+        }
+        
         application.applicationIconBadgeNumber = 0
         FirebaseController.shared.resetBadgeCount()
     }
@@ -136,5 +126,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
+}
+
+func attemptRegisterForNotifications(application: UIApplication, completion: @escaping (Bool) -> ()) {
+    guard let userID = Auth.auth().currentUser?.uid else { return }
+    
+    let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
+    UNUserNotificationCenter.current().requestAuthorization(options: authOptions, completionHandler: {granted, error in
+        if let error = error {
+            print("Failed to request auth:", error)
+            completion(false)
+            return
+        }
+        
+        if granted {
+            print("Auth granted.")
+            
+            DispatchQueue.main.async {
+                application.registerForRemoteNotifications()
+            }
+            
+            FirebaseController.shared.ref.child("users").child(userID).child("notificationSettings").observeSingleEvent(of: .value, with: { (snapshot) in
+                if !snapshot.exists() {
+                    let dict = [UserNotificationType.cooked.rawValue: true,
+                                UserNotificationType.favorited.rawValue: true,
+                                UserNotificationType.message.rawValue: true,
+                                UserNotificationType.review.rawValue: true]
+                    FirebaseController.shared.ref.child("users").child(userID).child("notificationSettings").updateChildValues(dict)
+                    completion(true)
+                } else { completion(true) }
+            })
+        } else {
+            print("Auth denied.")
+            completion(false)
+        }
+    })
     
 }

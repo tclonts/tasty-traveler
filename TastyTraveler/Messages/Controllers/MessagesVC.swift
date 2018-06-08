@@ -12,8 +12,17 @@ import SVProgressHUD
 
 class MessagesVC: UITableViewController {
     
+//    let emptyLabel = UILabel()
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.view.backgroundColor = .white
+//
+//        emptyLabel.text = "You don't have any messages."
+//        emptyLabel.textColor = Color.primaryOrange
+//        emptyLabel.font = ProximaNova.semibold.of(size: 18)
+//        self.view.sv(emptyLabel)
+//        emptyLabel.centerInContainer()
         
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]

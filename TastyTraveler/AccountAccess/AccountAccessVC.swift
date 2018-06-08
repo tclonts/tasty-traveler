@@ -198,7 +198,7 @@ class AccountAccessVC: UIViewController {
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
+        return .default
     }
     
     func setUpViews() {

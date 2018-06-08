@@ -153,7 +153,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("ReviewsLoaded"), object: nil)
+        //notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("ReviewsLoaded"), object: nil)
         
 //        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
         self.view.sv(loadingRecipesView)
@@ -351,6 +351,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         recipeDetailVC.homeVC = self
         //recipeDetailVC.formatCookButton()
         recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
+        recipeDetailVC.recipeHeaderView.starRating.rating = cell.recipeHeaderView.starRating.rating
+        recipeDetailVC.recipeHeaderView.starRating.text = cell.recipeHeaderView.starRating.text
         // matching IDs for: Photo, favoriteButton, flagImageView, countryLabel, creatorLabel, ratingsStars, numberOfRatingsLabel
         
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)

@@ -36,13 +36,6 @@ exports.observeWrittenReview = functions.database
                   .once('value', snapshot => {
                     const creator = snapshot.val();
 
-                    const newBadgeValue = creator.badgeCount + 1;
-
-                    admin
-                      .database()
-                      .ref('/users/' + creatorID + '/badgeCount')
-                      .set(newBadgeValue);
-
                     const notification = {
                       message:
                         reviewer.username +
@@ -62,31 +55,40 @@ exports.observeWrittenReview = functions.database
                       .ref('/users/' + creatorID + '/notifications')
                       .push(notification);
 
-                    const payload = {
-                      notification: {
-                        title: '',
-                        body:
-                          reviewer.username +
-                          ' wrote a review of your ' +
-                          recipe.name +
-                          ' recipe.',
-                        badge: String(newBadgeValue)
-                      },
-                      data: {
-                        recipeID: review.recipeID
-                      }
-                    };
+                    if (creator.notificationSettings.review) {
+                      const newBadgeValue = creator.badgeCount + 1;
 
-                    admin
-                      .messaging()
-                      .sendToDevice(creator.notificationToken, payload)
-                      .then(response => {
-                        console.log('Successfully sent message: ', response);
-                        return null;
-                      })
-                      .catch(error => {
-                        console.log('Error sending message: ', error);
-                      });
+                      admin
+                        .database()
+                        .ref('/users/' + creatorID + '/badgeCount')
+                        .set(newBadgeValue);
+
+                      const payload = {
+                        notification: {
+                          title: '',
+                          body:
+                            reviewer.username +
+                            ' wrote a review of your ' +
+                            recipe.name +
+                            ' recipe.',
+                          badge: String(newBadgeValue)
+                        },
+                        data: {
+                          recipeID: review.recipeID
+                        }
+                      };
+
+                      admin
+                        .messaging()
+                        .sendToDevice(creator.notificationToken, payload)
+                        .then(response => {
+                          console.log('Successfully sent message: ', response);
+                          return null;
+                        })
+                        .catch(error => {
+                          console.log('Error sending message: ', error);
+                        });
+                    }
                   });
               });
           });
@@ -119,13 +121,6 @@ exports.observeFavorites = functions.database
               .once('value', snapshot => {
                 const creator = snapshot.val();
 
-                const newBadgeValue = creator.badgeCount + 1;
-
-                admin
-                  .database()
-                  .ref('/users/' + recipe.creatorID + '/badgeCount')
-                  .set(newBadgeValue);
-
                 const notification = {
                   message:
                     user.username +
@@ -145,31 +140,39 @@ exports.observeFavorites = functions.database
                   .ref('/users/' + recipe.creatorID + '/notifications')
                   .push(notification);
 
-                const payload = {
-                  notification: {
-                    title: '',
-                    body:
-                      user.username +
-                      ' favorited your ' +
-                      recipe.name +
-                      ' recipe.',
-                    badge: String(newBadgeValue)
-                  },
-                  data: {
-                    recipeID: recipeID
-                  }
-                };
+                if (creator.notificationSettings.favorited) {
+                  const newBadgeValue = creator.badgeCount + 1;
 
-                admin
-                  .messaging()
-                  .sendToDevice(creator.notificationToken, payload)
-                  .then(response => {
-                    console.log('Successfully sent message: ', response);
-                    return null;
-                  })
-                  .catch(error => {
-                    console.log('Error sending message: ', error);
-                  });
+                  admin
+                    .database()
+                    .ref('/users/' + recipe.creatorID + '/badgeCount')
+                    .set(newBadgeValue);
+                  const payload = {
+                    notification: {
+                      title: '',
+                      body:
+                        user.username +
+                        ' favorited your ' +
+                        recipe.name +
+                        ' recipe.',
+                      badge: String(newBadgeValue)
+                    },
+                    data: {
+                      recipeID: recipeID
+                    }
+                  };
+
+                  admin
+                    .messaging()
+                    .sendToDevice(creator.notificationToken, payload)
+                    .then(response => {
+                      console.log('Successfully sent message: ', response);
+                      return null;
+                    })
+                    .catch(error => {
+                      console.log('Error sending message: ', error);
+                    });
+                }
               });
           });
       });
@@ -202,13 +205,6 @@ exports.observeReviews = functions.database
               .once('value', snapshot => {
                 const recipeCreator = snapshot.val();
 
-                const newBadgeValue = recipeCreator.badgeCount + 1;
-
-                admin
-                  .database()
-                  .ref('/users/' + reviewedRecipe.creatorID + '/badgeCount')
-                  .set(newBadgeValue);
-
                 const notification = {
                   message:
                     reviewer.username +
@@ -228,31 +224,40 @@ exports.observeReviews = functions.database
                   .ref('/users/' + reviewedRecipe.creatorID + '/notifications')
                   .push(notification);
 
-                const payload = {
-                  notification: {
-                    title: '',
-                    body:
-                      reviewer.username +
-                      ' cooked your ' +
-                      reviewedRecipe.name +
-                      ' recipe!',
-                    badge: String(newBadgeValue)
-                  },
-                  data: {
-                    recipeID: recipeID
-                  }
-                };
+                if (recipeCreator.notificationSettings.cooked) {
+                  const newBadgeValue = recipeCreator.badgeCount + 1;
 
-                admin
-                  .messaging()
-                  .sendToDevice(recipeCreator.notificationToken, payload)
-                  .then(response => {
-                    console.log('Successfully sent message: ', response);
-                    return null;
-                  })
-                  .catch(error => {
-                    console.log('Error sending message: ', error);
-                  });
+                  admin
+                    .database()
+                    .ref('/users/' + reviewedRecipe.creatorID + '/badgeCount')
+                    .set(newBadgeValue);
+
+                  const payload = {
+                    notification: {
+                      title: '',
+                      body:
+                        reviewer.username +
+                        ' cooked your ' +
+                        reviewedRecipe.name +
+                        ' recipe!',
+                      badge: String(newBadgeValue)
+                    },
+                    data: {
+                      recipeID: recipeID
+                    }
+                  };
+
+                  admin
+                    .messaging()
+                    .sendToDevice(recipeCreator.notificationToken, payload)
+                    .then(response => {
+                      console.log('Successfully sent message: ', response);
+                      return null;
+                    })
+                    .catch(error => {
+                      console.log('Error sending message: ', error);
+                    });
+                }
               });
           });
       });
@@ -280,8 +285,6 @@ exports.observeMessages = functions.database
           .once('value', snapshot => {
             const sender = snapshot.val();
 
-            const newBadgeValue = recipient.badgeCount + 1;
-
             const unreadMessagesCount = recipient.unreadMessagesCount + 1;
 
             admin
@@ -289,33 +292,36 @@ exports.observeMessages = functions.database
               .ref('/users/' + recipientID + '/unreadMessagesCount')
               .set(unreadMessagesCount);
 
-            admin
-              .database()
-              .ref('/users/' + recipientID + '/badgeCount')
-              .set(newBadgeValue);
+            if (recipient.notificationSettings.message) {
+              const newBadgeValue = recipient.badgeCount + 1;
+              admin
+                .database()
+                .ref('/users/' + recipientID + '/badgeCount')
+                .set(newBadgeValue);
 
-            const payload = {
-              notification: {
-                title: '',
-                body: sender.username + ' sent you a message.',
-                badge: String(newBadgeValue)
-              },
-              data: {
-                recipeID: message.recipeID,
-                withUserID: senderID
-              }
-            };
+              const payload = {
+                notification: {
+                  title: '',
+                  body: sender.username + ' sent you a message.',
+                  badge: String(newBadgeValue)
+                },
+                data: {
+                  recipeID: message.recipeID,
+                  withUserID: senderID
+                }
+              };
 
-            admin
-              .messaging()
-              .sendToDevice(recipient.notificationToken, payload)
-              .then(response => {
-                console.log('Successfully sent message: ', response);
-                return null;
-              })
-              .catch(error => {
-                console.log('Error sending message: ', error);
-              });
+              admin
+                .messaging()
+                .sendToDevice(recipient.notificationToken, payload)
+                .then(response => {
+                  console.log('Successfully sent message: ', response);
+                  return null;
+                })
+                .catch(error => {
+                  console.log('Error sending message: ', error);
+                });
+            }
           });
       });
   });
