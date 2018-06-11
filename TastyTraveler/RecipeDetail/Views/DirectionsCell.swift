@@ -16,6 +16,7 @@ class DirectionsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
     var videoURL: String?
     var thumbnailURL: String?
     var recipeDetailVC: RecipeDetailVC?
+    var delegate: AboutCellDelegate?
     
     let videoHeaderView: UIView = {
         let view = UIView()
@@ -74,6 +75,7 @@ class DirectionsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
         tableView.top(0).left(adaptConstant(25)).right(adaptConstant(25)).bottom(0)
         
         backgroundColor = .white
+        
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -123,6 +125,10 @@ class DirectionsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
         } else {
             return UITableViewCell()
         }
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        delegate?.resizeCollectionView(forHeight: self.tableView.contentSize.height, cell: self)
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

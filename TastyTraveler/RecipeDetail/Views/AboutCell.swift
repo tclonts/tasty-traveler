@@ -250,7 +250,7 @@ class AboutCell: BaseCell {
         
         reviewsLabel.left(adaptConstant(25))
         
-        delegate?.resizeCollectionView(forHeight: self.scrollView.contentSize.height)
+        delegate?.resizeCollectionView(forHeight: self.scrollView.contentSize.height, cell: self)
         
         backgroundColor = .white
     }
@@ -280,7 +280,7 @@ class AboutCell: BaseCell {
         reviewsTableView.heightConstraint?.constant = reviewsTableView.contentSize.height + 24
         self.layoutIfNeeded()
         
-        delegate?.resizeCollectionView(forHeight: self.scrollView.contentSize.height)
+        delegate?.resizeCollectionView(forHeight: self.scrollView.contentSize.height, cell: self)
     }
     
     @objc func refreshUserRating() {
@@ -423,6 +423,6 @@ extension AboutCell: UITableViewDelegate, UITableViewDataSource {
 
 protocol AboutCellDelegate: class {
     func presentComposeReviewView()
-    func resizeCollectionView(forHeight height: CGFloat)
+    func resizeCollectionView(forHeight height: CGFloat, cell: UICollectionViewCell)
     func scrollToBottom()
 }

@@ -65,7 +65,7 @@ class FavoritesVC: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     lazy var emptyDataView: UIStackView = {
         let label = UILabel()
-        label.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(20))
+        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(20))
         label.text = "You don't have any recipes saved."
         label.textColor = Color.gray
         

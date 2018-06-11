@@ -190,18 +190,23 @@ class CreateRecipeVC: UIViewController {
                     recipeDictionary["latitude"] = adjustedLatitude
                     
                     // Found state or province; display that instead of city
-                    if let administrativeArea = placemark.administrativeArea, let states = self.states {
+                    if let administrativeArea = placemark.administrativeArea, let states = self.states, placemark.country == "United States" {
                         if let matchingState = states.first(where: { $0.country == countryCode && $0.short == administrativeArea}) {
                             recipeDictionary[Recipe.localityKey] = matchingState.name
                             
                             // Upload with location
                             FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
-                        } else {
-                            recipeDictionary[Recipe.localityKey] = administrativeArea
-                            
-                            // Upload with location
-                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
                         }
+//                        } else {
+//                            recipeDictionary[Recipe.localityKey] = administrativeArea
+//
+//                            // Upload with location
+//                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+//                        }
+                    } else {
+                        recipeDictionary[Recipe.localityKey] = placemark.locality
+                        
+                        FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
                     }
                     
                 } else {
@@ -253,30 +258,139 @@ class CreateRecipeVC: UIViewController {
         return imageData
     }
     
-//    func submitTestRecipe() {
-//        let ac = UIAlertController(title: "Submit Test Recipe", message: "Generate and submit a recipe for testing.", preferredStyle: .alert)
-//        ac.addTextField { (textField) in
-//            textField.placeholder = "Enter recipe name"
-//        }
-//        ac.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (_) in
-//            guard let name = ac.textFields![0].text else { return }
-//            self.getUserLocation()
-//            if let location = self.locationManager.location {
-//                
-//                let range = -2...2
-//                let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
-//                let adjustedLatitude = location.coordinate.latitude + (Double(randomDistance) * 0.01)
-//                let adjustedLongitude = location.coordinate.longitude + (Double(randomDistance) * 0.01)
-//                
-//                FirebaseController.shared.uploadTestRecipe(named: name, longitude: adjustedLongitude, latitude: adjustedLatitude)
-//            }
-//            
-//            self.dismiss(animated: true, completion: nil)
-//        }))
-//        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-//        
-//        self.present(ac, animated: true, completion: nil)
-//    }
+    func submitTestRecipe() {
+        let ac = UIAlertController(title: "Submit with custom location", message: "Use the current recipe with a custom location.", preferredStyle: .alert)
+        ac.addTextField { (textField) in
+            textField.placeholder = "Enter latitude"
+        }
+        ac.addTextField { (textField) in
+            textField.placeholder = "Enter longitude"
+        }
+        ac.addAction(UIAlertAction(title: "Submit", style: .default, handler: { (_) in
+            guard let latitude = ac.textFields![0].text else { return }
+            guard let longitude = ac.textFields![1].text else { return }
+            
+            guard let photo = self.formView.photoImageView.image else { return }
+            guard let name = self.formView.recipeNameTextInputView.textView.text else { return }
+            guard let servings = self.servings else { return }
+            guard let timeInMinutes = self.timeInMinutes else { return }
+            guard let difficulty = self.formView.difficultyControl.titleForSegment(at: self.formView.difficultyControl.selectedSegmentIndex) else { return }
+            guard let mealType = self.formView.mealTypeButton.titleLabel?.text else { return }
+            
+            var steps = self.stepsDataSource.steps
+            
+            // if the last element in the tableview has an empty textfield continue, if not append that textfield text to the steps array
+            let stepsIndexPath = IndexPath(row: self.stepsDataSource.steps.count, section: 0)
+            
+            if let stepCell = self.formView.stepsTableView.cellForRow(at: stepsIndexPath) as? TextInputTableViewCell {
+                if let text = stepCell.textField.text {
+                    if !steps.contains(text) && text != "" {
+                        steps.append(text)
+                    }
+                } else {
+                    print("Last step field is empty")
+                }
+            } else {
+                return
+            }
+            
+            var ingredients = self.ingredientsDataSource.ingredients
+            
+            let ingredientsIndexPath = IndexPath(row: self.ingredientsDataSource.ingredients.count, section: 0)
+            if let ingredientCell = self.formView.ingredientsTableView.cellForRow(at: ingredientsIndexPath) as? TextInputTableViewCell {
+                if let text = ingredientCell.textField.text {
+                    if !ingredients.contains(text) && text != "" {
+                        ingredients.append(text)
+                    }
+                } else {
+                    print("Last ingredient field is empty")
+                }
+            } else {
+                return
+            }
+            
+            let servingsInt = Int(servings)
+            let timeInMinutesInt = Int(timeInMinutes)
+            
+            var recipeDictionary: [String:Any] = [Recipe.photoKey: self.resize(photo),
+                                                  Recipe.nameKey: name,
+                                                  Recipe.creatorIDKey: Auth.auth().currentUser!.uid,
+                                                  Recipe.servingsKey: servingsInt!,
+                                                  Recipe.timeInMinutesKey: timeInMinutesInt!,
+                                                  Recipe.difficultyKey: difficulty,
+                                                  Recipe.ingredientsKey: ingredients,
+                                                  Recipe.stepsKey: steps,
+                                                  Recipe.mealKey: mealType]
+            
+            if let descriptionText = self.formView.descriptionTextInputView.textView.text {
+                if descriptionText != "" && descriptionText != "Give your recipe a description..." {
+                    recipeDictionary[Recipe.descriptionKey] = descriptionText
+                }
+            }
+            
+            if let videoURL = self.localVideoURL {
+                recipeDictionary[Recipe.videoURLKey] = videoURL
+                recipeDictionary[Recipe.thumbnailURLKey] = UIImageJPEGRepresentation(self.formView.tutorialVideoImageView.image!, 0.8)!
+            }
+            
+            if let selectedTags = self.formView.tagsCollectionView.indexPathsForSelectedItems {
+                let tagIndexes = selectedTags.map { $0.item }
+                var tags = [String]()
+                tagIndexes.forEach { tags.append(self.tagsDataSource.tags[$0]) }
+                recipeDictionary[Recipe.tagsKey] = tags
+            }
+            
+            let location = CLLocation(latitude: Double(latitude)!, longitude: Double(longitude)!)
+            
+            let geocoder = CLGeocoder()
+            
+            // Look up the location and pass it to the completion handler
+            geocoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) in
+                if error == nil {
+                    guard let placemark = placemarks?[0] else { print("placemark not found"); return }
+                    let countryCode = placemark.isoCountryCode
+                    recipeDictionary[Recipe.countryCodeKey] = countryCode
+                    recipeDictionary[Recipe.countryKey] = placemark.country
+                    
+                    let range = -2...2
+                    let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
+                    let adjustedLatitude = location.coordinate.latitude + (Double(randomDistance) * 0.01)
+                    let adjustedLongitude = location.coordinate.longitude + (Double(randomDistance) * 0.01)
+                    
+                    recipeDictionary["longitude"] = adjustedLongitude
+                    recipeDictionary["latitude"] = adjustedLatitude
+                    
+                    // Found state or province; display that instead of city
+                    if let administrativeArea = placemark.administrativeArea, let states = self.states, placemark.country == "United States" {
+                        if let matchingState = states.first(where: { $0.country == countryCode && $0.short == administrativeArea}) {
+                            recipeDictionary[Recipe.localityKey] = matchingState.name
+                            
+                            // Upload with location
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                        }
+                        //                        } else {
+                        //                            recipeDictionary[Recipe.localityKey] = administrativeArea
+                        //
+                        //                            // Upload with location
+                        //                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                        //                        }
+                    } else {
+                        recipeDictionary[Recipe.localityKey] = placemark.locality
+                        
+                        FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                    }
+                    
+                } else {
+                    print(error!.localizedDescription)
+                }
+            })
+            
+            self.dismiss(animated: true, completion: nil)
+        }))
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(ac, animated: true, completion: nil)
+    }
     
     @objc func handleTap() {
         self.view.endEditing(true)

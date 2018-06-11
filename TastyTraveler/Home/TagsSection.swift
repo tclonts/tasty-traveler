@@ -27,6 +27,7 @@ class TagsSection: BaseCell, UICollectionViewDelegate, UICollectionViewDelegateF
                 "Gluten-free",
                 "Vegetarian",
                 "Whole 30",
+                "Dairy-free",
                 "Paleo",
                 "Organic"]
     

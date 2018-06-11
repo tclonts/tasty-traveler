@@ -12,18 +12,35 @@ import SVProgressHUD
 
 class MessagesVC: UITableViewController {
     
-//    let emptyLabel = UILabel()
+    let emptyLabel = UIStackView()
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.view.backgroundColor = .white
-//
-//        emptyLabel.text = "You don't have any messages."
-//        emptyLabel.textColor = Color.primaryOrange
-//        emptyLabel.font = ProximaNova.semibold.of(size: 18)
-//        self.view.sv(emptyLabel)
-//        emptyLabel.centerInContainer()
+
+        let emptyLabelTitle = UILabel()
+        emptyLabelTitle.text = "You don't have any messages."
+        emptyLabelTitle.textColor = Color.gray
+        emptyLabelTitle.textAlignment = .center
+        emptyLabelTitle.font = ProximaNova.semibold.of(size: 20)
+        emptyLabelTitle.numberOfLines = 0
         
+        let emptyLabelMessage = UILabel()
+        emptyLabelMessage.text = "Any conversations you have with other cooks will show up here."
+        emptyLabelMessage.textColor = Color.gray
+        emptyLabelMessage.textAlignment = .center
+        emptyLabelMessage.font = ProximaNova.regular.of(size: 16)
+        emptyLabelMessage.numberOfLines = 0
+        
+        emptyLabel.addArrangedSubview(emptyLabelTitle)
+        emptyLabel.addArrangedSubview(emptyLabelMessage)
+        emptyLabel.axis = .vertical
+        emptyLabel.spacing = adaptConstant(20)
+        
+        self.view.sv(emptyLabel)
+        emptyLabel.centerInContainer().left(adaptConstant(20)).right(adaptConstant(20))
+        emptyLabel.isHidden = FirebaseController.shared.messages.count != 0
+
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]
         self.navigationController?.navigationBar.isTranslucent = false
@@ -51,6 +68,8 @@ class MessagesVC: UITableViewController {
     
     @objc func reloadMessages() {
         self.tableView.reloadData()
+        
+        emptyLabel.isHidden = FirebaseController.shared.messages.count != 0
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -83,7 +102,6 @@ class MessagesVC: UITableViewController {
                 self.showChatControllerForChat(chat)
             })
         }
-        
     }
     
     func showChatControllerForChat(_ chat: Chat) {

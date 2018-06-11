@@ -34,6 +34,8 @@ class IngredientsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
     }()
     
     var ingredients = [String]()
+    
+    var delegate: AboutCellDelegate?
 
     override func setUpViews() {
         super.setUpViews()
@@ -44,7 +46,6 @@ class IngredientsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
         
         tableView.left(adaptConstant(25)).right(adaptConstant(25)).bottom(0)
         tableView.Top == ingredientsLabel.Bottom + adaptConstant(18)
-        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -59,6 +60,10 @@ class IngredientsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
         cell.selectionStyle = .none
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        delegate?.resizeCollectionView(forHeight: self.tableView.contentSize.height, cell: self)
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

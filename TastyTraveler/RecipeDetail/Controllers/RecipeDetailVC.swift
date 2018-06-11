@@ -263,6 +263,10 @@ class RecipeDetailVC: UIViewController {
     var didSubmitReview = false
     var previousCreatorID: String?
     
+    var aboutCellHeight: CGFloat = 0.0
+    var ingredientsCellHeight: CGFloat = 0.0
+    var directionsCellHeight: CGFloat = 0.0
+    
     var ratings: [Int]?
     var averageRating: Double?
     var reviews = [Review]() {
@@ -947,9 +951,9 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
             let indexPath = IndexPath(item: Int(index), section: 0)
             menuBar.collectionView.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition())
             
-            let position = CGPoint(x: 0, y: self.menuBar.frame.origin.y)
-            if position.y < self.scrollView.contentOffset.y {
-                
+//            let position = CGPoint(x: 0, y: self.menuBar.frame.origin.y)
+//            if position.y < self.scrollView.contentOffset.y {
+//
                 if indexPath.item == 0 {
                     self.ingredientsCellScrollPosition = self.scrollView.contentOffset
                     //                guard aboutCellScrollPosition != nil else { return }
@@ -982,7 +986,7 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
                     guard directionsCellScrollPosition != nil else { return }
                     self.scrollView.setContentOffset(directionsCellScrollPosition!, animated: true)
                 }
-            }
+//            }
         }
     }
     
@@ -1023,6 +1027,7 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
             let ingredientsCell = collectionView.dequeueReusableCell(withReuseIdentifier: "ingredientsCell", for: indexPath) as! IngredientsCell
             // ingredients array
             ingredientsCell.ingredients = recipe.ingredients
+            ingredientsCell.delegate = self
             self.ingredientsCellTableView = ingredientsCell.tableView
             
             return ingredientsCell
@@ -1036,6 +1041,7 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
                 directionsCell.hasVideo = true
             }
             directionsCell.recipeDetailVC = self
+            directionsCell.delegate = self
             self.directionsCellTableView = directionsCell.tableView
             
             return directionsCell
@@ -1123,8 +1129,22 @@ extension RecipeDetailVC: AboutCellDelegate {
         present(composeNav, animated: true, completion: nil)
     }
     
-    func resizeCollectionView(forHeight height: CGFloat) {
-        self.collectionView.heightConstraint?.constant = height
+    func resizeCollectionView(forHeight height: CGFloat, cell: UICollectionViewCell) {
+        if cell is AboutCell {
+            self.aboutCellHeight = height
+        }
+        
+        if cell is IngredientsCell {
+            self.ingredientsCellHeight = height
+        }
+        
+        if cell is DirectionsCell {
+            self.directionsCellHeight = height
+        }
+        
+        let maxHeight = max(self.aboutCellHeight, self.ingredientsCellHeight, directionsCellHeight)
+        
+        self.collectionView.heightConstraint?.constant = maxHeight
         self.view.layoutIfNeeded()
         self.collectionView.collectionViewLayout.invalidateLayout()
     }

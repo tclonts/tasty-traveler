@@ -20,7 +20,7 @@ private let sectionHeaderID = "sectionHeader"
 
 class ProfileHeaderView: GSKStretchyHeaderView {
     weak var delegate: ProfileHeaderViewDelegate?
-    
+        
     lazy var settingsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "settings"), for: .normal)
@@ -71,7 +71,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     let countryFlagImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.height(15).width(22)//imageView.height(adaptConstant(15)).width(adaptConstant(22))
+        imageView.height(15).width(22)
         imageView.image = #imageLiteral(resourceName: "US")
         return imageView
     }()
@@ -235,22 +235,9 @@ protocol ProfileHeaderViewDelegate: class {
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-//    var sections = ["Favorites", "Cooked", "Uploaded"]
     var headerView: ProfileHeaderView!
-    
-//    var favoriteRecipes = [Recipe]()
-//    var cookedRecipes   = [Recipe]()
-//    var uploadedRecipes = [Recipe]()
     var recipes = [Recipe]()
-    
     var imagePicker: UIImagePickerController?
-    
-//    lazy var menuBar: MenuBar = {
-//        let menuBar = MenuBar()
-//        menuBar.delegate = self
-//        menuBar.setUpHorizontalBar(onTop: false)
-//        return menuBar
-//    }()
     
     var isMyProfile = true
     var userID: String?
@@ -264,18 +251,44 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.bioLabel.isUserInteractionEnabled = false
             }
             
-            //self.headerView.bioLabel.text = "123456789123456789123456789123456789123456789123456789123456789123456789123456789"
-            //headerView.bioLabel.text = user!.bio
             if let urlString = user!.avatarURL {
                 self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
             }
         }
+    }
+    
+    lazy var emptyDataView: UIStackView = {
+        let label = UILabel()
+        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(20))
+        label.text = "You haven't uploaded any recipes."
+        label.textColor = Color.gray
+        
+        let button = UIButton(type: .system)
+        let title = NSAttributedString(string: "Create a recipe", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        button.addTarget(self, action: #selector(presentCreateRecipeVC), for: .touchUpInside)
+        
+        let stackView = UIStackView(arrangedSubviews: [label, button])
+        stackView.axis = .vertical
+        stackView.spacing = adaptConstant(20)
+        stackView.isHidden = true
+        return stackView
+    }()
+    
+    @objc func presentCreateRecipeVC() {
+        let createRecipeVC = CreateRecipeVC()
+        self.present(createRecipeVC, animated: true, completion: nil)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         fetchUserInfo()
+        
+        self.view.sv(emptyDataView)
+        emptyDataView.centerInContainer()
         
         if isMyProfile {
             imagePicker = UIImagePickerController()
@@ -288,14 +301,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
         
         self.navigationController?.navigationBar.isTranslucent = false
-        
         self.collectionView?.backgroundColor = .white
         self.collectionView?.contentInsetAdjustmentBehavior = .never
         self.collectionView?.showsVerticalScrollIndicator = false
-        
-//        self.collectionView!.register(FavoritesSection.self, forCellWithReuseIdentifier: favoritesSection)
-//        self.collectionView?.register(CookedSection.self, forCellWithReuseIdentifier: cookedSection)
-//        self.collectionView?.register(UploadedSection.self, forCellWithReuseIdentifier: uploadedSection)
         self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
         self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
     }
@@ -323,17 +331,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         guard let userID = userID else { return }
         
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
-        //SVProgressHUD.show()
         
         var incomingRecipes = [Recipe]()
         
         FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (snapshot) in
             guard let uploadedRecipesDictionary = snapshot.value as? [String:Double] else {
                 self.collectionView!.reloadData()
-                //self.recipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
+                self.emptyDataView.isHidden = self.recipes.count != 0
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                //SVProgressHUD.dismiss()
-                //self.loadingRecipesView.isHidden = true
                 return
             }
             
@@ -359,20 +364,27 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                         incomingRecipes.append(recipe)
                         group.leave()
                     })
-                    
-                    //self.loadingRecipesView.isHidden = true
                 })
             })
             
             group.notify(queue: .main) {
                 self.recipes = incomingRecipes
                 self.recipes.sort(by: { (r1, r2) -> Bool in
-                    return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                    return r1.creationDate.compare(r2.creationDate) == .orderedAscending
                 })
                 
                 self.collectionView!.reloadData()
+                self.emptyDataView.isHidden = self.recipes.count != 0
+                
+                if let recipeForLocation = self.recipes.last, let countryCode = recipeForLocation.countryCode, let locality = recipeForLocation.locality {
+                    self.headerView.countryLabel.text = "\(locality), \(countryCode)"
+                    self.headerView.countryFlagImageView.image = UIImage(named: countryCode)
+                } else {
+                    self.headerView.countryLabel.isHidden = true
+                    self.headerView.countryFlagImageView.isHidden = true
+                }
+                
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                //SVProgressHUD.dismiss()
             }
         }
     }
@@ -406,15 +418,12 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         } else {
             self.headerView.unreadIndicator.isHidden = true
         }
-//
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         navigationController?.setNavigationBarHidden(true, animated: false)
-        
-//        refreshRecipes()
     }
     
     @objc func toggleIndicator() {
@@ -426,11 +435,6 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     }
 
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
-//        if isMyProfile {
-//            return 2
-//        } else {
-//            return sections.count
-//        }
         return 1
     }
 
@@ -439,51 +443,12 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-//        switch indexPath.section {
-//        case 0:
-//            let cell = isMyProfile ? collectionView.dequeueReusableCell(withReuseIdentifier: cookedSection, for: indexPath) as! CookedSection : collectionView.dequeueReusableCell(withReuseIdentifier: favoritesSection, for: indexPath) as! FavoritesSection
-//            return cell
-//        case 1:
-//            let cell = isMyProfile ? collectionView.dequeueReusableCell(withReuseIdentifier: uploadedSection, for: indexPath) as! UploadedSection : collectionView.dequeueReusableCell(withReuseIdentifier: cookedSection, for: indexPath) as! CookedSection
-//            return cell
-//        case 2:
-//            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: uploadedSection, for: indexPath) as! UploadedSection
-//            return cell
-//        default:
-//            return UICollectionViewCell()
-//        }
+
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "recipeCell", for: indexPath) as! FavoriteCell
         cell.favoriteButton.isHidden = true
         cell.recipe = recipes[indexPath.item]
         return cell
     }
-    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-//        return CGSize(width: collectionView.frame.width, height: 50)
-//    }
-//
-//    override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-//        let sectionHeaderView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: sectionHeaderID, for: indexPath) as! SectionHeaderView
-//
-////        switch indexPath.section {
-////        case 0:
-////            sectionHeaderView.sectionLabel.text = isMyProfile ? sections[1] : sections[0]
-////            sectionHeaderView.numberOfRecipesLabel.text = isMyProfile ? "\(cookedRecipes.count)" : "\(favoriteRecipes.count)"
-////        case 1:
-////            sectionHeaderView.sectionLabel.text = isMyProfile ? sections[2] : sections[1]
-////            sectionHeaderView.numberOfRecipesLabel.text = isMyProfile ? "\(uploadedRecipes.count)" : "\(cookedRecipes.count)"
-////        case 2:
-////            sectionHeaderView.sectionLabel.text = sections[2]
-////            sectionHeaderView.numberOfRecipesLabel.text = "\(uploadedRecipes.count)"
-////        default:
-////            print("Error when setting up view for section header")
-////        }
-//
-//        sectionHeaderView.sectionLabel.text = "Recipes"
-//        sectionHeaderView.numberOfRecipesLabel.text = "\(recipes.count)"
-//
-//        return sectionHeaderView
-//    }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (collectionView.frame.width / 2) - adaptConstant(10) - adaptConstant(5)
@@ -556,6 +521,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 })
                 self.recipes.remove(at: indexPath.item)
                 self.collectionView!.deleteItems(at: [indexPath])
+                self.emptyDataView.isHidden = self.recipes.count != 0
                 
                 ac.dismiss(animated: true, completion: nil)
             }))
