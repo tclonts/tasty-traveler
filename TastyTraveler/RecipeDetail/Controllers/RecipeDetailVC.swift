@@ -848,7 +848,9 @@ class RecipeDetailVC: UIViewController {
         collectionView.left(0).right(0).bottom(0)
         // view - recipeheaderview height - navbar height - menu bar height - bottomview height
         if screenHeight == iPhoneXScreenHeight {
-            let collectionViewHeight: CGFloat = self.view.frame.height - menuBar.frame.height - recipeHeaderView.frame.height - 64 - menuBar.frame.height - bottomBarHeight - adaptConstant(45) - 20
+            let menuBarHeight = menuBar.frame.height
+            let extraHeight = adaptConstant(45)
+            let collectionViewHeight: CGFloat = self.view.frame.height - menuBarHeight - recipeHeaderView.frame.height - 84 - menuBarHeight - bottomBarHeight - extraHeight
             collectionView.height(collectionViewHeight)
         } else {
             let collectionViewHeight: CGFloat = self.view.frame.height - menuBar.frame.height - recipeHeaderView.frame.height - 64 - menuBar.frame.height - bottomBarHeight - adaptConstant(45)
@@ -884,51 +886,8 @@ class RecipeDetailVC: UIViewController {
 extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if scrollView == self.scrollView && aboutCellScrollView != nil {
-//            aboutCellScrollView!.isScrollEnabled = (self.scrollView.contentOffset.y >= (self.scrollView.contentSize.height - self.scrollView.frame.size.height))
-            if let tableView = ingredientsCellTableView {
-                if tableView.contentSize.height > tableView.frame.size.height {
-                    ingredientsCellTableView?.isScrollEnabled = (self.scrollView.contentOffset.y >= (self.scrollView.contentSize.height - self.scrollView.frame.size.height))
-                }
-            }
-        }
 
-        if scrollView == self.aboutCellScrollView && aboutCellScrollView != nil {
-            // if the scrollview.contentoffset.y > 0 then allow scrolling
-            //
-//            if scrollView.contentOffset.y > 0 {
-//                scrollView.isScrollEnabled = true
-//            } else if scrollView.contentOffset.y == 0 {
-//                scrollView.isScrollEnabled = scrollView.panGestureRecognizer.translation(in: scrollView.superview).y < 0
-//            } else {
-//                scrollView.isScrollEnabled = false
-//            }
-            
-            if scrollView.contentOffset.y < 0 { isInAboutCellScrollView = true }
-            
-            
-            if isInAboutCellScrollView {
-                scrollView.isScrollEnabled = true
-                isInAboutCellScrollView = false
-            } else {
-                scrollView.isScrollEnabled = scrollView.contentOffset.y > 0
-            }
-
-            if aboutCellScrollView!.contentOffset.y > 0 {
-                self.aboutCellScrollView!.isScrollEnabled = (aboutCellScrollView!.contentOffset.y > 0)
-            }
-         
-        }
-        
         if scrollView == self.scrollView {
-//            if scrollView.contentOffset.y >= menuBar.frame.origin.y {
-//                topMenuBarConstraint.isActive = false
-//                topMenuBarConstraintFixed.isActive = true
-//                // self.view.layoutIfNeed()
-//            } else {
-//                topMenuBarConstraintFixed.isActive = false
-//                topMenuBarConstraint.isActive = true
-//            }
             
             if viewIsDark == nil { return }
             let photoHeight = self.view.frame.width * 0.75

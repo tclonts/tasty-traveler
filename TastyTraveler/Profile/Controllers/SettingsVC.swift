@@ -97,7 +97,7 @@ class SettingsVC: FormViewController {
                         if #available(iOS 10.3, *) {
                             SKStoreReviewController.requestReview()
                         } else {
-                            if let reviewURL = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1279816444?mt=8"), UIApplication.shared.canOpenURL(reviewURL) {
+                            if let reviewURL = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1345041207?mt=8"), UIApplication.shared.canOpenURL(reviewURL) {
                                 if #available(iOS 10.0, *) {
                                     UIApplication.shared.open(reviewURL, options: [:], completionHandler: nil)
                                 } else {
@@ -112,18 +112,22 @@ class SettingsVC: FormViewController {
                         cell.accessoryType = .disclosureIndicator
                         cell.textLabel?.textColor = .black
                         cell.textLabel?.textAlignment = .left
+                    }.onCellSelection { cell, row in
+                        if let url = URL(string: "https://app.termly.io/document/privacy-policy/9eb0c00e-7126-43b8-8d62-965156197b11"), UIApplication.shared.canOpenURL(url) {
+                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                        }
                     }
-                <<< CheckRow("Changelog") { row in
-                        row.title = row.tag
-                    
-                    }.cellUpdate { cell, row in
-                        cell.accessoryType = .disclosureIndicator
-                        cell.textLabel?.textColor = .black
-                        cell.textLabel?.textAlignment = .left
-                        let version: String = Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String
-                        cell.detailTextLabel?.text = version
-                        cell.detailTextLabel?.textColor = Color.gray
-                    }
+//                <<< CheckRow("Changelog") { row in
+//                        row.title = row.tag
+//
+//                    }.cellUpdate { cell, row in
+//                        cell.accessoryType = .disclosureIndicator
+//                        cell.textLabel?.textColor = .black
+//                        cell.textLabel?.textAlignment = .left
+//                        let version: String = Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String
+//                        cell.detailTextLabel?.text = version
+//                        cell.detailTextLabel?.textColor = Color.gray
+//                    }
         +++ Section()
                 <<< ButtonRow("Sign Out") { row in
                         row.title = row.tag
@@ -133,6 +137,7 @@ class SettingsVC: FormViewController {
                     }.onCellSelection { cell, row in
                         self.handleSignOut()
                     }
+        +++ Section("Version \(Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String)")
         
     }
     

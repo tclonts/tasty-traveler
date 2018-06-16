@@ -44,5 +44,8 @@ target 'TastyTraveler' do
   pod 'TagCellLayout', :git => 'https://github.com/riteshhgupta/TagCellLayout.git'
   
   pod 'Eureka'
+  
+  pod 'Fabric', '~> 1.7.7'
+  pod 'Crashlytics', '~> 3.10.2'
 
 end

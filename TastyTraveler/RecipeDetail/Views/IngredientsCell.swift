@@ -63,7 +63,7 @@ class IngredientsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        delegate?.resizeCollectionView(forHeight: self.tableView.contentSize.height, cell: self)
+        delegate?.resizeCollectionView(forHeight: self.tableView.contentSize.height + adaptConstant(60), cell: self)
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -91,19 +91,7 @@ class IngredientsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
         cell.label.attributedText = NSAttributedString(string: text, attributes: attributes)
     }
     var isInTableView = false
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        if scrollView == self.tableView {
-//        }
-        print("SCROLL TABLE: \(tableView.contentOffset.y)")
-        if tableView.contentOffset.y < 0 { isInTableView = true }
-        
-        if isInTableView {
-            scrollView.isScrollEnabled = true
-            isInTableView = false
-        } else {
-            scrollView.isScrollEnabled = tableView.contentOffset.y > 0
-        }
-    }
+    
 }
 
 class IngredientCell: UITableViewCell {

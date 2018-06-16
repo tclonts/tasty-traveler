@@ -165,7 +165,7 @@ class CreateRecipeVC: UIViewController {
         if let selectedTags = formView.tagsCollectionView.indexPathsForSelectedItems {
             let tagIndexes = selectedTags.map { $0.item }
             var tags = [String]()
-            tagIndexes.forEach { tags.append(tagsDataSource.tags[$0]) }
+            tagIndexes.forEach { tags.append(Tag.allValues[$0]) }
             recipeDictionary[Recipe.tagsKey] = tags
         }
         
@@ -336,7 +336,7 @@ class CreateRecipeVC: UIViewController {
             if let selectedTags = self.formView.tagsCollectionView.indexPathsForSelectedItems {
                 let tagIndexes = selectedTags.map { $0.item }
                 var tags = [String]()
-                tagIndexes.forEach { tags.append(self.tagsDataSource.tags[$0]) }
+                tagIndexes.forEach { tags.append(Tag.allValues[$0]) }
                 recipeDictionary[Recipe.tagsKey] = tags
             }
             
@@ -750,21 +750,15 @@ class StepsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate, Tex
 }
 
 class TagsDataSource: NSObject, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    var tags = ["Vegan",
-                "Gluten-free",
-                "Vegetarian",
-                "Whole 30",
-                "Paleo",
-                "Organic"]
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
+        return Tag.allValues.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tagCell", for: indexPath) as! TagCell
         
-        let tag = tags[indexPath.item]
+        let tag = Tag.allValues[indexPath.item]
         
         let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: Color.lightGray])
 //        cell.tagString = tag
@@ -784,7 +778,7 @@ class TagsDataSource: NSObject, UICollectionViewDataSource, UICollectionViewDele
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let attributedString = NSAttributedString(string: tags[indexPath.row], attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: Color.lightGray])
+        let attributedString = NSAttributedString(string: Tag.allValues[indexPath.row], attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: Color.lightGray])
         return CGSize(width: attributedString.size().width + adaptConstant(24), height: collectionView.frame.height)
     }
 }

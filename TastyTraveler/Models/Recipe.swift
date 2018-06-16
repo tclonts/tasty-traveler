@@ -157,4 +157,8 @@ enum Tag: String {
     case budget = "Budget"
     case paleo = "Paleo"
     case organic = "Organic"
+    case nutFree = "Nut-free"
+    case dairyFree = "Dairy-free"
+    
+    static let allValues = [vegetarian.rawValue, vegan.rawValue, glutenFree.rawValue, whole30.rawValue, budget.rawValue, paleo.rawValue, organic.rawValue, nutFree.rawValue, dairyFree.rawValue]
 }

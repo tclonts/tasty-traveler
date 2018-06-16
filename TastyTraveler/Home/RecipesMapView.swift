@@ -9,6 +9,7 @@
 import UIKit
 import MapKit
 import Stevia
+import FirebaseAuth
 
 class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDelegate {
     lazy var backButton: UIButton = {
@@ -97,20 +98,43 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
                             FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
                                 guard let creator = creator else { count += 1; return }
                                 count += 1
-                                let recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
+                                var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
                                 
-                                topRecipes.append(recipe)
-                                
-                                if count == lastCount {
-                                    topRecipes.sort(by: { (r1, r2) -> Bool in
-                                        return r1.recipeScore > r2.recipeScore
-                                    })
+                                guard let userID = Auth.auth().currentUser?.uid else { return }
+                                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                                    if (snapshot.value as? Double) != nil {
+                                        recipe.hasFavorited = true
+                                    } else {
+                                        recipe.hasFavorited = false
+                                    }
                                     
-                                    let top25 = Array(topRecipes.prefix(25))
-                                    top25.forEach({ (recipe) in
-                                        self.mapView.addAnnotation(RecipeAnnotation(recipe: recipe))
+                                    FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                                        if (snapshot.value as? Double) != nil {
+                                            recipe.hasCooked = true
+                                            let timestamp = (snapshot.value as! Double)
+                                            recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
+                                        } else {
+                                            recipe.hasCooked = false
+                                        }
+                                        
+                                    
+                                        topRecipes.append(recipe)
+                                    
+                                        if count == lastCount {
+                                            topRecipes.sort(by: { (r1, r2) -> Bool in
+                                                return r1.recipeScore > r2.recipeScore
+                                            })
+                                        
+                                            let top25 = Array(topRecipes.prefix(25))
+                                            top25.forEach({ (recipe) in
+                                                self.mapView.addAnnotation(RecipeAnnotation(recipe: recipe))
+                                            })
+                                        }
+                                    
                                     })
-                                }
+                                }, withCancel: { (error) in
+                                    print("Failed to fetch favorite info for recipe: ", error)
+                                })
                             })
                         })
                     })
@@ -160,8 +184,12 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
     }
     
     func recipeDetailView(recipe: Recipe) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = recipe
+        if recipe.creator.uid == userID { recipeDetailVC.isMyRecipe = true }
+        recipeDetailVC.isFromFavorites = true
         //recipeDetailVC.formatCookButton()
         recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
         

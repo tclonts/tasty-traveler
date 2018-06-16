@@ -72,7 +72,6 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     let countryFlagImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.height(15).width(22)
-        imageView.image = #imageLiteral(resourceName: "US")
         return imageView
     }()
     
@@ -80,7 +79,6 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         let label = UILabel()
         label.font = ProximaNova.semibold.of(size: 12)
         label.textColor = Color.darkGrayText
-        label.text = "United States"
         return label
     }()
     
@@ -243,7 +241,10 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     var userID: String?
     var user: TTUser? {
         didSet {
-            headerView.usernameLabel.text = user!.username
+            guard headerView != nil else { return }
+            if let username = user?.username {
+                headerView.usernameLabel.text = username
+            }
 
             if let bio = user?.bio, bio != "" {
                 self.headerView.bioLabel.text = bio
@@ -277,6 +278,17 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         return stackView
     }()
     
+    let userHasNoRecipesLabel: UILabel = {
+        let label = UILabel()
+        label.text = "User has not uploaded any recipes."
+        label.font = ProximaNova.semibold.of(size: 20)
+        label.textColor = Color.gray
+        label.isHidden = true
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        return label
+    }()
+    
     @objc func presentCreateRecipeVC() {
         let createRecipeVC = CreateRecipeVC()
         self.present(createRecipeVC, animated: true, completion: nil)
@@ -287,8 +299,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         fetchUserInfo()
         
-        self.view.sv(emptyDataView)
+        self.view.sv(emptyDataView, userHasNoRecipesLabel)
         emptyDataView.centerInContainer()
+        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
         
         if isMyProfile {
             imagePicker = UIImagePickerController()
@@ -337,7 +350,13 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (snapshot) in
             guard let uploadedRecipesDictionary = snapshot.value as? [String:Double] else {
                 self.collectionView!.reloadData()
-                self.emptyDataView.isHidden = self.recipes.count != 0
+                if self.isMyProfile {
+                    self.emptyDataView.isHidden = self.recipes.count != 0
+                } else {
+                    self.userHasNoRecipesLabel.isHidden = false
+                }
+                self.headerView.countryLabel.isHidden = true
+                self.headerView.countryFlagImageView.isHidden = true
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
                 return
             }
@@ -374,8 +393,12 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 })
                 
                 self.collectionView!.reloadData()
-                self.emptyDataView.isHidden = self.recipes.count != 0
-                
+                if self.isMyProfile {
+                    self.emptyDataView.isHidden = self.recipes.count != 0
+                } else {
+                    self.userHasNoRecipesLabel.isHidden = self.recipes.count != 0
+                }
+
                 if let recipeForLocation = self.recipes.last, let countryCode = recipeForLocation.countryCode, let locality = recipeForLocation.locality {
                     self.headerView.countryLabel.text = "\(locality), \(countryCode)"
                     self.headerView.countryFlagImageView.image = UIImage(named: countryCode)
@@ -402,21 +425,44 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             headerView.delegate = self
             collectionView?.addSubview(self.headerView)
 
+            if let username = user?.username {
+                headerView.usernameLabel.text = username
+            }
             
+            if let bio = user?.bio, bio != "" {
+                headerView.bioLabel.text = bio
+                headerView.bioLabel.textColor = Color.darkText
+                headerView.bioLabel.isUserInteractionEnabled = false
+            }
+            
+            if let urlString = user?.avatarURL {
+                headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+            }
+            
+            if FirebaseController.shared.unreadNotificationsCount > 0 {
+                self.headerView.unreadIndicator.isHidden = false
+            } else {
+                self.headerView.unreadIndicator.isHidden = true
+            }
             
             if !isMyProfile {
                 headerView.profilePhotoButton.isHidden = true
                 headerView.settingsButton.isHidden = true
                 headerView.notificationsButton.isHidden = true
+                headerView.unreadIndicator.isHidden = true
+                
+                if let bio = user?.bio, bio != "" {
+                    headerView.bioLabel.text = bio
+                    headerView.bioLabel.textColor = Color.darkText
+                    headerView.bioLabel.isUserInteractionEnabled = false
+                } else {
+                    headerView.bioLabel.text = "No bio"
+                    headerView.bioLabel.textColor = Color.gray
+                    headerView.bioLabel.isUserInteractionEnabled = false
+                }
                 
                 headerView.backButton.isHidden = false
             }
-        }
-        
-        if FirebaseController.shared.unreadNotificationsCount > 0 {
-            self.headerView.unreadIndicator.isHidden = false
-        } else {
-            self.headerView.unreadIndicator.isHidden = true
         }
     }
     
@@ -521,8 +567,12 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 })
                 self.recipes.remove(at: indexPath.item)
                 self.collectionView!.deleteItems(at: [indexPath])
-                self.emptyDataView.isHidden = self.recipes.count != 0
-                
+                if self.isMyProfile {
+                    self.emptyDataView.isHidden = self.recipes.count != 0
+                } else {
+                    self.userHasNoRecipesLabel.isHidden = self.recipes.count != 0
+                }
+
                 ac.dismiss(animated: true, completion: nil)
             }))
             

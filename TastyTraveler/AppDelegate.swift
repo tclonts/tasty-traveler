@@ -27,6 +27,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             fatalError("Invalid Firebase configuration file.")
         }
         
+        SDKApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+        
         FirebaseApp.configure(options: options)
         
         Messaging.messaging().delegate = self
@@ -71,6 +73,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return true
     }
     
+    
+    
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
         print("Registered with FCM with token:", fcmToken)
     }
@@ -108,6 +112,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        AppEventsLogger.activate(application)
+        
         let defaults = UserDefaults.standard
         var numberOfTimesLaunched = defaults.object(forKey: "TimesLaunched") as? Int ?? 0
         numberOfTimesLaunched += 1
@@ -126,7 +132,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
+    
+    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
+        return SDKApplicationDelegate.shared.application(app, open: url, options: options)
+    }
 }
+
+
+
 
 func attemptRegisterForNotifications(application: UIApplication, completion: @escaping (Bool) -> ()) {
     guard let userID = Auth.auth().currentUser?.uid else { return }

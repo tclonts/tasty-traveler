@@ -23,14 +23,6 @@ class TagsSection: BaseCell, UICollectionViewDelegate, UICollectionViewDelegateF
     
     var filtersLauncher: FiltersLauncher!
     
-    var tags = ["Vegan",
-                "Gluten-free",
-                "Vegetarian",
-                "Whole 30",
-                "Dairy-free",
-                "Paleo",
-                "Organic"]
-    
     override func setUpViews() {
         super.setUpViews()
         
@@ -49,7 +41,7 @@ class TagsSection: BaseCell, UICollectionViewDelegate, UICollectionViewDelegateF
     
     @objc func deselectFilter(_ notification: Notification) {
         if let filterText = notification.userInfo?["filterText"] as? String {
-            if let index = tags.index(of: filterText) {
+            if let index = Tag.allValues.index(of: filterText) {
                 collectionView.deselectItem(at: IndexPath(item: index, section: 0), animated: true)
             }
         }
@@ -61,7 +53,7 @@ class TagsSection: BaseCell, UICollectionViewDelegate, UICollectionViewDelegateF
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tags.count
+        return Tag.allValues.count
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -73,7 +65,7 @@ class TagsSection: BaseCell, UICollectionViewDelegate, UICollectionViewDelegateF
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tagCell", for: indexPath) as! TagCell
         
-        let tag = tags[indexPath.item]
+        let tag = Tag.allValues[indexPath.item]
         
         let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: Color.lightGray])
         

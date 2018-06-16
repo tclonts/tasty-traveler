@@ -96,7 +96,9 @@ extension MainTabBarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         let index = viewControllers?.index(of: viewController)
         
-        if index == 0 {
+        let currentIndex = tabBarController.selectedIndex
+        
+        if index == 0 && currentIndex == index {
             if let vc = viewController as? UINavigationController, let homeVC = vc.viewControllers[0] as? HomeVC {
                 if homeVC.collectionView!.contentOffset.y > CGFloat(0) {
                     UIView.animate(withDuration: 0.3, animations: {
