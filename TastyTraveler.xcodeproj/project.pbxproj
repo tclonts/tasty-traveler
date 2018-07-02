@@ -40,6 +40,8 @@
 		2A3BE8AF2098D0380095CDA5 /* Question.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3BE8AE2098D0380095CDA5 /* Question.swift */; };
 		2A3BE8B42098D6110095CDA5 /* QuestionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3BE8B32098D6110095CDA5 /* QuestionCell.swift */; };
 		2A476AF820937EE7009C5005 /* GradientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A476AF720937EE7009C5005 /* GradientView.swift */; };
+		2A54424F20D86F3900727BFA /* tada.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2A54424E20D86F3800727BFA /* tada.mp3 */; };
+		2A54425120D949A500727BFA /* AchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A54425020D949A500727BFA /* AchievementVC.swift */; };
 		2A54A964205076FB008255A9 /* proximanova-bold-webfont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2A54A95F205076FA008255A9 /* proximanova-bold-webfont.ttf */; };
 		2A54A965205076FB008255A9 /* proximanova-light-webfont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2A54A960205076FA008255A9 /* proximanova-light-webfont.ttf */; };
 		2A54A966205076FB008255A9 /* proximanova-regular-webfont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2A54A961205076FA008255A9 /* proximanova-regular-webfont.ttf */; };
@@ -126,6 +128,8 @@
 		2A3BE8AE2098D0380095CDA5 /* Question.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Question.swift; sourceTree = "<group>"; };
 		2A3BE8B32098D6110095CDA5 /* QuestionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionCell.swift; sourceTree = "<group>"; };
 		2A476AF720937EE7009C5005 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
+		2A54424E20D86F3800727BFA /* tada.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = tada.mp3; sourceTree = "<group>"; };
+		2A54425020D949A500727BFA /* AchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementVC.swift; sourceTree = "<group>"; };
 		2A54A95F205076FA008255A9 /* proximanova-bold-webfont.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "proximanova-bold-webfont.ttf"; sourceTree = "<group>"; };
 		2A54A960205076FA008255A9 /* proximanova-light-webfont.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "proximanova-light-webfont.ttf"; sourceTree = "<group>"; };
 		2A54A961205076FA008255A9 /* proximanova-regular-webfont.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "proximanova-regular-webfont.ttf"; sourceTree = "<group>"; };
@@ -430,6 +434,7 @@
 				2A0B4DFE2059977E0056F7D5 /* Notifications+Messages */,
 				2A0B4DFF2059978A0056F7D5 /* Profile */,
 				2A805AE32049BF45004BEEF3 /* AppDelegate.swift */,
+				2A54425020D949A500727BFA /* AchievementVC.swift */,
 				2A665ACA2069B2F10014A464 /* FirebaseController.swift */,
 				2A54A969205077CE008255A9 /* MainTabBarController.swift */,
 				2AD34F0B2049C902004F2EF3 /* Models */,
@@ -442,6 +447,7 @@
 				2A54A96D2051915A008255A9 /* Images.xcassets */,
 				2A54A95E205076EF008255A9 /* Fonts */,
 				2A665ACC206C156E0014A464 /* Storyboards */,
+				2A54424E20D86F3800727BFA /* tada.mp3 */,
 				2AC67E2C2087B36A00C0E828 /* states.json */,
 			);
 			path = TastyTraveler;
@@ -624,6 +630,7 @@
 				2A54A967205076FB008255A9 /* proximanova-regularitalic-webfont.ttf in Resources */,
 				2AC67E2D2087B36A00C0E828 /* states.json in Resources */,
 				2A54A968205076FB008255A9 /* proximanova-semibold-webfont.ttf in Resources */,
+				2A54424F20D86F3900727BFA /* tada.mp3 in Resources */,
 				2A54A964205076FB008255A9 /* proximanova-bold-webfont.ttf in Resources */,
 				2A805AE92049BF45004BEEF3 /* Main.storyboard in Resources */,
 				2A54A965205076FB008255A9 /* proximanova-light-webfont.ttf in Resources */,
@@ -671,6 +678,8 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
+				"${BUILT_PRODUCTS_DIR}/Arrow/Arrow.framework",
 				"${BUILT_PRODUCTS_DIR}/Bolts/Bolts.framework",
 				"${BUILT_PRODUCTS_DIR}/CodableFirebase/CodableFirebase.framework",
 				"${BUILT_PRODUCTS_DIR}/Cosmos/Cosmos.framework",
@@ -690,12 +699,17 @@
 				"${BUILT_PRODUCTS_DIR}/RSKImageCropper/RSKImageCropper.framework",
 				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/SteviaLayout/Stevia.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftySound/SwiftySound.framework",
 				"${BUILT_PRODUCTS_DIR}/TagCellLayout/TagCellLayout.framework",
 				"${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
+				"${BUILT_PRODUCTS_DIR}/thenPromise/then.framework",
+				"${BUILT_PRODUCTS_DIR}/ws/ws.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Arrow.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Bolts.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CodableFirebase.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Cosmos.framework",
@@ -715,9 +729,12 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RSKImageCropper.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stevia.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftySound.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TagCellLayout.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/leveldb.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/then.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ws.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -776,6 +793,7 @@
 				2AA252092062A7C300BA9775 /* CreateRecipeVC.swift in Sources */,
 				2A3BE8B42098D6110095CDA5 /* QuestionCell.swift in Sources */,
 				2ABEE58320B31C000000519A /* UserNotificationCell.swift in Sources */,
+				2A54425120D949A500727BFA /* AchievementVC.swift in Sources */,
 				2ABEE58720B360BA0000519A /* LaunchScreenVC.swift in Sources */,
 				2A2D480820A38D6100705D70 /* RecipesMapView.swift in Sources */,
 				2A35F5B220A0E901009899AA /* RatingsView.swift in Sources */,
@@ -957,6 +975,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = TastyTraveler/TastyTraveler.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 88M8AT4J5D;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;

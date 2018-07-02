@@ -47,6 +47,10 @@ class CustomImageView: UIImageView {
             imageCache[url.absoluteString] = photoImage
             
             DispatchQueue.main.async {
+                self.alpha = 0
+                UIView.animate(withDuration: 0.2, animations: {
+                    self.alpha = 1
+                })
                 self.image = photoImage
             }
         }.resume()

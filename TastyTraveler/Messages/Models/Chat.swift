@@ -9,6 +9,6 @@
 import UIKit
 
 struct Chat {
-    var recipe: Recipe
+    var recipe: Recipe?
     var withUser: TTUser
 }

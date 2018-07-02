@@ -154,6 +154,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
         //notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("ReviewsLoaded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         
 //        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
         self.view.sv(loadingRecipesView)
@@ -209,7 +210,9 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         hideEmptyView()
         print("Handling refresh..")
         recipes.removeAll()
-        //collectionView?.reloadData()
+//        searchResultRecipes.removeAll()
+        page = 1
+//        collectionView?.reloadData()
         fetchAllRecipes()
     }
     
@@ -319,12 +322,19 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecipeCell
         print(indexPath)
+        
         if searchResultRecipes.count > 0 {
             let recipe = searchResultRecipes[indexPath.item]
             cell.recipe = recipe
             cell.delegate = self
             cell.setNeedsLayout()
             cell.layoutIfNeeded()
+        }
+        if indexPath.row == self.searchResultRecipes.count - 1 {
+            searchResultRecipes.removeAll()
+            page += 1
+            searchResultRecipes = Array(self.recipes.prefix(upTo: 25 * page))
+            collectionView.reloadData()
         }
         
         return cell
@@ -382,6 +392,8 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         searchField.resignFirstResponder()
         searchField.layoutIfNeeded()
     }
+    
+    var page = 1
 }
 
 extension HomeVC {
@@ -395,6 +407,7 @@ extension HomeVC {
         FirebaseController.shared.ref.child("recipes").observeSingleEvent(of: .value) { (snapshot) in
             
             // Stop refreshing & loading indicators
+            
             self.collectionView?.refreshControl?.endRefreshing()
             
             guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
@@ -404,7 +417,7 @@ extension HomeVC {
             
             recipeIDsDictionary.forEach({ (key, value) in
                 guard let recipeDictionary = value as? [String:Any] else { return }
-                guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String, creatorID != userID else { return }
+                guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
                 
                 group.enter()
                 
@@ -445,19 +458,21 @@ extension HomeVC {
             
             group.notify(queue: .main) {
                 self.recipes = incomingRecipes
-                self.recipes.sort(by: { (r1, r2) -> Bool in
-                    if r1.recipeScore == r2.recipeScore {
-                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
-                    } else {
-                        return r1.recipeScore > r2.recipeScore
-                    }
-                })
+//                self.recipes.sort(by: { (r1, r2) -> Bool in
+//                    if r1.recipeScore == r2.recipeScore {
+//                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+//                    } else {
+//                        return r1.recipeScore > r2.recipeScore
+//                    }
+//                })
                 
                 if self.lastSearchText != "" {
                     self.searchRecipes(text: self.lastSearchText)
                 } else {
-                    self.searchResultRecipes = self.recipes
+                    self.recipes.shuffle()
+                    self.searchResultRecipes = Array(self.recipes.prefix(upTo: 25))
                 }
+                
                 
                 self.collectionView?.reloadData()
                 UIApplication.shared.isNetworkActivityIndicatorVisible = false
@@ -476,9 +491,9 @@ extension HomeVC {
     
     func openMapView() {
         let mapView = RecipesMapView()
-        if filtersLauncher.filtersApplied || lastSearchText != "" {
-            mapView.filteredRecipes = self.searchResultRecipes
-        }
+//        if filtersLauncher.filtersApplied || lastSearchText != "" {
+        mapView.filteredRecipes = self.searchResultRecipes
+//        }
         self.navigationController?.pushViewController(mapView, animated: true)
     }
 }

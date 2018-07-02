@@ -14,7 +14,7 @@ struct Message {
     var toID: String
     var timestamp: Date
     var text: String
-    var recipeID: String
+    var recipeID: String?
     var uid: String
     
     var isUnread = true
@@ -26,7 +26,7 @@ struct Message {
         let timeInterval = dictionary["timestamp"] as! Double
         self.timestamp = Date(timeIntervalSince1970: timeInterval)
         self.text = dictionary["text"] as! String
-        self.recipeID = dictionary["recipeID"] as! String
+        self.recipeID = dictionary["recipeID"] as? String
         self.isUnread = dictionary["unread"] as! Bool
     }
     

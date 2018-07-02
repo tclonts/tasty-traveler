@@ -8,21 +8,17 @@
 
 import UIKit
 
-class ChatMessageCell: UICollectionViewCell {
+class ChatMessageCell: UITableViewCell {
     
     var message: Message?
     
-    let textView: UITextView = {
-        let tv = UITextView()
-        tv.text = "Sample text for now"
-        tv.font = ProximaNova.regular.of(size: 16)
-        tv.textColor = .white
-        tv.backgroundColor = .clear
-//        tv.textContainerInset = UIEdgeInsets.zero
-//        tv.textContainer.lineFragmentPadding = 0
-        tv.isEditable = false
-        tv.isScrollEnabled = false
-        return tv
+    let messageLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.regular.of(size: 16)
+        label.numberOfLines = 0
+        label.textColor = .white
+        label.backgroundColor = .clear
+        return label
     }()
     
     let bubbleView: UIView = {
@@ -46,10 +42,11 @@ class ChatMessageCell: UICollectionViewCell {
     var bubbleViewRightAnchor: NSLayoutConstraint?
     var bubbleViewLeftAnchor: NSLayoutConstraint?
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        sv(bubbleView, textView, profileImageView)
+        
+        sv(bubbleView.sv(messageLabel), profileImageView)
         
         profileImageView.left(adaptConstant(8)).bottom(0).width(adaptConstant(32)).height(adaptConstant(32))
         
@@ -61,12 +58,9 @@ class ChatMessageCell: UICollectionViewCell {
         bubbleViewWidthAnchor = bubbleView.widthAnchor.constraint(equalToConstant: adaptConstant(200))
         bubbleViewWidthAnchor?.isActive = true
         
-        bubbleView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        bubbleView.top(adaptConstant(8)).bottom(0)
         
-        textView.leftAnchor.constraint(equalTo: bubbleView.leftAnchor, constant: adaptConstant(8)).isActive = true
-        textView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
-        textView.rightAnchor.constraint(equalTo: bubbleView.rightAnchor).isActive = true
-        textView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
+        messageLabel.left(adaptConstant(12)).right(adaptConstant(12)).top(adaptConstant(8)).bottom(adaptConstant(8))
     }
     
     required init?(coder aDecoder: NSCoder) {

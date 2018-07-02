@@ -1,4 +1,6 @@
 PODS:
+  - Alamofire (4.5.1)
+  - Arrow (3.0.5)
   - Bolts (1.9.0):
     - Bolts/AppLinks (= 1.9.0)
     - Bolts/Tasks (= 1.9.0)
@@ -98,7 +100,13 @@ PODS:
   - RSKImageCropper (2.0.0)
   - SteviaLayout (4.2.0)
   - SVProgressHUD (2.2.2)
+  - SwiftySound (1.0.0)
   - TagCellLayout (1.0)
+  - thenPromise (4.0.0)
+  - ws (3.1.0):
+    - Alamofire (~> 4.5.1)
+    - Arrow (~> 3.0.5)
+    - thenPromise (~> 4.0.0)
 
 DEPENDENCIES:
   - CodableFirebase
@@ -120,18 +128,27 @@ DEPENDENCIES:
   - RSKImageCropper
   - SteviaLayout
   - SVProgressHUD
+  - SwiftySound
   - TagCellLayout (from `https://github.com/riteshhgupta/TagCellLayout.git`)
+  - ws (from `https://github.com/freshOS/ws`)
 
 EXTERNAL SOURCES:
   TagCellLayout:
     :git: https://github.com/riteshhgupta/TagCellLayout.git
+  ws:
+    :git: https://github.com/freshOS/ws
 
 CHECKOUT OPTIONS:
   TagCellLayout:
     :commit: c8a143743b0761606fd36872808ea239c0215a60
     :git: https://github.com/riteshhgupta/TagCellLayout.git
+  ws:
+    :commit: 7c56bcbd57c6f385b9b0b2b3e2d9c3631dbd90bd
+    :git: https://github.com/freshOS/ws
 
 SPEC CHECKSUMS:
+  Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a
+  Arrow: b696d6173296da330d1a995019db42f693249cd6
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   CodableFirebase: 8310f6336b2f6aba70b023389bee2a104b6a9033
   Cosmos: a6dbd3d0baa0cc8f51f8598f7508d5a09d0a9ade
@@ -163,8 +180,11 @@ SPEC CHECKSUMS:
   RSKImageCropper: d9a1acbc0600bf8decc8f0d21895872c99a9e4cf
   SteviaLayout: 0d2112caea45707695e8c718262c8ea3dd37ef17
   SVProgressHUD: 59b2d3dabacbd051576d21d32293ca7228dc18b0
+  SwiftySound: b9c3370956fd4ed65ed79d45563070077a50a2cd
   TagCellLayout: 2a6e3f022bb85a5fe8ccc71762d2e8ab1bbfd8a3
+  thenPromise: 7093eaa2d2da9fef15240ccc48a213dc2e7befb1
+  ws: b4ba7990810def956eab2af2b97a85646b164fe2
 
-PODFILE CHECKSUM: 9f7a84ad06848dd5d53cbb7c608ccc3dac0d8999
+PODFILE CHECKSUM: f36ae8cb9a1b71aa9ba30999600478912301ffaa
 
 COCOAPODS: 1.3.1

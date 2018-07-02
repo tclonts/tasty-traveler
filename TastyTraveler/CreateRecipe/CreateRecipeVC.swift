@@ -98,7 +98,10 @@ class CreateRecipeVC: UIViewController {
         }
     }
     
+    
+    
     func submitRecipe() {
+        
         guard let photo = formView.photoImageView.image else { return }
         guard let name = formView.recipeNameTextInputView.textView.text else { return }
         guard let servings = servings else { return }
@@ -219,7 +222,15 @@ class CreateRecipeVC: UIViewController {
             print("No location available.")
         }
         
-        self.dismiss(animated: true, completion: nil)
+        self.dismiss(animated: true, completion: {
+            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
+                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+            } else {
+                UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
+                
+                NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
+            }
+        })
     }
     
     func resize(_ image: UIImage) -> Data? {
@@ -385,7 +396,15 @@ class CreateRecipeVC: UIViewController {
                 }
             })
             
-            self.dismiss(animated: true, completion: nil)
+            self.dismiss(animated: true, completion: {
+                if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
+                    print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+                } else {
+                    UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
+                    
+                    NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
+                }
+            })
         }))
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
@@ -435,6 +454,7 @@ extension CreateRecipeVC: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .denied {
+            Analytics.logEvent("location_denied", parameters: ["username": Auth.auth().currentUser!.displayName!, "userID": Auth.auth().currentUser!.uid])
             showLocationDisabledPopUp()
         }
     }

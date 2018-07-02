@@ -11,7 +11,11 @@ import MapKit
 
 class RecipeAnnotation: NSObject, MKAnnotation {
     var recipe: Recipe
-    var coordinate: CLLocationCoordinate2D { return recipe.coordinate! }
+    var coordinate: CLLocationCoordinate2D {
+        
+        return recipe.coordinate!
+        
+    }
     
     init(recipe: Recipe) {
         self.recipe = recipe

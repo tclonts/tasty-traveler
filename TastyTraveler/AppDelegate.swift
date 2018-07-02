@@ -83,7 +83,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         //completionHandler(.alert)
         print("WILL PRESENT NOTIFICATION CALLED")
-        
+   
         let application = UIApplication.shared
         if application.applicationState == .active {
             application.applicationIconBadgeNumber = 0
@@ -113,8 +113,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
         AppEventsLogger.activate(application)
-        
         let defaults = UserDefaults.standard
+        
         var numberOfTimesLaunched = defaults.object(forKey: "TimesLaunched") as? Int ?? 0
         numberOfTimesLaunched += 1
         defaults.set(numberOfTimesLaunched, forKey: "TimesLaunched")
@@ -127,6 +127,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         application.applicationIconBadgeNumber = 0
         FirebaseController.shared.resetBadgeCount()
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        guard let username = Auth.auth().currentUser?.displayName else { return }
+        
+        if let scheduledDate = defaults.object(forKey: "scheduledDate") as? Date {
+            
+            // if scheduled date has passed
+            let currentDate = Date()
+            if scheduledDate <= currentDate {
+        
+                let ref = FirebaseController.shared.ref.child("messages")
+                let childRef = ref.childByAutoId()
+                let toID = userID
+                let fromID = "Zzk10HjWRWOXlBnCmbK2STYBj2N2"// Tasty Traveler account uid
+                let timestamp = currentDate.timeIntervalSince1970
+                
+                let values: [String:Any] = ["toID": toID,
+                                            "fromID": fromID,
+                                            "timestamp": timestamp,
+                                            "text": "Hello \(username), thank you for joining Tasty Traveler, a place where people can cook, share, and communicate with one another about everyone's favorite thing...food. \n\nWe want to let you know that Tasty Traveler will never flood your email inbox with spam mail, and will never use your info for anything outside of Tasty Traveler. \n\nWe welcome and encourage you to be an active member of this community and share your talent with the world! By contributing recipes or cooking recipes created by others, you are helping to build a better community for all of us here. \n\nAlso, this communication portal is for you to give us your feedback and send us any ideas you have about how to improve the overall experience of Tasty Traveler. \n\nIf you have any questions, please ask them here. We'd love to hear from you. \n\nThank you and have fun discovering and cooking delicious recipes.",
+                                            "unread": true]
+                
+                childRef.updateChildValues(values) { (error, ref) in
+                    if let error = error { print(error); return }
+                    
+                    let userMessagesRef = FirebaseController.shared.ref.child("userMessages").child(fromID).child(toID)
+                    let messageID = childRef.key
+                    userMessagesRef.updateChildValues([messageID: true])
+                    
+                    let recipientUserMessagesRef = FirebaseController.shared.ref.child("userMessages").child(toID).child(fromID)
+                    recipientUserMessagesRef.updateChildValues([messageID: true])
+                }
+                defaults.removeObject(forKey: "scheduledDate")
+            }
+        } else {
+            print("NO SCHEDULED DATE")
+        }
     }
     
     func applicationWillTerminate(_ application: UIApplication) {

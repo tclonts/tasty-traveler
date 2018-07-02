@@ -54,10 +54,17 @@ class FirebaseController {
                 guard message.toID == uid else { return }
                 
                 if let chatPartnerID = message.chatPartnerID() {
-                    if let existingMessage = self.messagesDictionary[chatPartnerID]?[message.recipeID],
+                    if let recipeID = message.recipeID {
+                        if let existingMessage = self.messagesDictionary[chatPartnerID]?[recipeID],
                             existingMessage.uid == message.uid {
-                        self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: message.recipeID)
-                        self.attemptReload()
+                            self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: recipeID)
+                            self.attemptReload()
+                        }
+                    } else {
+                        if let existingMessage = self.messagesDictionary[chatPartnerID]?["welcomeMessage"], existingMessage.uid == message.uid {
+                            self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: "welcomeMessage")
+                            self.attemptReload()
+                        }
                     }
                 }
             }
@@ -72,11 +79,18 @@ class FirebaseController {
                 let message = Message(uid: snapshot.key, dictionary: dictionary)
                 
                 if let chatPartnerID = message.chatPartnerID() {
-                    //self.messagesDictionary[chatPartnerID]![message.recipeID] = message
-                    if self.messagesDictionary[chatPartnerID] == nil {
-                        self.messagesDictionary[chatPartnerID] = [message.recipeID: message]
+                    if let recipeID = message.recipeID {
+                        if self.messagesDictionary[chatPartnerID] == nil {
+                            self.messagesDictionary[chatPartnerID] = [recipeID: message]
+                        } else {
+                            self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: recipeID)
+                        }
                     } else {
-                        self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: message.recipeID)
+                        if self.messagesDictionary[chatPartnerID] == nil {
+                            self.messagesDictionary[chatPartnerID] = ["welcomeMessage": message]
+                        } else {
+                            self.messagesDictionary[chatPartnerID]!.updateValue(message, forKey: "welcomeMessage")
+                        }
                     }
                 }
                 self.attemptReload()
@@ -150,7 +164,7 @@ class FirebaseController {
         self.ref.child("users").child(uid).child("badgeCount").setValue(0)
     }
     
-    func storeUsername(_ username: String, uid: String) {
+    func storeUsername(_ username: String, uid: String, completion: @escaping (Bool) -> ()) {
         guard let currentUser = Auth.auth().currentUser else { return }
         let changeRequest = currentUser.createProfileChangeRequest()
         changeRequest.displayName = username
@@ -160,6 +174,8 @@ class FirebaseController {
             } else {
                 self.ref.child("users").child(uid).child("username").setValue(username)
                 self.ref.child("usernames").child(username.lowercased()).setValue(true)
+                
+                completion(true)
                 
                 let isRegisteredForRemoteNotifications = UIApplication.shared.isRegisteredForRemoteNotifications
                 if isRegisteredForRemoteNotifications { self.saveToken() }
@@ -189,7 +205,8 @@ class FirebaseController {
         last25NotificationsQuery.observe(.childAdded) { (snapshot) in
             guard let notificationDict = snapshot.value as? [String:Any] else { return }
             
-            let userID = notificationDict["userID"] as! String
+            guard let userID = notificationDict["userID"] as? String else { return }
+            
             self.fetchUserWithUID(uid: userID, completion: { (user) in
                 guard let user = user else { print("Could not retrieve user data"); return }
                 
@@ -424,6 +441,13 @@ class FirebaseController {
             
             NotificationCenter.default.post(Notification(name: Notification.Name("RecipeUploaded")))
             
+            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool {
+                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+                
+                SVProgressHUD.showSuccess(withStatus: "Recipe uploaded!")
+                SVProgressHUD.dismiss(withDelay: 0.5)
+            }
+            
             if let videoURL = dictionary[Recipe.videoURLKey] as? URL {
                 let _ = videoFileRef.putFile(from: videoURL, metadata: nil) { (videoMetadata, error) in
                     guard let videoMetadata = videoMetadata else { return }
@@ -440,9 +464,6 @@ class FirebaseController {
                     self.ref.child("recipes").child(recipeID).updateChildValues([Recipe.videoURLKey: uploadedVideoURL])
                 }
             }
-            
-            SVProgressHUD.showSuccess(withStatus: "Recipe uploaded!")
-            SVProgressHUD.dismiss(withDelay: 0.5)
         }
     }
 

@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, TextInputAccessoryViewDelegate {
+class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
     
     var chat: Chat? {
         didSet {
@@ -35,7 +35,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 guard let dictionary = snapshot.value as? [String:Any] else { return }
                 var message = Message(uid: snapshot.key, dictionary: dictionary)
                 
-                if message.isUnread, message.toID == uid, self.isViewingChat, message.recipeID == self.chat!.recipe.uid {
+                if message.isUnread, message.toID == uid, self.isViewingChat, message.recipeID == self.chat!.recipe?.uid {
                     message.isUnread = false
                     
                     FirebaseController.shared.ref.child("messages").child(messageID).child("unread").setValue(false)
@@ -58,15 +58,15 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     })
                 }
                 
-                if message.recipeID == self.chat!.recipe.uid {
+                if message.recipeID == self.chat!.recipe?.uid {
                     
                     self.messages.append(message)
                     
                     DispatchQueue.main.async {
-                        self.collectionView?.reloadData()
+                        self.tableView?.reloadData()
                         // scroll to the last index
                         let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
-                        self.collectionView?.scrollToItem(at: indexPath, at: .bottom, animated: true)
+                        self.tableView?.scrollToRow(at: indexPath, at: .bottom, animated: true)
                     }
                 }
             })
@@ -86,7 +86,12 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         recipeLabel.font = ProximaNova.regular.of(size: 12)
         recipeLabel.textColor = Color.gray
         recipeLabel.textAlignment = .center
-        recipeLabel.text = chat?.recipe.name
+        
+        if let recipeName = chat?.recipe?.name {
+            recipeLabel.text = recipeName
+        } else {
+            recipeLabel.isHidden = true
+        }
         
         let stackView = UIStackView(arrangedSubviews: [usernameLabel, recipeLabel])
         stackView.axis = .vertical
@@ -110,6 +115,8 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
             let barButton = UIBarButtonItem(customView: closeButton)
             self.navigationItem.leftBarButtonItem = barButton
+        } else if chat?.recipe == nil {
+            print("NO RECIPE")
         } else {
             let infoButton = UIButton(type: .infoLight)
             infoButton.addTarget(self, action: #selector(infoButtonTapped), for: .touchUpInside)
@@ -117,14 +124,16 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             self.navigationItem.rightBarButtonItem = barButton
         }
         
-        collectionView?.contentInsetAdjustmentBehavior = .never
-        collectionView?.backgroundColor = .white
-        collectionView?.alwaysBounceVertical = true
-        collectionView?.contentInset = UIEdgeInsets(top: adaptConstant(8), left: 0, bottom: adaptConstant(50), right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: adaptConstant(8), left: 0, bottom: adaptConstant(50), right: 0)
-        collectionView?.register(ChatMessageCell.self, forCellWithReuseIdentifier: "chatMessageCell")
-        
-        collectionView?.keyboardDismissMode = .interactive
+        tableView?.separatorStyle = .none
+        tableView?.rowHeight = UITableViewAutomaticDimension
+        tableView?.estimatedRowHeight = 60
+        tableView?.contentInsetAdjustmentBehavior = .never
+        tableView?.backgroundColor = .white
+        tableView?.alwaysBounceVertical = true
+        tableView?.contentInset = UIEdgeInsets(top: adaptConstant(8), left: 0, bottom: adaptConstant(8), right: 0)
+        tableView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        tableView?.register(ChatMessageCell.self, forCellReuseIdentifier: "chatMessageCell")
+        tableView?.keyboardDismissMode = .interactive
         
         navigationController?.navigationBar.tintColor = Color.blackText
         
@@ -166,7 +175,9 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = chat!.recipe
         //recipeDetailVC.formatCookButton()
-        recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: chat!.recipe.photoURL, placeholder: nil)
+        if let photoURL = chat?.recipe?.photoURL {
+            recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: photoURL, placeholder: nil)
+        }
         recipeDetailVC.isFromChatLogVC = true
         recipeDetailVC.isFromFavorites = true
         
@@ -180,7 +191,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     @objc func handleKeyboardDidShow() {
         if messages.count > 0 {
             let indexPath = IndexPath(item: messages.count - 1, section: 0)
-            collectionView?.scrollToItem(at: indexPath, at: .top, animated: true)
+            tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
         }
     }
     
@@ -190,7 +201,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         let toID = chat!.withUser.uid
         let fromID = Auth.auth().currentUser!.uid
         let timestamp = Date().timeIntervalSince1970
-        let recipeID = chat!.recipe.uid
+        let recipeID = chat!.recipe?.uid
         
         let values: [String:Any] = ["toID": toID,
                                     "fromID": fromID,
@@ -225,38 +236,27 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         return true
     }
     
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return messages.count
     }
     
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "chatMessageCell", for: indexPath) as! ChatMessageCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "chatMessageCell", for: indexPath) as! ChatMessageCell
         
-        let message = messages[indexPath.item]
+        let message = messages[indexPath.row]
         cell.message = message
-        cell.textView.text = message.text
+        cell.messageLabel.text = message.text
         
         setUpCell(cell, message: message)
         
-        cell.bubbleViewWidthAnchor?.constant = estimateFrameForText(message.text).width + adaptConstant(32)
-        cell.textView.isHidden = false
+        cell.bubbleViewWidthAnchor?.constant = estimateFrameForText(message.text).width + adaptConstant(24)
+        //cell.textView.isHidden = false
         
         return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        var height: CGFloat = 80
-        
-        let message = messages[indexPath.item]
-        height = estimateFrameForText(message.text).height + adaptConstant(20)
-        
-        let width = UIScreen.main.bounds.width
-        return CGSize(width: width, height: height)
-    }
-    
     func estimateFrameForText(_ text: String) -> CGRect {
-        let size = CGSize(width: 200, height: 1000)
+        let size = CGSize(width: self.view.frame.width * 0.7, height: 1000)
         let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
         return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedStringKey.font: ProximaNova.regular.of(size: 16)], context: nil)
     }
@@ -269,7 +269,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         if message.fromID == Auth.auth().currentUser?.uid {
             // outgoing orange
             cell.bubbleView.backgroundColor = Color.primaryOrange
-            cell.textView.textColor = .white
+            cell.messageLabel.textColor = .white
             cell.profileImageView.isHidden = true
             cell.bubbleView.layer.borderColor = UIColor.clear.cgColor
             cell.bubbleView.layer.borderWidth = 0
@@ -278,7 +278,7 @@ class ChatLogVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         } else {
             // incoming white with border
             cell.bubbleView.backgroundColor = .white
-            cell.textView.textColor = Color.darkText
+            cell.messageLabel.textColor = Color.darkText
             cell.bubbleView.layer.borderColor = Color.lightGray.cgColor
             cell.bubbleView.layer.borderWidth = 1
             cell.profileImageView.isHidden = false

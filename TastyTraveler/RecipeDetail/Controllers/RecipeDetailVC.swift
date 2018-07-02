@@ -39,6 +39,25 @@ class RecipeDetailVC: UIViewController {
             recipeHeaderView.recipeNameLabel.text = recipe?.name
             recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
             
+            if recipe!.coordinate == nil {
+                print("NO LOCATION DATA")
+            } else {
+                recipeHeaderView.countryLabel.isUserInteractionEnabled = true
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showMapView))
+                self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
+                
+                recipeHeaderView.countryLabel.textColor = Color.primaryOrange
+                
+                let globeIcon = UIImageView()
+                globeIcon.image = #imageLiteral(resourceName: "mapIcon")
+                recipeHeaderView.sv(globeIcon)
+                globeIcon.Left == recipeHeaderView.countryLabel.Right + 8
+                globeIcon.CenterY == recipeHeaderView.countryLabel.CenterY
+                globeIcon.isUserInteractionEnabled = true
+                globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
+                globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showMapView)))
+            }
+            
             if userID == recipe!.creator.uid {
                 isMyRecipe = true
                 // my recipe
@@ -319,10 +338,6 @@ class RecipeDetailVC: UIViewController {
                 
         if isMyRecipe { reloadRecipe() }
         
-        recipeHeaderView.countryLabel.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showMapView))
-        self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
-        
         if !isMyRecipe {
             let profileGesture = UITapGestureRecognizer(target: self, action: #selector(showProfileView))
             self.recipeHeaderView.creatorNameLabel.isUserInteractionEnabled = true
@@ -552,7 +567,7 @@ class RecipeDetailVC: UIViewController {
             dismiss(animated: true, completion: nil)
         } else {
             
-            let chatLogVC = ChatLogVC(collectionViewLayout: UICollectionViewFlowLayout())
+            let chatLogVC = ChatLogVC()
             let chat = Chat(recipe: self.recipe!, withUser: self.recipe!.creator)
             chatLogVC.chat = chat
             chatLogVC.isFromRecipeDetailView = true
@@ -795,17 +810,6 @@ class RecipeDetailVC: UIViewController {
                 collectionView
             )
         )
-        
-        recipeHeaderView.countryLabel.textColor = Color.primaryOrange
-        
-        let globeIcon = UIImageView()
-        globeIcon.image = #imageLiteral(resourceName: "mapIcon")
-        recipeHeaderView.sv(globeIcon)
-        globeIcon.Left == recipeHeaderView.countryLabel.Right + 8
-        globeIcon.CenterY == recipeHeaderView.countryLabel.CenterY
-        globeIcon.isUserInteractionEnabled = true
-        globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
-        globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showMapView)))
         
         containerView.fillContainer()
         containerView.Width == scrollView.Width

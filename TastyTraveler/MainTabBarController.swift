@@ -22,6 +22,15 @@ class MainTabBarController: UITabBarController {
         FirebaseController.shared.observeUnreadMessagesCount()
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateTabBadge), name: Notification.Name("UpdateTabBadge"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(showAchievement), name: Notification.Name("FirstRecipe"), object: nil)
+    }
+    
+    @objc func showAchievement() {
+        let achievementVC = AchievementVC()
+        achievementVC.modalPresentationStyle = .overCurrentContext
+        self.present(achievementVC, animated: false) {
+            achievementVC.show()
+        }
     }
     
     @objc func updateTabBadge() {
@@ -110,7 +119,7 @@ extension MainTabBarController: UITabBarControllerDelegate {
         
         if index == 2 {
             let createRecipeVC = CreateRecipeVC()
-            
+
             present(createRecipeVC, animated: true, completion: nil)
             
             return false

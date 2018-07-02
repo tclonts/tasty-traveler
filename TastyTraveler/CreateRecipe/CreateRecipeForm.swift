@@ -10,7 +10,7 @@ import UIKit
 import Stevia
 
 class CreateRecipeForm: UIView {
-
+    
     var createRecipeVC: CreateRecipeVC?
     
     lazy var scrollView: UIScrollView = {
@@ -530,6 +530,7 @@ class CreateRecipeForm: UIView {
         bottomView.Bottom == self.safeAreaLayoutGuide.Bottom
         cancelButton.left(adaptConstant(27)).centerVertically()
         doneButton.right(adaptConstant(27)).centerVertically()
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -623,8 +624,11 @@ class CreateRecipeForm: UIView {
 //        print(createRecipeVC?.ingredientsDataSource.ingredients.count)
     }
     
+    
+    
     @objc fileprivate func doneButtonTapped() {
         print("Done tapped")
+        
         
         self.recipeNameTextInputView.textView.text = self.recipeNameTextInputView.textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
         

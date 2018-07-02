@@ -10,6 +10,7 @@ import UIKit
 import Hero
 import Stevia
 import Firebase
+import UserNotifications
 
 class SignUpVC: UIViewController, UITextFieldDelegate {
 
@@ -460,7 +461,11 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                                 } else {
                                     FirebaseController.shared.ref.child("users").child(uid).child("badgeCount").setValue(0)
                                     FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount").setValue(0)
-                                    FirebaseController.shared.storeUsername(usernameText, uid: uid)
+                                    FirebaseController.shared.storeUsername(usernameText, uid: uid, completion: { (_) in
+                                        self.scheduleNotification()
+                                    })
+                                    UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
+                                                                    
                                     self.view.endEditing(true)
                                     let mainTabBarController = MainTabBarController()
                                     guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
@@ -485,7 +490,11 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                 if isUnique {
                     FirebaseController.shared.ref.child("users").child(uid).child("badgeCount").setValue(0)
                     FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount").setValue(0)
-                    FirebaseController.shared.storeUsername(usernameText, uid: uid)
+                    FirebaseController.shared.storeUsername(usernameText, uid: uid, completion: { (_) in
+                        self.scheduleNotification()
+                    })
+                    UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
+                    
                     self.view.endEditing(true)
                     let mainTabBarController = MainTabBarController()
                     guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
@@ -501,6 +510,31 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                 }
             })
         }
+    }
+    
+    func scheduleNotification() {
+        // Create a notification to be triggered 48 hours later
+        let currentDate = Date()
+        let date = Calendar.current.date(byAdding: .day, value: 2, to: currentDate)
+        let components = Calendar.current.dateComponents([.day, .hour, .minute], from: date!)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        
+        guard let username = Auth.auth().currentUser?.displayName else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Welcome, \(username)"
+        content.body = "Thank you for being a part of the Tasty Traveler community. We've sent you a message in-app. Go check it out!"
+        content.sound = UNNotificationSound.default()
+        content.categoryIdentifier = "welcomeNotification"
+        
+        let request = UNNotificationRequest(identifier: "welcomeNotification", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: { (error) in
+            if let error = error {
+                print("Error: \(error)")
+            }
+            
+            UserDefaults.standard.setValue(date, forKey: "scheduledDate")
+        })
     }
     
     func showError(type: ValidationError, message: String) {

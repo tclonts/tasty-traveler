@@ -47,5 +47,6 @@ target 'TastyTraveler' do
   
   pod 'Fabric', '~> 1.7.7'
   pod 'Crashlytics', '~> 3.10.2'
-
+  pod 'SwiftySound'
+  pod 'ws', :git => 'https://github.com/freshOS/ws'
 end

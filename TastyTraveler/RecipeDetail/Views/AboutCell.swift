@@ -250,8 +250,6 @@ class AboutCell: BaseCell {
         
         reviewsLabel.left(adaptConstant(25))
         
-        delegate?.resizeCollectionView(forHeight: self.scrollView.contentSize.height, cell: self)
-        
         backgroundColor = .white
     }
     

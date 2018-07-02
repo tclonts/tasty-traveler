@@ -78,73 +78,79 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
     func fetchAnnotations() {
         // Fetch list of localities
         // for each locality > query top 25 recipes with locality == locality, sorted by recipeScore > for each recipe > create annotation using recipe
-        if filteredRecipes.isEmpty {
-            FirebaseController.shared.ref.child("localities").observeSingleEvent(of: .value) { (snapshot) in
-                guard let localities = snapshot.value as? [String:Any] else { return }
-                
-                localities.keys.forEach { locality in
-                    let localityQuery = FirebaseController.shared.ref.child("recipes").queryOrdered(byChild: "locality").queryEqual(toValue: locality)
-                    localityQuery.observeSingleEvent(of: .value, with: { (snapshot) in
-                        guard let recipesInLocality = snapshot.value as? [String:Any] else { return }
-                        print(recipesInLocality)
-                        
-                        var topRecipes = [Recipe]()
-                        let lastCount = recipesInLocality.count // 3   1
-                        var count = 0
-                        recipesInLocality.forEach({ (key, value) in
-                            guard let recipeDictionary = value as? [String:Any] else { return }
-                            guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
-                            
-                            FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
-                                guard let creator = creator else { count += 1; return }
-                                count += 1
-                                var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
-                                
-                                guard let userID = Auth.auth().currentUser?.uid else { return }
-                                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
-                                    if (snapshot.value as? Double) != nil {
-                                        recipe.hasFavorited = true
-                                    } else {
-                                        recipe.hasFavorited = false
-                                    }
-                                    
-                                    FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
-                                        if (snapshot.value as? Double) != nil {
-                                            recipe.hasCooked = true
-                                            let timestamp = (snapshot.value as! Double)
-                                            recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
-                                        } else {
-                                            recipe.hasCooked = false
-                                        }
-                                        
-                                    
-                                        topRecipes.append(recipe)
-                                    
-                                        if count == lastCount {
-                                            topRecipes.sort(by: { (r1, r2) -> Bool in
-                                                return r1.recipeScore > r2.recipeScore
-                                            })
-                                        
-                                            let top25 = Array(topRecipes.prefix(25))
-                                            top25.forEach({ (recipe) in
-                                                self.mapView.addAnnotation(RecipeAnnotation(recipe: recipe))
-                                            })
-                                        }
-                                    
-                                    })
-                                }, withCancel: { (error) in
-                                    print("Failed to fetch favorite info for recipe: ", error)
-                                })
-                            })
-                        })
-                    })
-                }
-            }
-        } else {
+//        if filteredRecipes.isEmpty {
+//            FirebaseController.shared.ref.child("localities").observeSingleEvent(of: .value) { (snapshot) in
+//                guard let localities = snapshot.value as? [String:Any] else { return }
+//                
+//                localities.keys.forEach { locality in
+//                    let localityQuery = FirebaseController.shared.ref.child("recipes").queryOrdered(byChild: "locality").queryEqual(toValue: locality)
+//                    localityQuery.observeSingleEvent(of: .value, with: { (snapshot) in
+//                        guard let recipesInLocality = snapshot.value as? [String:Any] else { return }
+//                        print(recipesInLocality)
+//                        
+//                        var topRecipes = [Recipe]()
+//                        let lastCount = recipesInLocality.count // 3   1
+//                        var count = 0
+//                        recipesInLocality.forEach({ (key, value) in
+//                            guard let recipeDictionary = value as? [String:Any] else { return }
+//                            guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
+//                            
+//                            FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
+//                                guard let creator = creator else { count += 1; return }
+//                                count += 1
+//                                var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
+//                                
+//                                if recipe.coordinate == nil {
+//                                    return
+//                                }
+//                                
+//                                guard let userID = Auth.auth().currentUser?.uid else { return }
+//                                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+//                                    if (snapshot.value as? Double) != nil {
+//                                        recipe.hasFavorited = true
+//                                    } else {
+//                                        recipe.hasFavorited = false
+//                                    }
+//                                    
+//                                    FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+//                                        if (snapshot.value as? Double) != nil {
+//                                            recipe.hasCooked = true
+//                                            let timestamp = (snapshot.value as! Double)
+//                                            recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
+//                                        } else {
+//                                            recipe.hasCooked = false
+//                                        }
+//                                        
+//                                    
+//                                        topRecipes.append(recipe)
+//                                    
+//                                        if count == lastCount {
+//                                            topRecipes.sort(by: { (r1, r2) -> Bool in
+//                                                return r1.recipeScore > r2.recipeScore
+//                                            })
+//                                        
+//                                            let top25 = Array(topRecipes.prefix(3))
+//                                            top25.forEach({ (recipe) in
+//                                                self.mapView.addAnnotation(RecipeAnnotation(recipe: recipe))
+//                                            })
+//                                        }
+//                                    
+//                                    })
+//                                }, withCancel: { (error) in
+//                                    print("Failed to fetch favorite info for recipe: ", error)
+//                                })
+//                            })
+//                        })
+//                    })
+//                }
+//            }
+//        } else {
             filteredRecipes.forEach({ (recipe) in
-                self.mapView.addAnnotation(RecipeAnnotation(recipe: recipe))
+                if recipe.coordinate != nil {
+                    self.mapView.addAnnotation(RecipeAnnotation(recipe: recipe))
+                }
             })
-        }
+//        }
     }
     
     @objc func backButtonTapped() {

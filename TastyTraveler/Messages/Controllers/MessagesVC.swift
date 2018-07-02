@@ -96,16 +96,21 @@ class MessagesVC: UITableViewController {
         SVProgressHUD.show()
         FirebaseController.shared.fetchUserWithUID(uid: chatPartnerID) { (user) in
             guard let user = user else { return }
-            FirebaseController.shared.fetchRecipeWithUID(uid: message.recipeID, completion: { (recipe) in
-                guard let recipe = recipe else { return }
-                let chat = Chat(recipe: recipe, withUser: user)
+            if let recipeID = message.recipeID {
+                FirebaseController.shared.fetchRecipeWithUID(uid: recipeID, completion: { (recipe) in
+                    guard let recipe = recipe else { return }
+                    let chat = Chat(recipe: recipe, withUser: user)
+                    self.showChatControllerForChat(chat)
+                })
+            } else {
+                let chat = Chat(recipe: nil, withUser: user)
                 self.showChatControllerForChat(chat)
-            })
+            }
         }
     }
     
     func showChatControllerForChat(_ chat: Chat) {
-        let chatLogVC = ChatLogVC(collectionViewLayout: UICollectionViewFlowLayout())
+        let chatLogVC = ChatLogVC()
         chatLogVC.chat = chat
         chatLogVC.isFromRecipeDetailView = false
         navigationController?.pushViewController(chatLogVC, animated: true)

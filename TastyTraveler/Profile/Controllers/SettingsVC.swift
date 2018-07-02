@@ -94,15 +94,11 @@ class SettingsVC: FormViewController {
                         cell.textLabel?.textAlignment = .left
                         cell.textLabel?.textColor = .black
                     }.onCellSelection { cell, row in
-                        if #available(iOS 10.3, *) {
-                            SKStoreReviewController.requestReview()
-                        } else {
-                            if let reviewURL = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1345041207?mt=8"), UIApplication.shared.canOpenURL(reviewURL) {
-                                if #available(iOS 10.0, *) {
-                                    UIApplication.shared.open(reviewURL, options: [:], completionHandler: nil)
-                                } else {
-                                    UIApplication.shared.openURL(reviewURL)
-                                }
+                        if let reviewURL = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1345041207?mt=8"), UIApplication.shared.canOpenURL(reviewURL) {
+                            if #available(iOS 10.0, *) {
+                                UIApplication.shared.open(reviewURL, options: [:], completionHandler: nil)
+                            } else {
+                                UIApplication.shared.openURL(reviewURL)
                             }
                         }
                     }
@@ -141,6 +137,14 @@ class SettingsVC: FormViewController {
         
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if #available(iOS 10.3, *) {
+            SKStoreReviewController.requestReview()
+        }
+    }
+    
     func fetchProviders() {
         guard let currentUser = Auth.auth().currentUser else { return }
         
@@ -149,29 +153,31 @@ class SettingsVC: FormViewController {
             accountRow.evaluateDisabled()
         }
         
-        Auth.auth().fetchProviders(forEmail: currentUser.email!) { (providers, error) in
-            if let providers = providers {
-                if providers.count == 1 && providers.contains("facebook.com") {
-                    // using facebook
-                    // show username
-                    self.accountVC.facebookLinked = true
-                    self.accountVC.showEmail = false
-                } else if providers.count == 2 {
-                    // using facebook and email
-                    // show username, email, password, and change password
-                    self.accountVC.facebookLinked = true
-                    self.accountVC.showEmail = true
-                } else {
-                    // using email
-                    // show username, email, link facebook, password, and change password
-                    self.accountVC.facebookLinked = false
-                    self.accountVC.showEmail = true
+        if let userEmail = currentUser.email {
+            Auth.auth().fetchProviders(forEmail: userEmail) { (providers, error) in
+                if let providers = providers {
+                    if providers.count == 1 && providers.contains("facebook.com") {
+                        // using facebook
+                        // show username
+                        self.accountVC.facebookLinked = true
+                        self.accountVC.showEmail = false
+                    } else if providers.count == 2 {
+                        // using facebook and email
+                        // show username, email, password, and change password
+                        self.accountVC.facebookLinked = true
+                        self.accountVC.showEmail = true
+                    } else {
+                        // using email
+                        // show username, email, link facebook, password, and change password
+                        self.accountVC.facebookLinked = false
+                        self.accountVC.showEmail = true
+                    }
                 }
-            }
-            
-            if let accountRow = self.form.rowBy(tag: "Account") {
-                accountRow.disabled = false
-                accountRow.evaluateDisabled()
+                
+                if let accountRow = self.form.rowBy(tag: "Account") {
+                    accountRow.disabled = false
+                    accountRow.evaluateDisabled()
+                }
             }
         }
     }
@@ -473,8 +479,11 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                             })
                         }
                     }.onChange { row in
-                        if row.value != self.email! {
-                            self.newEmail = row.value
+                        if let email = self.email {
+                            
+                            if row.value != email {
+                                self.newEmail = row.value
+                            }
                         }
                 }
                 +++ Section()
@@ -733,7 +742,9 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                 if result {
                     let usernameToRemove = self.username?.lowercased()
                     FirebaseController.shared.ref.child("usernames").child(usernameToRemove!).removeValue()
-                    FirebaseController.shared.storeUsername(newUsername, uid: user.uid)
+                    FirebaseController.shared.storeUsername(newUsername, uid: user.uid, completion: { (_) in
+                        print("username stored")
+                    })
                     
                     NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
 
