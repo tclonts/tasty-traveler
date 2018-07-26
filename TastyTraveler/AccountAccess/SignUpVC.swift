@@ -11,6 +11,7 @@ import Hero
 import Stevia
 import Firebase
 import UserNotifications
+import FacebookCore
 
 class SignUpVC: UIViewController, UITextFieldDelegate {
 
@@ -464,10 +465,14 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                                     FirebaseController.shared.storeUsername(usernameText, uid: uid, completion: { (_) in
                                         self.scheduleNotification()
                                     })
-                                    UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
+                                    //UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
                                                                     
                                     self.view.endEditing(true)
                                     let mainTabBarController = MainTabBarController()
+                                    
+                                    let registrationEvent = AppEvent.completedRegistration(registrationMethod: "email", valueToSum: 1.0, extraParameters: ["userID": uid])
+                                    AppEventsLogger.log(registrationEvent)
+                                    
                                     guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
                                     
                                     appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
@@ -493,10 +498,14 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                     FirebaseController.shared.storeUsername(usernameText, uid: uid, completion: { (_) in
                         self.scheduleNotification()
                     })
-                    UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
+                    //UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
                     
                     self.view.endEditing(true)
                     let mainTabBarController = MainTabBarController()
+                    
+                    let registrationEvent = AppEvent.completedRegistration(registrationMethod: "facebook", valueToSum: 1.0, extraParameters: ["userID": uid])
+                    AppEventsLogger.log(registrationEvent)
+                    
                     guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
                     
                     appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
@@ -515,7 +524,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
     func scheduleNotification() {
         // Create a notification to be triggered 48 hours later
         let currentDate = Date()
-        let date = Calendar.current.date(byAdding: .day, value: 2, to: currentDate)
+        let date = Calendar.current.date(byAdding: .hour, value: 2, to: currentDate)
         let components = Calendar.current.dateComponents([.day, .hour, .minute], from: date!)
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         

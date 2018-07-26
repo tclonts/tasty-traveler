@@ -67,6 +67,7 @@ class RecipeHeaderView: UIView {
         let label = UILabel()
         label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(14))
         label.textColor = Color.darkGrayText
+        label.numberOfLines = 0
         return label
     }()
     

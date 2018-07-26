@@ -51,6 +51,9 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
         setUpViews()
         
         fetchAnnotations()
+        
+        let viewContentEvent = AppEvent.viewedContent(contentType: "interactive-map", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: nil)
+        AppEventsLogger.log(viewContentEvent)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {

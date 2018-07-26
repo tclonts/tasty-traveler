@@ -8,6 +8,7 @@
 
 import UIKit
 import Stevia
+import FacebookCore
 
 enum FilterType {
     case meal
@@ -255,23 +256,32 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
 //        if !selectedMeals.isEmpty { FirebaseController.shared.filterRecipesByMeal(types: [selectedMeals]) }
 //        if !selectedLocations.isEmpty { FirebaseController.shared.filterRecipesByLocation(locations: [selectedLocations]) }
         guard homeVC != nil else { return }
-        guard !selectedFilters.isEmpty else { handleDismiss(); filtersApplied = false; homeVC?.handleRefresh(); return }
+        guard !selectedFilters.isEmpty else {
+            handleDismiss()
+            filtersApplied = false
+            homeVC!.searchResultRecipes = Array(homeVC!.recipes.prefix(25));
+            homeVC?.tableView.reloadData()
+            return
+        }
         
-        let data = homeVC!.isSearching ? homeVC!.searchResultRecipes : homeVC!.recipes
+        let data = homeVC!.isSearching ? homeVC!.filteredRecipes : homeVC!.recipes
+        var filteredByMeal = [Recipe]()
+        var filteredByLocation = [Recipe]()
+        var filteredByTag = [Recipe]()
         
         if !selectedMeals.isEmpty {
-            homeVC?.searchResultRecipes = data.filter { selectedMeals.contains($0.meal!) }
+            filteredByMeal = data.filter { selectedMeals.contains($0.meal!) }
         }
         
         if !selectedLocations.isEmpty {
-            homeVC?.searchResultRecipes = data.filter { recipe in
+            filteredByLocation = data.filter { recipe in
                 guard let country = recipe.country else { return false }
                 return selectedLocations.contains(country)
             }
         }
         
         if !selectedTags.isEmpty {
-            homeVC?.searchResultRecipes = data.filter { recipe in
+            filteredByTag = data.filter { recipe in
                 guard let recipeTags = recipe.tags else { return false }
                 let selectedTagsSet = Set(selectedTags)
                 let tagsArray = recipeTags.map { $0.rawValue }
@@ -281,15 +291,17 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
             }
         }
         
+        homeVC?.filteredRecipes = filteredByMeal + filteredByLocation + filteredByTag
+        homeVC?.searchResultRecipes = Array(homeVC!.filteredRecipes.prefix(25))
+        
         filtersApplied = true
         handleDismiss()
-        homeVC?.collectionView?.reloadData()
+        homeVC?.tableView.reloadData()
+        
         if homeVC!.searchResultRecipes.isEmpty {
             homeVC?.showEmptyView()
         } else {
             homeVC?.hideEmptyView()
-//            homeVC?.filterStatusView.isHidden = false
-//            homeVC?.filterStatusView.filtersCollectionView.reloadData()
         }
     }
     

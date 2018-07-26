@@ -9,7 +9,7 @@
 import UIKit
 import Stevia
 
-class HomeHeaderView: UICollectionViewCell {
+class HomeHeaderView: UITableViewCell {
     
     let recipesLabel: UILabel = {
         let label = UILabel()
@@ -35,26 +35,13 @@ class HomeHeaderView: UICollectionViewCell {
         return button
     }()
     
-//    lazy var searchField: UITextField = {
-//        let textField = UITextField()
-//        textField.placeholder = "Search recipes"
-//        textField.borderStyle = .none
-//        textField.returnKeyType = .search
-//        textField.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(14))
-//        textField.textColor = Color.darkText
-//        textField.layer.cornerRadius = 5
-//        textField.layer.masksToBounds = false
-//        textField.layer.shadowRadius = adaptConstant(30)
-//        textField.layer.shadowOffset = CGSize(width: 0, height: 0)
-//        textField.layer.shadowOpacity = 0.1
-//        textField.height(adaptConstant(38))
-//
-//        textField.setLeftPadding(amount: adaptConstant(14))
-//        textField.setRightPadding(amount: adaptConstant(14))
-//
-//        textField.backgroundColor = .white
-//        return textField
-//    }()
+    lazy var sortButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "sortButton"), for: .normal)
+        button.width(adaptConstant(29)).height(adaptConstant(19))
+        button.addTarget(self, action: #selector(showSort), for: .touchUpInside)
+        return button
+    }()
 
     var searchField: UITextField!
     
@@ -69,23 +56,20 @@ class HomeHeaderView: UICollectionViewCell {
     
     lazy var filterStatusView: FilterStatusCell = {
         let view = FilterStatusCell()
-        view.isHidden = true
         view.homeHeaderView = self
+        view.isHidden = true
         return view
     }()
     
+    let searchStackView = UIStackView()
+    let filterSearchStackView = UIStackView()
+    
     weak var homeVC: HomeVC!
-//    weak var searchVC: SearchVC?
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(hideFilterStatus), name: Notification.Name("RemoveAllFiltersNotification"), object: nil)
-    }
-    
-    @objc func hideFilterStatus() {
-        self.filterStatusView.filtersCollectionView.reloadData()
-        self.filterStatusView.isHidden = true
+        selectionStyle = .none
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -93,27 +77,36 @@ class HomeHeaderView: UICollectionViewCell {
     }
     
     func setUpViews() {
+        
+        searchStackView.addArrangedSubview(filterButton)
+        searchStackView.addArrangedSubview(searchField)
+        searchStackView.addArrangedSubview(sortButton)
+        searchStackView.axis = .horizontal
+        searchStackView.spacing = adaptConstant(18)
+        searchStackView.alignment = .center
+        
+        filterStatusView.height(adaptConstant(30))
+        
+        filterSearchStackView.addArrangedSubview(searchStackView)
+        filterSearchStackView.addArrangedSubview(filterStatusView)
+        filterSearchStackView.axis = .vertical
+        filterSearchStackView.spacing = adaptConstant(18)
+        
         sv(recipesLabel,
            mapButton,
-           filterButton,
-           searchField,
-           cancelButton,
-           filterStatusView)
+           filterSearchStackView)
         
         recipesLabel.left(adaptConstant(18)).top(adaptConstant(16))
         mapButton.right(adaptConstant(18))
         alignCenter(mapButton, with: recipesLabel)
-        filterButton.left(adaptConstant(18))
-        filterButton.Top == recipesLabel.Bottom + adaptConstant(18)
-        searchField.Left == filterButton.Right + adaptConstant(18)
-        searchField.right(adaptConstant(18))
-        alignCenter(searchField, with: filterButton)
         
-        cancelButton.right(adaptConstant(32))
+        filterSearchStackView.left(adaptConstant(18)).right(adaptConstant(18))
+        filterSearchStackView.Top == recipesLabel.Bottom + adaptConstant(18)
+        filterSearchStackView.bottom(adaptConstant(18))
+        
+        sv(cancelButton)
+        cancelButton.Right == searchField.Right - adaptConstant(12)
         cancelButton.CenterY == searchField.CenterY
-        
-        filterStatusView.Top == searchField.Bottom + adaptConstant(18)
-        filterStatusView.left(adaptConstant(18)).right(0).height(adaptConstant(30))
     }
     
     override func prepareForReuse() {
@@ -122,21 +115,16 @@ class HomeHeaderView: UICollectionViewCell {
     
     @objc func cancelSearch() {
         homeVC.cancelledSearch = true
-//        searchVC?.view.removeFromSuperview()
-//        searchVC?.removeFromParentViewController()
-//        UIView.animate(withDuration: 0.3, animations: {
-//            self.cancelButton.alpha = 0
-//        }) { (completed) in
-//            self.cancelButton.isHidden = true
-//        }
-        //homeVC.view.endEditing(true)
-        //searchField.text = ""
-        //searchField.resignFirstResponder()
     }
     
     @objc func showFilters() {
         homeVC.showFilters()
     }
+    
+    @objc func showSort() {
+        homeVC.showSort()
+    }
+    
     @objc func openMapView() {
         homeVC.openMapView()
     }

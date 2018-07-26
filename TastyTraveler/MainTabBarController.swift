@@ -51,7 +51,8 @@ class MainTabBarController: UITabBarController {
     
     func setUpViewControllers() {
         // Home
-        let homeNavController = templateNavController(image: #imageLiteral(resourceName: "home"), selectedImage: #imageLiteral(resourceName: "homeSelected"), viewController: HomeVC(collectionViewLayout: UICollectionViewFlowLayout()))
+//        let homeNavController = templateNavController(image: #imageLiteral(resourceName: "home"), selectedImage: #imageLiteral(resourceName: "homeSelected"), viewController: HomeVC(collectionViewLayout: UICollectionViewFlowLayout()))
+        let homeNavController = templateNavController(image: #imageLiteral(resourceName: "home"), selectedImage: #imageLiteral(resourceName: "homeSelected"), viewController: HomeVC())
         
         // Favorites
         let favoritesNavController = templateNavController(image: #imageLiteral(resourceName: "favorites"), selectedImage: #imageLiteral(resourceName: "favoritesSelected"), viewController: FavoritesVC())
@@ -109,9 +110,9 @@ extension MainTabBarController: UITabBarControllerDelegate {
         
         if index == 0 && currentIndex == index {
             if let vc = viewController as? UINavigationController, let homeVC = vc.viewControllers[0] as? HomeVC {
-                if homeVC.collectionView!.contentOffset.y > CGFloat(0) {
+                if homeVC.tableView!.contentOffset.y > CGFloat(0) {
                     UIView.animate(withDuration: 0.3, animations: {
-                        homeVC.collectionView?.contentOffset.y = 0
+                        homeVC.tableView?.contentOffset.y = 0
                     })
                 }
             }
@@ -119,7 +120,7 @@ extension MainTabBarController: UITabBarControllerDelegate {
         
         if index == 2 {
             let createRecipeVC = CreateRecipeVC()
-
+            //let recipeForm = RecipeForm()
             present(createRecipeVC, animated: true, completion: nil)
             
             return false

@@ -9,6 +9,7 @@
 import Firebase
 import UIKit
 import SVProgressHUD
+import FacebookCore
 
 class FirebaseController {
     static var shared = FirebaseController()
@@ -384,12 +385,17 @@ class FirebaseController {
         SVProgressHUD.dismiss(withDelay: 0.5)
     }
     
-    func uploadRecipe(dictionary: [String:Any]) {
+    func updateRecipe(dictionary: [String:Any], uid: String) {
+        guard let currentUser = Auth.auth().currentUser else { return }
+        
+    }
+    
+    func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
         guard let currentUser = Auth.auth().currentUser else { return }
         
         guard let localData = dictionary[Recipe.photoKey] as? Data else { return }
         
-        let recipeID = UUID().uuidString
+        let recipeID = uid ?? UUID().uuidString
         let imageFileRef = storageRef.child("images/\(recipeID)")
         let thumbnailFileRef = storageRef.child("thumbnails/\(recipeID)")
         let videoFileRef = storageRef.child("videos/\(recipeID)")
@@ -399,11 +405,10 @@ class FirebaseController {
             
             guard let photoURL = metadata.downloadURL()?.absoluteString else { print("no download url"); return }
             
-            let timestamp = Date().timeIntervalSince1970
+            let timestamp = timestamp ?? Date().timeIntervalSince1970
             
             let recipeName = dictionary[Recipe.nameKey] as! String
             
-            // Firebase Recipe: name, timestamp, photoURL, creatorID, # servings, # minutes, difficulty, ingredients, steps, countryCode, locality, tags, description,
             var dictionaryToUpload: [String:Any] = [Recipe.nameKey: recipeName,
                                                     "timestamp": timestamp,
                                                     Recipe.photoURLKey: photoURL,
@@ -435,18 +440,26 @@ class FirebaseController {
                 self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).child("recipes").child(recipeID).setValue(true)
             }
             
-            self.ref.child("recipes").child(recipeID).setValue(dictionaryToUpload)
+            self.ref.child("recipes").child(recipeID).updateChildValues(dictionaryToUpload)
             
             self.ref.child("users").child(currentUser.uid).child("uploadedRecipes").child(recipeID).setValue(true)
             
             NotificationCenter.default.post(Notification(name: Notification.Name("RecipeUploaded")))
             
-            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool {
-                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+            if uid == nil {
+                Analytics.logEvent("recipe_uploaded", parameters: ["username": Auth.auth().currentUser!.displayName!, "userID": Auth.auth().currentUser!.uid])
                 
-                SVProgressHUD.showSuccess(withStatus: "Recipe uploaded!")
-                SVProgressHUD.dismiss(withDelay: 0.5)
+                let uploadedRecipeEvent = AppEvent(name: "uploaded-recipe", parameters: ["userID": Auth.auth().currentUser!.uid], valueToSum: 1)
+                AppEventsLogger.log(uploadedRecipeEvent)
             }
+            
+//            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool {
+//                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+//
+//                let string = uid == nil ? "Recipe uploaded" : "Recipe updated"
+//                SVProgressHUD.showSuccess(withStatus: string)
+//                SVProgressHUD.dismiss(withDelay: 0.5)
+//            }
             
             if let videoURL = dictionary[Recipe.videoURLKey] as? URL {
                 let _ = videoFileRef.putFile(from: videoURL, metadata: nil) { (videoMetadata, error) in

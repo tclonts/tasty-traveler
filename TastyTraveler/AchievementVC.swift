@@ -32,7 +32,7 @@ class AchievementVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You posted your first recipe. Thank you for sharing it with us!"
+        label.text = "You posted a recipe. Thank you for sharing it with us!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center

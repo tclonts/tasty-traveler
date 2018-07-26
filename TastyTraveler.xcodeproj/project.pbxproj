@@ -79,6 +79,7 @@
 		2AA252092062A7C300BA9775 /* CreateRecipeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA252082062A7C300BA9775 /* CreateRecipeVC.swift */; };
 		2AA2520D2062BC9500BA9775 /* CreateRecipeForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2520C2062BC9500BA9775 /* CreateRecipeForm.swift */; };
 		2AA2521120647F6F00BA9775 /* TextInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA2521020647F6F00BA9775 /* TextInputView.swift */; };
+		2AAC858620F66A5B006B2C17 /* RecipeForm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AAC858520F66A5B006B2C17 /* RecipeForm.swift */; };
 		2ABEE58120B31BE40000519A /* UserNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ABEE58020B31BE40000519A /* UserNotification.swift */; };
 		2ABEE58320B31C000000519A /* UserNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ABEE58220B31C000000519A /* UserNotificationCell.swift */; };
 		2ABEE58520B31C1F0000519A /* UserNotificationsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ABEE58420B31C1F0000519A /* UserNotificationsVC.swift */; };
@@ -170,6 +171,7 @@
 		2AA252082062A7C300BA9775 /* CreateRecipeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecipeVC.swift; sourceTree = "<group>"; };
 		2AA2520C2062BC9500BA9775 /* CreateRecipeForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRecipeForm.swift; sourceTree = "<group>"; };
 		2AA2521020647F6F00BA9775 /* TextInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInputView.swift; sourceTree = "<group>"; };
+		2AAC858520F66A5B006B2C17 /* RecipeForm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeForm.swift; sourceTree = "<group>"; };
 		2ABEE58020B31BE40000519A /* UserNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotification.swift; sourceTree = "<group>"; };
 		2ABEE58220B31C000000519A /* UserNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationCell.swift; sourceTree = "<group>"; };
 		2ABEE58420B31C1F0000519A /* UserNotificationsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotificationsVC.swift; sourceTree = "<group>"; };
@@ -216,6 +218,7 @@
 				2AA2520C2062BC9500BA9775 /* CreateRecipeForm.swift */,
 				2AA2521020647F6F00BA9775 /* TextInputView.swift */,
 				2AC67E2E2087B52E00C0E828 /* State.swift */,
+				2AAC858520F66A5B006B2C17 /* RecipeForm.swift */,
 			);
 			path = CreateRecipe;
 			sourceTree = "<group>";
@@ -327,8 +330,8 @@
 		2A3BE8AB2098CFC80095CDA5 /* Questions */ = {
 			isa = PBXGroup;
 			children = (
-				2A3BE8B22098D0900095CDA5 /* Views */,
 				2A3BE8B12098D08B0095CDA5 /* Models */,
+				2A3BE8B22098D0900095CDA5 /* Views */,
 				2A3BE8B02098D0810095CDA5 /* Controllers */,
 			);
 			path = Questions;
@@ -468,8 +471,8 @@
 		2A9BA31F2099FE3200AC3E42 /* Messages */ = {
 			isa = PBXGroup;
 			children = (
-				2A9BA3222099FE4600AC3E42 /* Views */,
 				2A9BA3212099FE4100AC3E42 /* Models */,
+				2A9BA3222099FE4600AC3E42 /* Views */,
 				2A9BA3202099FE3B00AC3E42 /* Controllers */,
 			);
 			path = Messages;
@@ -794,6 +797,7 @@
 				2A3BE8B42098D6110095CDA5 /* QuestionCell.swift in Sources */,
 				2ABEE58320B31C000000519A /* UserNotificationCell.swift in Sources */,
 				2A54425120D949A500727BFA /* AchievementVC.swift in Sources */,
+				2AAC858620F66A5B006B2C17 /* RecipeForm.swift in Sources */,
 				2ABEE58720B360BA0000519A /* LaunchScreenVC.swift in Sources */,
 				2A2D480820A38D6100705D70 /* RecipesMapView.swift in Sources */,
 				2A35F5B220A0E901009899AA /* RatingsView.swift in Sources */,

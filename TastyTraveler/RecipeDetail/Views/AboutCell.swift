@@ -86,7 +86,6 @@ class AboutCell: BaseCell {
 
     lazy var tagsCollectionView: UICollectionView = {
         let layout = FlowLayout()
-        //layout.sectionInset = UIEdgeInsetsMake(8, 8, 8, 8)
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -260,9 +259,7 @@ class AboutCell: BaseCell {
         
         reviewsTableView.reloadData()
         
-        if recipeDetailVC!.didSubmitReview {
-            //delegate?.scrollToBottom()
-            
+        if recipeDetailVC!.didSubmitReview {            
             recipeDetailVC?.didSubmitReview = false
         }
         
@@ -335,23 +332,9 @@ class AboutCell: BaseCell {
         ratingsView.oneStarBar.layoutSubviews()
     }
     
-
-    
     @objc func writeReviewButtonTapped() {
         delegate?.presentComposeReviewView()
     }
-    
-    // review: uid, user, title, text, rating, commentIDs, recipeID
-    // comment: uid, user, text, reviewID
-    // firebase
-    //    recipes > recipeID > reviews > reviewID
-    //    reviews > reviewID > info
-    //    users > userID > reviewedRecipes > recipeID = reviewID
-    // collectionview of reviews
-    //     if a Review of a reviewCell has comments => insert a new commentCell below that reviewCell for each comment of the review
-    //                                              => insert a new commentCollection below that reviewCell that has a commentCell for each comment
-    
-    var longString = "start ––– Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ––– end"
     
     var oneLineHeight: CGFloat {
         return 54.0

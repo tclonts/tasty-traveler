@@ -16,6 +16,7 @@ import CoreLocation
 import MapKit
 import Social
 import FacebookShare
+import FacebookCore
 
 class RecipeDetailVC: UIViewController {
     
@@ -82,6 +83,9 @@ class RecipeDetailVC: UIViewController {
             
             fetchReviewData()
 
+            let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe!.uid,
+                                                                                                                                                          "userID": userID])
+            AppEventsLogger.log(viewContentEvent)
         }
     }
     
@@ -361,6 +365,9 @@ class RecipeDetailVC: UIViewController {
     @objc func showMapView() {
         print("SHOW")
         guard let recipe = self.recipe, let coordinate = recipe.coordinate else { return }
+        
+        let viewContentEvent = AppEvent.viewedContent(contentType: "static-map", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe.uid])
+        AppEventsLogger.log(viewContentEvent)
         
         let popup = StaticMapView()
         popup.modalPresentationStyle = .overCurrentContext

@@ -32,18 +32,6 @@ extension Sequence {
 }
 extension UIButton {
     
-//    open override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-//
-//        let inside = super.point(inside: point, with: event)
-//
-//        if inside != isHighlighted && event?.type == .touches {
-//            isHighlighted = inside
-//        }
-//
-//        return inside
-//
-//    }
-    
     func applyGradient(colors: [CGColor]) {
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds

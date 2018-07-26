@@ -10,6 +10,7 @@ import UIKit
 import Cosmos
 import Firebase
 import SVProgressHUD
+import FacebookCore
 
 class ComposeReviewVC: UITableViewController, UITextViewDelegate {
     
@@ -100,6 +101,15 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
             FirebaseController.shared.ref.child("recipes").child(recipeID).child("reviews").updateChildValues([userID: uid])
             
             NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
+            
+            // ANALYTICS
+            let cookedRecipeEvent = AppEvent(name: "cooked-recipe", parameters: ["recipeID": recipeID,
+                                                                                 "userID": userID], valueToSum: 1.0)
+            AppEventsLogger.log(cookedRecipeEvent)
+            
+            let ratedRecipeEvent = AppEvent(name: "rated-recipe", parameters: ["rating": ratingControl.rating,
+                                                                               "userID": userID], valueToSum: 1)
+            AppEventsLogger.log(ratedRecipeEvent)
         }
         
         recipeDetailVC.didSubmitReview = true

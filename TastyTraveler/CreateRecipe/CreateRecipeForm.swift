@@ -47,6 +47,8 @@ class CreateRecipeForm: UIView {
     let ingredientsErrorLabel = ErrorLabel()
     let stepsErrorLabel = ErrorLabel()
     
+    var tagsToSelect: [Int]?
+    
     lazy var cameraButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "cameraButton"), for: .normal)
@@ -535,6 +537,25 @@ class CreateRecipeForm: UIView {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        if let indexes = tagsToSelect {
+            indexes.forEach {
+                tagsCollectionView.selectItem(at: IndexPath(item: $0, section: 0), animated: false, scrollPosition: .left)
+            }
+        }
+        
+        ingredientsTableView.heightConstraint?.constant = ingredientsTableView.contentSize.height
+        stepsTableView.heightConstraint?.constant = stepsTableView.contentSize.height
+        
+        layoutIfNeeded()
+        
+        self.endEditing(true)
+        
+        if let editing = createRecipeVC?.isEditingRecipe, editing { scrollView.setContentOffset(.zero, animated: false) }
     }
     
     @objc fileprivate func tutorialVideoTapped() {

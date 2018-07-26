@@ -75,6 +75,7 @@ class StaticMapView: UIViewController {
             self.overlayView.alpha = 1
             self.backgroundView.transform = .identity
         }, completion: nil)
+        
     }
     
     func handleDismiss() {

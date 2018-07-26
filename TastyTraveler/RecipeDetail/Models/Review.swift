@@ -17,7 +17,7 @@ struct Review {
     var reviewerID: String
     var recipeID: String
     var creationDate: Date!
-    var commentsDictionary: [String:String]?  // user:commentID
+    var commentsDictionary: [String:String]?
     var upvotes = 0
     
     init(uid: String, dictionary: [String:Any]) {

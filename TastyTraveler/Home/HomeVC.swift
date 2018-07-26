@@ -11,19 +11,16 @@ import Stevia
 import Hero
 import FirebaseAuth
 import SVProgressHUD
+import Firebase
+import FacebookCore
 
 private let reuseIdentifier = "recipeCell"
 
-class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class HomeVC: UITableViewController {
     
     var filteredByCountry = [Recipe]()
     var filteredByRecipeName = [Recipe]()
     var filteredByLocality = [Recipe]()
-    
-    lazy var tapGesture: UITapGestureRecognizer = {
-        let gesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        return gesture
-    }()
     
     lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
@@ -55,36 +52,13 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         textField.backgroundColor = .white
         return textField
     }()
-    
-    lazy var testView: UICollectionReusableView = {
-        let view = UICollectionReusableView()
-        view.backgroundColor = .red
-        return view
-    }()
-    
+
     let activityIndicator:  UIActivityIndicatorView = {
         let activityIndicator = UIActivityIndicatorView()
         activityIndicator.activityIndicatorViewStyle = .whiteLarge
         activityIndicator.color = Color.primaryOrange
         activityIndicator.startAnimating()
         return activityIndicator
-    }()
-    
-    lazy var loadingRecipesView: UIStackView = {
-        let containerView = UIStackView()
-        let label = UILabel()
-        
-        label.text = "Loading recipes"
-        label.font = UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))
-        
-        containerView.addArrangedSubview(activityIndicator)
-        containerView.addArrangedSubview(label)
-        containerView.axis = .vertical
-        containerView.alignment = .center
-        containerView.spacing = adaptConstant(8)
-        containerView.isHidden = true
-        
-        return containerView
     }()
     
     lazy var emptyDataView: UIStackView = {
@@ -108,12 +82,6 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         return stackView
     }()
     
-    lazy var refreshControl: UIRefreshControl = {
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
-        return refreshControl
-    }()
-    
     lazy var filtersLauncher: FiltersLauncher = {
         let launcher = FiltersLauncher()
         launcher.homeVC = self
@@ -128,40 +96,32 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     var cancelledSearch = false
     var isCancelButtonShowing = false
     var recipeDataHasChanged = false
+    
+    var previousIndexPath: IndexPath?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.collectionView?.keyboardDismissMode = .interactive
-        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
-        let statusBarColor = UIColor.white
-        statusBarView.backgroundColor = statusBarColor
-        view.sv(statusBarView)
-        
-        self.collectionView!.register(RecipeCell.self, forCellWithReuseIdentifier: reuseIdentifier)
-        self.collectionView?.register(HomeHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "header")
-        self.collectionView?.refreshControl = refreshControl
-        
-        self.navigationController?.navigationBar.isHidden = true
-        self.isHeroEnabled = true
-        
-        
         self.view.backgroundColor = .white
-        self.collectionView?.backgroundColor = .white
+        self.isHeroEnabled = true
+        self.navigationController?.navigationBar.isHidden = true
         
+        
+        // Tableview Setup
+        self.refreshControl = UIRefreshControl()
+        refreshControl?.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        self.tableView.keyboardDismissMode = .interactive
+        self.tableView.register(RecipeCell.self, forCellReuseIdentifier: reuseIdentifier)
+        self.tableView.register(HomeHeaderView.self, forCellReuseIdentifier: "header")
+        self.tableView.rowHeight = UITableViewAutomaticDimension
+        self.tableView.estimatedRowHeight = 200
+        self.tableView.backgroundColor = .white
+        self.tableView.separatorStyle = .none
+        
+        // Notifications
         let notificationCenter = NotificationCenter.default
-        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillHide, object: nil)
-        notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
-        //notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("ReviewsLoaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
-        
-//        self.view.insertSubview(loadingRecipesView, belowSubview: collectionView!)
-        self.view.sv(loadingRecipesView)
-        loadingRecipesView.left(0).right(0)
-        loadingRecipesView.centerVertically()
-        
-        self.collectionView?.delaysContentTouches = true
         
         self.view.sv(emptyDataView)
         emptyDataView.centerInContainer()
@@ -173,7 +133,7 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         super.viewDidAppear(animated)
         
         if recipeDataHasChanged {
-            collectionView?.reloadItems(at: [previousIndexPath!])
+            tableView.reloadRows(at: [previousIndexPath!], with: .none)
             recipeDataHasChanged = false
         }
     }
@@ -182,6 +142,40 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         if self.searchField.isFirstResponder { self.searchField.resignFirstResponder() }
         
         filtersLauncher.showFilters()
+    }
+    
+    var sortQuery: String?
+    var currentlySortingBy = "Random"
+    
+    func showSort() {
+        let ac = UIAlertController(title: "Sort Recipes", message: "Currently sorted by: \(self.currentlySortingBy)", preferredStyle: .actionSheet)
+        ac.addAction(UIAlertAction(title: "Highest Rated", style: .default, handler: { (_) in
+            print("Sort by highest rated")
+            self.sortQuery = "recipeScore"
+            self.currentlySortingBy = "Highest Rated"
+            self.handleRefresh()
+        }))
+        ac.addAction(UIAlertAction(title: "Newest", style: .default, handler: { (_) in
+            print("Sort by newest")
+            self.sortQuery = "timestamp"
+            self.currentlySortingBy = "Newest"
+            self.handleRefresh()
+        }))
+        ac.addAction(UIAlertAction(title: "Most Cooked", style: .default, handler: { (_) in
+            print("Sort by most cooked")
+            self.sortQuery = "reviews"
+            self.currentlySortingBy = "Most Cooked"
+            self.handleRefresh()
+        }))
+        ac.addAction(UIAlertAction(title: "Random", style: .default, handler: { (_) in
+            print("Sort by random")
+            self.sortQuery = nil
+            self.currentlySortingBy = "Random"
+            self.handleRefresh()
+        }))
+        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(ac, animated: true, completion: nil)
     }
     
     func showEmptyView() {
@@ -200,7 +194,6 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     @objc func clearFilters() {
         filtersLauncher.clearFilters()
         filtersLauncher.filtersApplied = false
-//        collectionView?.reloadSections([0])
         
         hideEmptyView()
         handleRefresh()
@@ -209,10 +202,9 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     @objc func handleRefresh() {
         hideEmptyView()
         print("Handling refresh..")
+        self.tableView.refreshControl?.beginRefreshing()
         recipes.removeAll()
-//        searchResultRecipes.removeAll()
-        page = 1
-//        collectionView?.reloadData()
+        refreshPage = 25
         fetchAllRecipes()
     }
     
@@ -237,56 +229,35 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             self.isCancelButtonShowing = false
         }
         cancelButton.removeFromSuperview()
-        self.collectionView?.reloadSections([1])
+        self.tableView.reloadSections([1], with: .automatic)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return adaptConstant(20)
+    // TABLEVIEW FUNCTIONS
+    
+//    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        if section == 0 {
+//            if filtersLauncher.filtersApplied {
+//                return adaptConstant(165)
+//            } else {
+//                return adaptConstant(125)
+//            }
+//        } else {
+//            return 0
+//        }
+//    }
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        if section == 1 {
-            return UIEdgeInsetsMake(0, 0, adaptConstant(18), 0 )
-        } else {
-            return UIEdgeInsets.zero
-        }
-        
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if section == 0 { return 1 }
+        return searchResultRecipes.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        if section == 0 {
-            if filtersLauncher.filtersApplied {
-                return CGSize(width: view.frame.width, height: adaptConstant(165))
-            } else {
-                return CGSize(width: view.frame.width, height: adaptConstant(125))
-            }
-        } else {
-            return CGSize.zero
-        }
-    }
-    
-    
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = view.frame.width - adaptConstant(36) // margins
-        if !recipes.isEmpty {
-            let recipe = self.recipes[indexPath.row]
-            let approximateWidthOfRecipeNameLabel = view.frame.width - adaptConstant(18) - adaptConstant(18) - adaptConstant(20)
-            let size = CGSize(width: approximateWidthOfRecipeNameLabel, height: 1000)
-            let attributes = [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(22))!]
-            let estimatedFrame = NSString(string: recipe.name).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: attributes, context: nil)
-
-            
-            return CGSize(width: width, height: estimatedFrame.height + (width * 0.75) + adaptConstant(80))
-        } else {
-            return CGSize(width: width, height: width)
-        }
-    }
-    
-    override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0 {
-            
-            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as! HomeHeaderView
+            let header = tableView.dequeueReusableCell(withIdentifier: "header", for: indexPath) as! HomeHeaderView
             
             header.homeVC = self
             header.searchField = searchField
@@ -304,54 +275,58 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             
             return header
         } else {
-            return UICollectionReusableView()
+            let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! RecipeCell
+            
+            if searchResultRecipes.count > 0 {
+                let recipe = searchResultRecipes[indexPath.item]
+                cell.recipe = recipe
+                cell.delegate = self
+                cell.setNeedsLayout()
+                cell.layoutIfNeeded()
+            }
+            
+            return cell
         }
-    }
-
-    // MARK: UICollectionViewDataSource
-
-    override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 2
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if section == 0 { return 0 }
-        return searchResultRecipes.count
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecipeCell
-        print(indexPath)
-        
-        if searchResultRecipes.count > 0 {
-            let recipe = searchResultRecipes[indexPath.item]
-            cell.recipe = recipe
-            cell.delegate = self
-            cell.setNeedsLayout()
-            cell.layoutIfNeeded()
-        }
-        if indexPath.row == self.searchResultRecipes.count - 1 {
-            searchResultRecipes.removeAll()
-            page += 1
-            searchResultRecipes = Array(self.recipes.prefix(upTo: 25 * page))
-            collectionView.reloadData()
-        }
-        
-        return cell
     }
     
-    var previousIndexPath: IndexPath?
+    var filteredRecipes = [Recipe]()
     
-    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    var loadingData = false
+    var refreshPage = 25
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if !loadingData && indexPath.row == refreshPage - 1 {
+            loadingData = true
+            loadMore()
+        }
+    }
+    
+    func loadMore() {
+        DispatchQueue.global(qos: .background).async {
+            DispatchQueue.main.async {
+                self.refreshPage += 25
+                if self.isSearching || self.filtersLauncher.filtersApplied {
+                    self.searchResultRecipes = Array(self.filteredRecipes.prefix(self.refreshPage))
+                } else {
+                    self.searchResultRecipes = Array(self.recipes.prefix(self.refreshPage))
+                }
+                self.tableView.reloadData()
+                self.loadingData = false
+            }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if indexPath.section == 0 { return }
         if let previousIndexPath = previousIndexPath {
-            if let previousCell = collectionView.cellForItem(at: previousIndexPath) as? RecipeCell {
+            if let previousCell = tableView.cellForRow(at: previousIndexPath) as? RecipeCell {
                 previousCell.recipeHeaderView.heroID = ""
             }
         }
         
         previousIndexPath = indexPath
         
-        let cell = collectionView.cellForItem(at: indexPath) as! RecipeCell
+        let cell = tableView.cellForRow(at: indexPath) as! RecipeCell
         cell.recipeHeaderView.heroID = "recipeHeaderView"
         
         guard let recipe = cell.recipe else { return }
@@ -359,11 +334,9 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = recipe
         recipeDetailVC.homeVC = self
-        //recipeDetailVC.formatCookButton()
         recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
         recipeDetailVC.recipeHeaderView.starRating.rating = cell.recipeHeaderView.starRating.rating
         recipeDetailVC.recipeHeaderView.starRating.text = cell.recipeHeaderView.starRating.text
-        // matching IDs for: Photo, favoriteButton, flagImageView, countryLabel, creatorLabel, ratingsStars, numberOfRatingsLabel
         
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
         recipeNavigationController.isHeroEnabled = true
@@ -371,129 +344,136 @@ class HomeVC: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         self.present(recipeNavigationController, animated: true, completion: nil)
     }
     
-    @objc func adjustForKeyboard(notification: Notification) {
-        let userInfo = notification.userInfo!
-        
-//        let keyboardScreenEndFrame = (userInfo[UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue
-//        let keyboardViewEndFrame = view.convert(keyboardScreenEndFrame, from: view.window)
-//
-        if notification.name == Notification.Name.UIKeyboardWillHide {
-            //self.view.removeGestureRecognizer(tapGesture)
-            //self.collectionView?.contentInset = UIEdgeInsets.zero
-        } else {
-            //self.view.addGestureRecognizer(tapGesture)
-            //self.collectionView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardViewEndFrame.height, right: 0)
-        }
-        
-        //self.collectionView?.scrollIndicatorInsets = self.collectionView!.contentInset
-    }
-    
-    @objc func handleTap() {
-        searchField.resignFirstResponder()
-        searchField.layoutIfNeeded()
-    }
-    
-    var page = 1
+    var incomingRecipes = [Recipe]()
+
 }
 
 extension HomeVC {
     func fetchAllRecipes() {
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
-        //loadingRecipesView.isHidden = (self.collectionView?.refreshControl?.isRefreshing)!
         
-        var incomingRecipes = [Recipe]()
+        let ref = FirebaseController.shared.ref.child("recipes")
         
+        ref.observeSingleEvent(of: .value) { (snapshot) in
+            self.createRecipes(from: snapshot)
+        }
+    }
+    
+    func getRecipeData(forDict recipeDictionary: [String:Any], key: String, group: DispatchGroup) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
         
-        FirebaseController.shared.ref.child("recipes").observeSingleEvent(of: .value) { (snapshot) in
+        group.enter()
+        
+        FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
+            guard let creator = creator else { group.leave(); self.tableView.refreshControl?.endRefreshing(); return }
             
-            // Stop refreshing & loading indicators
+            var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
             
-            self.collectionView?.refreshControl?.endRefreshing()
-            
-            guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
-            guard let userID = Auth.auth().currentUser?.uid else { return }
-            
-            let group = DispatchGroup()
-            
-            recipeIDsDictionary.forEach({ (key, value) in
-                guard let recipeDictionary = value as? [String:Any] else { return }
-                guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
+            FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                if (snapshot.value as? Double) != nil {
+                    recipe.hasFavorited = true
+                } else {
+                    recipe.hasFavorited = false
+                }
                 
-                group.enter()
-                
-                FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
-                    guard let creator = creator else { group.leave(); return }
+                FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                    if (snapshot.value as? Double) != nil {
+                        recipe.hasCooked = true
+                        let timestamp = (snapshot.value as! Double)
+                        recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
+                    } else {
+                        recipe.hasCooked = false
+                    }
                     
-                    var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
+                    self.incomingRecipes.append(recipe)
                     
-                    FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
-                        if (snapshot.value as? Double) != nil {
-                            recipe.hasFavorited = true
-                        } else {
-                            recipe.hasFavorited = false
-                        }
-                        
-                        FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
-                            if (snapshot.value as? Double) != nil {
-                                recipe.hasCooked = true
-                                let timestamp = (snapshot.value as! Double)
-                                recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
-                            } else {
-                                recipe.hasCooked = false
-                            }
-                            
-                            incomingRecipes.append(recipe)
-                            
-                            group.leave()
-                        
-                        })
-                        
-                        
-                    }, withCancel: { (error) in
-                        print("Failed to fetch favorite info for recipe: ", error)
-                    })
+                    group.leave()
                     
                 })
+                
+                
+            }, withCancel: { (error) in
+                print("Failed to fetch favorite info for recipe: ", error)
+                group.leave()
             })
             
-            group.notify(queue: .main) {
-                self.recipes = incomingRecipes
-//                self.recipes.sort(by: { (r1, r2) -> Bool in
-//                    if r1.recipeScore == r2.recipeScore {
-//                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
-//                    } else {
-//                        return r1.recipeScore > r2.recipeScore
-//                    }
-//                })
-                
-                if self.lastSearchText != "" {
-                    self.searchRecipes(text: self.lastSearchText)
-                } else {
-                    self.recipes.shuffle()
-                    self.searchResultRecipes = Array(self.recipes.prefix(upTo: 25))
-                }
-                
-                
-                self.collectionView?.reloadData()
-                UIApplication.shared.isNetworkActivityIndicatorVisible = false
-                //self.loadingRecipesView.isHidden = true
-                
-                if self.filtersLauncher.filtersApplied {
-                    self.filtersLauncher.applyFilters()
-                    //                        self.filterStatusView.filtersCollectionView.reloadData()
-                    //                        self.filterStatusView.isHidden = false
-                }
-                
-                self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
-            }
+        })
+    }
+    
+    
+    func createRecipes(from snapshot: DataSnapshot) {
+        
+        self.tableView.refreshControl?.endRefreshing()
+        
+        guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
+        let group = DispatchGroup()
+        
+        recipeIDsDictionary.forEach({ (key, value) in
+            guard let recipeDictionary = value as? [String:Any] else { return }
+            getRecipeData(forDict: recipeDictionary, key: key, group: group)
+        })
+        
+        group.notify(queue: .main) {
+            self.updateData()
         }
+    }
+    
+    func updateData() {
+        
+        self.recipes = incomingRecipes
+        
+        if self.lastSearchText != "" {
+            self.searchRecipes(text: self.lastSearchText)
+        } else {
+            if let sortQuery = sortQuery {
+                switch sortQuery {
+                case "timestamp":
+                    self.recipes.sort { (r1, r2) -> Bool in
+                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                    }
+                case "reviews":
+                    self.recipes = incomingRecipes.filter { $0.reviewsDictionary != nil }
+                    self.recipes.sort(by: { (r1, r2) -> Bool in
+                        
+                        if r1.reviewsDictionary!.count == r2.reviewsDictionary!.count {
+                            return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                        } else {
+                            return r1.reviewsDictionary!.count > r2.reviewsDictionary!.count
+                        }
+                    })
+                case "recipeScore":
+                    self.recipes.sort {
+                        if $0.recipeScore == $1.recipeScore {
+                            return $0.creationDate.compare($1.creationDate) == .orderedDescending
+                        } else {
+                            return $0.recipeScore > $1.recipeScore
+                        }
+                    }
+                default:
+                    print("No sort")
+                }
+            } else {
+                self.recipes.shuffle()
+            }
+            
+            self.searchResultRecipes = Array(self.recipes.prefix(25))
+        }
+        
+        self.tableView.refreshControl?.endRefreshing()
+        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+        self.tableView.reloadData()
+        
+        if self.filtersLauncher.filtersApplied { self.filtersLauncher.applyFilters() }
+        
+        self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
+        
+        self.incomingRecipes.removeAll()
     }
     
     func openMapView() {
         let mapView = RecipesMapView()
-//        if filtersLauncher.filtersApplied || lastSearchText != "" {
         mapView.filteredRecipes = self.searchResultRecipes
-//        }
         self.navigationController?.pushViewController(mapView, animated: true)
     }
 }
@@ -503,10 +483,6 @@ extension HomeVC: UITextFieldDelegate {
         if let text = textField.text {
             print(text)
             if text.isEmpty {
-                //isSearching = false
-                
-                //self.collectionView?.reloadSections([1])
-                
                 if textField.subviews.contains(cancelButton) {
                     UIView.animate(withDuration: 0.3, animations: {
                         self.cancelButton.alpha = 0
@@ -546,25 +522,16 @@ extension HomeVC: UITextFieldDelegate {
             let nameMatches = nameWords.filter { $0 == word }.count
             nameCount += nameMatches
             
-//            let nameDifference = nameWords.count - nameMatches
-//            if nameDifference > 0 { nameCount -= nameDifference }
-            
             if recipe.country != nil {
                 let countryWords = recipe.country!.lowercased().components(separatedBy: " ")
                 let countryMatches = countryWords.filter { $0 == word }.count
                 countryCount += countryMatches
-                
-//                let countryDifference = countryWords.count - countryMatches
-//                if countryDifference > 0 { countryCount -= countryDifference }
             }
             
             if recipe.locality != nil {
                 let localityWords = recipe.locality!.lowercased().components(separatedBy: " ")
                 let localityMatches = localityWords.filter { $0 == word }.count
                 localityCount += localityMatches
-                
-//                let localityDifference = localityWords.count - localityMatches
-//                if localityDifference > 0 { localityCount -= localityDifference }
             }
         }
         
@@ -585,9 +552,10 @@ extension HomeVC: UITextFieldDelegate {
             if self.filtersLauncher.filtersApplied {
                 self.filtersLauncher.applyFilters()
             } else {
-                self.searchResultRecipes = self.recipes
+                self.searchResultRecipes = Array(self.recipes.prefix(25))
             }
-            self.collectionView?.reloadSections([1])
+    
+            self.tableView.reloadSections([1], with: .automatic)
         }
         
         return true
@@ -598,22 +566,27 @@ extension HomeVC: UITextFieldDelegate {
         let splitText = text.lowercased().components(separatedBy: " ")
         
         if filtersLauncher.filtersApplied {
-            let matchingRecipes = searchResultRecipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
+            let matchingRecipes = filteredRecipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
             
-            self.searchResultRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
+            self.filteredRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
                 calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
             })
             
         } else {
             let matchingRecipes = recipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
             
-            self.searchResultRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
+            let successful = matchingRecipes.count > 0
+            let searchEvent = AppEvent.searched(contentId: nil, searchedString: text.lowercased(), successful: successful, valueToSum: 1.0, extraParameters: ["numberOfResults": matchingRecipes.count])
+            AppEventsLogger.log(searchEvent)
+            
+            self.filteredRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
                 calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
             })
-
         }
         
-        self.collectionView?.reloadSections([1])
+        self.searchResultRecipes = Array(filteredRecipes.prefix(25))
+        
+        self.tableView.reloadSections([1], with: .automatic)
         self.lastSearchText = text
         self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
     }
@@ -633,39 +606,11 @@ extension HomeVC: UITextFieldDelegate {
             isCancelButtonShowing = false
         }
     }
-    
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-//        if cancelledSearch { cancelledSearch = false; return true }
-//        self.collectionView?.isScrollEnabled = false
-//        let searchVC = SearchVC()
-//        addChildViewController(searchVC)
-////        searchVC.view.frame = CGRect(x: view.bounds.minX, y: adaptConstant(125), width: view.bounds.width, height: view.bounds.height - adaptConstant(125))
-//        //view.addSubview(searchVC.view)
-//        let y = textField.superview!.frame.maxY
-//        print(y)
-//        searchVC.view.frame = CGRect(x: view.bounds.minX, y: y, width: view.bounds.width, height: view.bounds.height - y)
-//        if let searchField = textField as? CustomSearchField {
-//            searchField.homeHeaderView?.searchVC = searchVC
-//            searchField.homeHeaderView?.cancelButton.isHidden = false
-//            UIView.animate(withDuration: 0.3, animations: {
-//                searchField.homeHeaderView?.cancelButton.alpha = 1
-//            })
-//        }
-//        view.addSubview(searchVC.view)
-//        searchVC.didMove(toParentViewController: self)
-//        searchVC.homeVC = self
-        
-        
-        
-        //NotificationCenter.default.post(name: Notification.Name("handleTextChangeNotification"), object: nil, userInfo: ["text": textField.text!])
-        
-        return true
-    }
 }
 
 extension HomeVC: RecipeCellDelegate {
     func didTapFavorite(for cell: RecipeCell) {
-        guard let indexPath = collectionView?.indexPath(for: cell) else { return }
+        guard let indexPath = tableView?.indexPath(for: cell) else { return }
         
         var recipe = self.searchResultRecipes[indexPath.item]
         
@@ -685,7 +630,7 @@ extension HomeVC: RecipeCellDelegate {
             
             self.searchResultRecipes[indexPath.item] = recipe
             
-            self.collectionView?.reloadItems(at: [indexPath])
+            self.tableView.reloadRows(at: [indexPath], with: .none)
             
             NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
         } else {
@@ -713,71 +658,11 @@ extension HomeVC: RecipeCellDelegate {
                     
                     self.searchResultRecipes[indexPath.item] = recipe
                     
-                    self.collectionView?.reloadItems(at: [indexPath])
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
                     
                     NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                 }
             }
         }
-    }
-}
-
-class SearchVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    
-    let tableView = UITableView()
-    var searchResults = [Recipe]()
-    var homeVC: HomeVC?
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleTextChange(_:)), name: Notification.Name("handleTextChangeNotification"), object: nil)
-        
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.keyboardDismissMode = .onDrag
-        
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        
-        self.view.sv(tableView)
-        
-        tableView.fillContainer()
-    }
-    
-    @objc func handleTextChange(_ notification: Notification) {
-        if let userInfo = notification.userInfo {
-            if let text = userInfo["text"] as? String {
-                searchResults = homeVC!.recipes.filter { (recipe) -> Bool in
-                    return recipe.name.lowercased().contains(text.lowercased())
-                }
-                self.tableView.reloadData()
-            }
-        }
-    }
-    
-    func updateSearchResults() {
-        
-    }
-    
-    func loadMore() {
-        
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return searchResults.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        
-        cell.textLabel?.text = searchResults[indexPath.row].name
-        
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let recipe = searchResults[indexPath.row]
-        
-        print(recipe.name)
     }
 }

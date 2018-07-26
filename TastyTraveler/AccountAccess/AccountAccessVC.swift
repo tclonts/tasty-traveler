@@ -332,7 +332,7 @@ class AccountAccessVC: UIViewController {
                                        CLLocationCoordinate2D(latitude: 59.916667, longitude: 10.733333)], // norway - 660225, 648980, 551392, 447965
                             ]
     
-    
+    var recipesUploaded = [String]()
     
     func retrieveRecipes() {
 
@@ -341,8 +341,8 @@ class AccountAccessVC: UIViewController {
         let ws = WS(defaultURL)
         ws.headers = ["X-Mashape-Key": "YOwj5Zy0PamshJakYxjZmpWUeh3Ep1a97grjsnC8615NGeTqBH", "Accept": "application/json"]
 
-        let numberOfRecipes = 50
-        let cuisine = "german"
+        let numberOfRecipes = 100
+        let cuisine = "nordic"
         
 //        for cuisine in cuisineLocations.keys {
         
@@ -365,7 +365,12 @@ class AccountAccessVC: UIViewController {
                             let latitude = randomCoordinate.latitude
                             let longitude = randomCoordinate.longitude
                             
-                            let location = CLLocation(latitude: latitude, longitude: longitude)
+                            let range = -2...2
+                            let randomDistance = Int(arc4random_uniform(UInt32(1 + range.upperBound - range.lowerBound))) + range.lowerBound
+                            let adjustedLatitude = latitude + (Double(randomDistance) * 0.01)
+                            let adjustedLongitude = longitude + (Double(randomDistance) * 0.01)
+                            
+                            let location = CLLocation(latitude: adjustedLatitude, longitude: adjustedLongitude)
                             let geocoder = CLGeocoder()
                             geocoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) in
                                 if error == nil {
@@ -455,6 +460,8 @@ class AccountAccessVC: UIViewController {
                                         // TITLE
                                         if let title = recipedict["title"] as? String {
                                             recipeName = title
+                                            if self.recipesUploaded.contains(title) { return }
+                                            self.recipesUploaded.append(title)
                                         } else { return }
                                         
                                         let timestamp = Date().timeIntervalSince1970
@@ -499,6 +506,8 @@ class AccountAccessVC: UIViewController {
     
     var randomNames = ["Cassy","Jonnie","Karine","Neely","Alex","Maira","Christy","Casie","Earline","Germaine","Vannesa","Odessa","Temika","Herminia","Tyisha","Floretta","Lizabeth","Keira","Coletta","Latosha","Lahoma","Shan","Kristian","Jayne","Holly","Ginny","Mildred","Luna","Lilliana","Ceola","Augustus","John","Vonda","Christiana","Todd","Isidro","Brande","Herbert","Clelia","Olevia","Lauralee","Meryl","Adelia","Rosalyn","Venita","Sherilyn","Shanae","Ervin","Linwood","Yolande","Vinnie","Lazaro","Dede","Juli","Kit","Wilbur","Luis","Janay","Enoch","Trista","Aracely","Mariano","Graciela","Rosemarie","Maxwell","Noelia","Damien","Louella","Terica","Gracia","Pansy","Bridget","Inocencia","Lana","Bula","Modesta","Marlen","Elina","Arnita","Lovie","Kiana","Frances","Clarinda","Loura","Helen","Rosalba","Vernita","Chasidy","Ema","Danyelle","Terence","Albina","Marg","Betty","Hye","Pei","Claudie","Sadie","Mikaela","Krystle","Deadra","Alejandra","Alaine","Francisca","Angelika","Hildegard","Walton","Morris","Andera","Candyce","Renaldo","Celesta","Robby","Taina","Venetta","Sumiko","Shandra","Lakenya","Illa","Reuben","Annalisa","Byron","Jaime","Shaunna","Johnnie","Aisha","Christia","Tim","Jennine","Elva","Laquanda","Tammie","Ehtel","Douglass","Dawne","Amee","Mittie","Rusty","Eduardo","Raul","Vicki","Earleen","Mercy","Judith","Jeni","Ashly","Georgene","Leonarda","Davis","Nanci","Ozie","Vera","Emelda","Jeannette","Sylvia","Monserrate","Charisse","Cherry","Towanda","Linnea","Lanie","Augustine","Latonya","Brice","Kimberli","Ken","Vita","Cruz","Dorian","Joe","Delena","Trent","Jefferson","Damaris","Kisha","Raphael","Rosalina","Eliz","Kali","Lorilee","Beth","Madelene","Aimee","Michiko","Avelina","Macy","August","Golda","Leeann","Nellie","Levi","Debbi","Lekisha","Jeremy","Charity","Thora","Latoria","Sandee","Jackie","Erline","Marcie","Christiane","Annett","Leandra","Felicitas","Annemarie","Blythe","Shad","Yelena","Cornelia","Earnestine","Charlie","Charles","Mara","Janene","Suellen","Julienne","Magnolia","Dani","Trisha","Sharri","Amber","Lilliam","Lacy","Margarita","Berna","Lashaunda","Eleanor","Carlton","Richie","Janella","Lavette","Catherin","Manual","Karolyn","Shon","Georgiana","Bernardina","Jinny","Jasper","Lashay","Oretha","Kala","Concetta","Ernesto","Tennie","Nguyet","Stan","Angel","Mitch","Dominick","Kathie","Eddie","Awilda","Kyle","Mendy","Angelica","Nelida","Nola","Tammara","Ann","Genie","Hortencia","Valrie","Patience","Shaina","Peggie","Laurie","Janiece","Alejandrina","Chloe","Trudi","Keneth","Curt","Charleen","Katelin","Shanda","Coralee","Loretta","Kallie","Marylee","Edward","Norris","Cleora","Katharyn","Irvin","Chiquita","Jesus","Staci","Jone","Deon","Renato","Angelic","Donita","Librada","Basilia","Cora","Dan","Darin","Sima","Lyn","Cami","Setsuko","Sam","Alycia","Emely","Toni","Alise","Cherrie","Natosha","Agnes","Onie","Bernardine","Inger","Sari","Karoline","Mertie","Elise","Slyvia","Loris","Estella","Millard","Alexandria","Cherelle","Kaley","Marissa","Daine","Janette","Jenice","Gregg","Flora","Williams","Lula","Ginger","Brock","James","Suzanna","Shara","Simon","Caryn","Meghan","Carolina","Delmar","Delphia","Dylan","Latesha","Cecille","Birdie","Blanch","Sabine","Jose","Harold","Ricarda","Jacqui","Jo","Tory","Birgit","Sonya","Jere","Joanna","Rashad","Alden","Rutha","Kellye","Antonia","Melani","Jolynn","Shela","Mohammad","Francine","Julianna","Christa","Santa","Quentin","Demarcus","Alysia","Bertie","Charmaine","Hsiu","Kathaleen","Sebrina","Francina","Starr","Luciano","Alaina","Gail","Carrie","Rozella","Lorenza","Quintin","Deja","Louvenia","Lovella","Lanora","Manda","Keesha","Kandi","Mark","Marin","Broderick","Bev","Kimber","Jody","Paige","Gertrud","Viki","Angelina","Cortez","Ira","Hedy","Nathanael","Madonna","Abbie","Teisha","Richelle","Brooke","Mel","Ninfa","Mary","Chae","Celinda","Stefany","Rachelle","Zada","Buford","Bonny","Anibal","Jaimie","Haywood","Layla","Thi","Denver","Rachal","Usha","Delicia","Kiesha","Dewitt","Harland","Suzanne","Janita","Justine","Doloris","Susannah","Wan","Bess","Horace","Maryjane","Waneta","Branden","Christena","Chery","Karry","Maryjo","Darrel","Dotty","Mira","Roman","Hwa","Lakeesha","Lorretta","Roger","Houston","Merrill","Debora","Jena","Elana","Tyrell","Octavio","Marlo","Jaclyn","Holley","Elida","Kendrick","Brigida","Fernanda","Demetria","Marlene","Pattie","Emory","Vivian","Gerardo","Roseanne"]
     
+    var count = 0
+    
     func createUserAndRecipe(name: String, recipe: [String:Any]) {
 
         let password = "fakeuser"
@@ -539,6 +548,9 @@ class AccountAccessVC: UIViewController {
                         FirebaseController.shared.ref.child("recipes").child(recipeID).setValue(updatedRecipe)
                         
                         FirebaseController.shared.ref.child("users").child(user.uid).child("uploadedRecipes").child(recipeID).setValue(true)
+                        
+                        self.count += 1
+                        print("recipe uploaded: \(self.count)")
                     })
                 }
             }

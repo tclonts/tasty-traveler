@@ -9,7 +9,7 @@
 import UIKit
 import Stevia
 
-class RecipeCell: BaseCell {
+class RecipeCell: UITableViewCell {
     
     var recipe: Recipe? {
         didSet {
@@ -46,21 +46,34 @@ class RecipeCell: BaseCell {
         view.layer.shadowOpacity = 0.1
         view.layer.shadowOffset = CGSize(width: 0, height: adaptConstant(10))
         view.layer.shadowRadius = adaptConstant(25)
-        view.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
         return view
     }()
     
     let recipeHeaderView = RecipeHeaderView()
     weak var delegate: RecipeCellDelegate?
     
-    override func setUpViews() {
+    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        
+        self.selectionStyle = .none
+        self.backgroundColor = .clear
+        
+        setUpViews()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setUpViews() {
         sv(shadowView.sv(recipeHeaderView))
         
-        shadowView.fillContainer()
+        shadowView.top(0).left(adaptConstant(18)).right(adaptConstant(18)).bottom(adaptConstant(20))
         recipeHeaderView.fillContainer()
         recipeHeaderView.layer.cornerRadius = adaptConstant(12)
         recipeHeaderView.clipsToBounds = true
         recipeHeaderView.layer.masksToBounds = true
+        recipeHeaderView.backgroundColor = .white
         
         recipeHeaderView.photoImageView.top(0).left(0).right(0)
         recipeHeaderView.photoImageView.Height == recipeHeaderView.photoImageView.Width * 0.75
@@ -81,15 +94,14 @@ class RecipeCell: BaseCell {
         recipeHeaderView.recipeNameLabel.Top == recipeHeaderView.countryFlag.Bottom + adaptConstant(8)
         
         recipeHeaderView.creatorNameLabel.left(adaptConstant(10))
-        recipeHeaderView.creatorNameLabel.Top == recipeHeaderView.recipeNameLabel.Bottom
+        recipeHeaderView.creatorNameLabel.Top == recipeHeaderView.recipeNameLabel.Bottom + adaptConstant(8)
+        recipeHeaderView.creatorNameLabel.bottom(adaptConstant(12))
         
         recipeHeaderView.favoriteButton.right(adaptConstant(14))
         recipeHeaderView.favoriteButton.CenterY == recipeHeaderView.photoImageView.Bottom
         
         recipeHeaderView.starRating.right(adaptConstant(10))
         recipeHeaderView.starRating.CenterY == recipeHeaderView.creatorNameLabel.CenterY
-        
-        recipeHeaderView.creatorNameLabel.bottom(adaptConstant(16))
         
         recipeHeaderView.favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
     }
@@ -105,37 +117,13 @@ class RecipeCell: BaseCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        
+        shadowView.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
+        
         self.layoutIfNeeded()
     }
 }
 
 protocol RecipeCellDelegate: class {
     func didTapFavorite(for cell: RecipeCell)
-}
-
-func starsImageForRating(_ rating: Double) -> UIImage {
-    switch rating {
-    case 0.5:
-        return #imageLiteral(resourceName: "starsOneHalf")
-    case 1.0:
-        return #imageLiteral(resourceName: "starsOne")
-    case 1.5:
-        return #imageLiteral(resourceName: "starsOneAndHalf")
-    case 2.0:
-        return #imageLiteral(resourceName: "starsTwo")
-    case 2.5:
-        return #imageLiteral(resourceName: "starsTwoAndHalf")
-    case 3.0:
-        return #imageLiteral(resourceName: "starsThree")
-    case 3.5:
-        return #imageLiteral(resourceName: "starsThreeAndHalf")
-    case 4.0:
-        return #imageLiteral(resourceName: "starsFour")
-    case 4.5:
-        return #imageLiteral(resourceName: "starsFourAndHalf")
-    case 5.0:
-        return #imageLiteral(resourceName: "starsFive")
-    default:
-        return #imageLiteral(resourceName: "starsZero")
-    }
 }

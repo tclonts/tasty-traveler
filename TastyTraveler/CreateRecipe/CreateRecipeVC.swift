@@ -18,6 +18,7 @@ import CoreLocation
 class CreateRecipeVC: UIViewController {
     
     var recipe: Recipe?
+    var isEditingRecipe = false
     
     let ingredientsDataSource = IngredientsDataSource()
     let stepsDataSource = StepsDataSource()
@@ -51,6 +52,60 @@ class CreateRecipeVC: UIViewController {
         super.viewDidLoad()
         
         states = loadJson(filename: "states")
+        
+        if isEditingRecipe {
+            guard let recipe = recipe else { return }
+            ingredientsDataSource.ingredients = recipe.ingredients
+            stepsDataSource.steps = recipe.steps
+            if let tags = recipe.tags {
+                var indexes = [Int]()
+                for tag in tags {
+                    if let index = Tag.allValues.index(where: { $0 == tag.rawValue }) {
+                        indexes.append(index)
+                    }
+                }
+                formView.tagsToSelect = indexes
+            }
+            formView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
+            formView.photoImageView.isHidden = false
+            formView.containerView.removeConstraint(formView.recipeNameConstraintNoImage)
+            formView.containerView.addConstraint(formView.recipeNameConstraint)
+            formView.recipeNameTextInputView.textView.text = recipe.name
+            formView.recipeNameTextInputView.textView.textColor = Color.darkText
+            if let desc = recipe.description {
+                formView.descriptionTextInputView.textView.text = desc
+                formView.descriptionTextInputView.textView.textColor = Color.darkGrayText
+            }
+            
+            let title = NSAttributedString(string: recipe.meal!, attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            formView.mealTypeButton.setAttributedTitle(title, for: .normal)
+            
+            if let videoURL = recipe.videoURL {
+                self.localVideoURL = URL(string: videoURL)
+                self.formView.tutorialVideoImageView.image = self.getThumbnail(forURL: self.localVideoURL!)
+                self.formView.tutorialVideoImageView.isHidden = false
+                self.formView.containerView.removeConstraint(self.formView.servingsConstraintNoVideo)
+                self.formView.containerView.addConstraint(self.formView.servingsConstraint)
+            }
+            
+            formView.servingsTextField.text = String(recipe.servings)
+            formView.textFieldDidEndEditing(formView.servingsTextField)
+            formView.timeTextField.text = String(recipe.timeInMinutes)
+            formView.textFieldDidEndEditing(formView.timeTextField)
+            
+            switch recipe.difficulty {
+            case "Easy":
+                formView.difficultyControl.selectedSegmentIndex = 0
+            case "Medium":
+                formView.difficultyControl.selectedSegmentIndex = 1
+            default:
+                formView.difficultyControl.selectedSegmentIndex = 2
+            }
+            
+            
+        }
         
         formView.ingredientsTableView.dataSource = ingredientsDataSource
         formView.ingredientsTableView.delegate = ingredientsDataSource
@@ -198,7 +253,11 @@ class CreateRecipeVC: UIViewController {
                             recipeDictionary[Recipe.localityKey] = matchingState.name
                             
                             // Upload with location
-                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                            if self.isEditingRecipe {
+                                FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: self.recipe?.uid, timestamp: self.recipe?.creationDate.timeIntervalSince1970)
+                            } else {
+                                FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: nil, timestamp: nil)
+                            }
                         }
 //                        } else {
 //                            recipeDictionary[Recipe.localityKey] = administrativeArea
@@ -209,7 +268,11 @@ class CreateRecipeVC: UIViewController {
                     } else {
                         recipeDictionary[Recipe.localityKey] = placemark.locality
                         
-                        FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                        if self.isEditingRecipe {
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: self.recipe?.uid, timestamp: self.recipe?.creationDate.timeIntervalSince1970)
+                        } else {
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: nil, timestamp: nil)
+                        }
                     }
                     
                 } else {
@@ -218,18 +281,22 @@ class CreateRecipeVC: UIViewController {
             })
         } else {
             // Upload without location
-            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+            if self.isEditingRecipe {
+                FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: self.recipe?.uid, timestamp: self.recipe?.creationDate.timeIntervalSince1970)
+            } else {
+                FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: nil, timestamp: nil)
+            }
             print("No location available.")
         }
         
         self.dismiss(animated: true, completion: {
-            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
-                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
-            } else {
-                UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
-                
+//            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
+//                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+//            } else {
+//                UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
+//
                 NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
-            }
+//            }
         })
     }
     
@@ -377,7 +444,11 @@ class CreateRecipeVC: UIViewController {
                             recipeDictionary[Recipe.localityKey] = matchingState.name
                             
                             // Upload with location
-                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                            if self.isEditingRecipe {
+                                FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: self.recipe?.uid, timestamp: self.recipe?.creationDate.timeIntervalSince1970)
+                            } else {
+                                FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: nil, timestamp: nil)
+                            }
                         }
                         //                        } else {
                         //                            recipeDictionary[Recipe.localityKey] = administrativeArea
@@ -388,7 +459,11 @@ class CreateRecipeVC: UIViewController {
                     } else {
                         recipeDictionary[Recipe.localityKey] = placemark.locality
                         
-                        FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary)
+                        if self.isEditingRecipe {
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: self.recipe?.uid, timestamp: self.recipe?.creationDate.timeIntervalSince1970)
+                        } else {
+                            FirebaseController.shared.uploadRecipe(dictionary: recipeDictionary, uid: nil, timestamp: nil)
+                        }
                     }
                     
                 } else {
@@ -397,13 +472,13 @@ class CreateRecipeVC: UIViewController {
             })
             
             self.dismiss(animated: true, completion: {
-                if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
-                    print("First recipe has already been uploaded: \(firstRecipeUploaded)")
-                } else {
-                    UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
-                    
+//                if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
+//                    print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+//                } else {
+//                    UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
+//
                     NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
-                }
+//                }
             })
         }))
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))

@@ -534,6 +534,13 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.present(recipeNavigationController, animated: true, completion: nil)
             }))
             
+            ac.addAction(UIAlertAction(title: "Edit", style: .default, handler: { (_) in
+                let createRecipeVC = CreateRecipeVC()
+                createRecipeVC.isEditingRecipe = true
+                createRecipeVC.recipe = recipe
+                self.present(createRecipeVC, animated: true, completion: nil)
+            }))
+            
             ac.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { (_) in
                 
                 FirebaseController.shared.ref.child("recipes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
