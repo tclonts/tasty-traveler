@@ -118,6 +118,14 @@ extension MainTabBarController: UITabBarControllerDelegate {
             }
         }
         
+        if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing, index != 0 {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            present(accountAccessVC, animated: true, completion: nil)
+            
+            return false
+        }
+        
         if index == 2 {
             let createRecipeVC = CreateRecipeVC()
             //let recipeForm = RecipeForm()

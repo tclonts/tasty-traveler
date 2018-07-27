@@ -344,6 +344,8 @@ class SignInVC: UIViewController, UITextFieldDelegate {
                         let mainTabBarController = MainTabBarController()
                         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
                         
+                        UserDefaults.standard.set(false, forKey: "isBrowsing")
+                        
                         appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
                         
                         UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {

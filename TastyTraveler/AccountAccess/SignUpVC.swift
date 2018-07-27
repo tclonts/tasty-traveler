@@ -463,7 +463,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                                     FirebaseController.shared.ref.child("users").child(uid).child("badgeCount").setValue(0)
                                     FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount").setValue(0)
                                     FirebaseController.shared.storeUsername(usernameText, uid: uid, completion: { (_) in
-                                        self.scheduleNotification()
+                                        self.sendWelcomeMessage()
                                     })
                                     //UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
                                                                     
@@ -476,6 +476,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                                     guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
                                     
                                     appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
+                                    
+                                    UserDefaults.standard.set(false, forKey: "isBrowsing")
                                     
                                     UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
                                         appDelegate.window?.rootViewController = mainTabBarController
@@ -496,7 +498,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                     FirebaseController.shared.ref.child("users").child(uid).child("badgeCount").setValue(0)
                     FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount").setValue(0)
                     FirebaseController.shared.storeUsername(usernameText, uid: uid, completion: { (_) in
-                        self.scheduleNotification()
+                        self.sendWelcomeMessage()
                     })
                     //UserDefaults.standard.set(false, forKey: "firstRecipeUploaded")
                     
@@ -508,6 +510,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                     
                     guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
                     
+                    UserDefaults.standard.set(false, forKey: "isBrowsing")
+                    
                     appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
                     
                     UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
@@ -518,6 +522,34 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                     self.showError(type: .username, message: "Username is already taken.")
                 }
             })
+        }
+    }
+    
+    func sendWelcomeMessage() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        guard let username = Auth.auth().currentUser?.displayName else { return }
+        
+        let ref = FirebaseController.shared.ref.child("messages")
+        let childRef = ref.childByAutoId()
+        let toID = userID
+        let fromID = "Zzk10HjWRWOXlBnCmbK2STYBj2N2"// Tasty Traveler account uid
+        let timestamp = Date().timeIntervalSince1970
+        
+        let values: [String:Any] = ["toID": toID,
+                                    "fromID": fromID,
+                                    "timestamp": timestamp,
+                                    "text": "Hello \(username), thank you for joining Tasty Traveler, a place where people can cook, share, and communicate with one another about everyone's favorite thing...food. \n\nWe want to let you know that Tasty Traveler will never flood your email inbox with spam mail, and will never use your info for anything outside of Tasty Traveler. \n\nWe welcome and encourage you to be an active member of this community and share your talent with the world! By contributing recipes or cooking recipes created by others, you are helping to build a better community for all of us here. \n\nAlso, this communication portal is for you to give us your feedback and send us any ideas you have about how to improve the overall experience of Tasty Traveler. \n\nIf you have any questions, please ask them here. We'd love to hear from you. \n\nThank you and have fun discovering and cooking delicious recipes.",
+            "unread": true]
+        
+        childRef.updateChildValues(values) { (error, ref) in
+            if let error = error { print(error); return }
+            
+            let userMessagesRef = FirebaseController.shared.ref.child("userMessages").child(fromID).child(toID)
+            let messageID = childRef.key
+            userMessagesRef.updateChildValues([messageID: true])
+            
+            let recipientUserMessagesRef = FirebaseController.shared.ref.child("userMessages").child(toID).child(fromID)
+            recipientUserMessagesRef.updateChildValues([messageID: true])
         }
     }
     

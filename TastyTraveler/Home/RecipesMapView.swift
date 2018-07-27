@@ -10,6 +10,7 @@ import UIKit
 import MapKit
 import Stevia
 import FirebaseAuth
+import FacebookCore
 
 class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDelegate {
     lazy var backButton: UIButton = {
@@ -51,9 +52,6 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
         setUpViews()
         
         fetchAnnotations()
-        
-        let viewContentEvent = AppEvent.viewedContent(contentType: "interactive-map", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: nil)
-        AppEventsLogger.log(viewContentEvent)
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -193,13 +191,18 @@ class RecipesMapView: UIViewController, MKMapViewDelegate, RecipeCalloutViewDele
     }
     
     func recipeDetailView(recipe: Recipe) {
-        guard let userID = Auth.auth().currentUser?.uid else { return }
         
         let recipeDetailVC = RecipeDetailVC()
         recipeDetailVC.recipe = recipe
-        if recipe.creator.uid == userID { recipeDetailVC.isMyRecipe = true }
+        
+        if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+            
+        } else {
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+            if recipe.creator.uid == userID { recipeDetailVC.isMyRecipe = true }
+        }
+        
         recipeDetailVC.isFromFavorites = true
-        //recipeDetailVC.formatCookButton()
         recipeDetailVC.recipeHeaderView.photoImageView.loadImage(urlString: recipe.photoURL, placeholder: nil)
         
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)

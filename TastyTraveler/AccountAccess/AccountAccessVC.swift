@@ -25,6 +25,26 @@ class AccountAccessVC: UIViewController {
         return imageView
     }()
     
+    lazy var cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: adaptConstant(16), weight: .semibold)
+        button.setTitle("Cancel", for: .normal)
+        
+        button.isHidden = true
+        return button
+    }()
+    
+    lazy var skipButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(skipTapped), for: .touchUpInside)
+        button.setTitle("Skip for now", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: adaptConstant(16), weight: .semibold)
+        return button
+    }()
+    
     let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "tasty traveler"
@@ -33,23 +53,40 @@ class AccountAccessVC: UIViewController {
         return label
     }()
     
-//    lazy var onboardingCollectionVC: OnboardingCollectionVC = {
-//        let layout = UICollectionViewFlowLayout()
-//        layout.scrollDirection = .horizontal
-//        layout.minimumLineSpacing = 0
-//        layout.minimumInteritemSpacing = 0
-//        let vc = OnboardingCollectionVC(collectionViewLayout: layout)
-//        addChildViewController(vc)
-//        vc.didMove(toParentViewController: self)
-//        return vc
-//    }()
-    
-//    let pageControl: UIPageControl = {
-//        let pageControl = UIPageControl()
-//        pageControl.numberOfPages = 3
-//        pageControl.isUserInteractionEnabled = false
-//        return pageControl
-//    }()
+    let needAccountView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        
+        let imageView = UIImageView()
+        imageView.image = #imageLiteral(resourceName: "lock")
+        imageView.width(adaptConstant(70)).height(adaptConstant(90))
+        
+        let label = UILabel()
+        label.text = "An account is required to use this feature."
+        label.font = ProximaNova.semibold.of(size: 24)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        
+        let sublabel = UILabel()
+        sublabel.text = "Please create an account or sign into an existing one."
+        sublabel.textColor = .white
+        sublabel.font = ProximaNova.regular.of(size: 20)
+        sublabel.alpha = 0.85
+        sublabel.textAlignment = .center
+        sublabel.numberOfLines = 0
+        
+        let stackView = UIStackView(arrangedSubviews: [imageView, label, sublabel])
+        stackView.axis = .vertical
+        stackView.spacing = adaptConstant(30)
+        
+        view.sv(stackView)
+        stackView.fillContainer()
+        stackView.alignment = .center
+        
+        view.isHidden = true
+        return view
+    }()
     
     let onboardingView: UIView = {
         let view = UIView()
@@ -214,8 +251,9 @@ class AccountAccessVC: UIViewController {
         self.view.sv(
             backgroundView,
             titleLabel,
-            //onboardingCollectionVC.view,
-            //pageControl,
+            skipButton,
+            cancelButton,
+            needAccountView,
             onboardingView,
             cardView,
             bottomView.sv(
@@ -226,28 +264,28 @@ class AccountAccessVC: UIViewController {
         
         backgroundView.fillContainer()
         
+        skipButton.right(adaptConstant(12))
+        skipButton.Top == view.safeAreaLayoutGuide.Top + adaptConstant(8)
+        
         // Title label
         let fontSize = adaptConstant(45)
-//        let spacing = adaptConstant(38)
         titleLabel.font = UIFont(name: "ProximaNova-Bold", size: fontSize)
         titleLabel.Bottom == onboardingView.Top - adaptConstant(40)
         titleLabel.centerHorizontally()
-        
-        // Onboarding Collection View
-//        onboardingCollectionVC.accountAccessVC = self
-//        onboardingCollectionVC.view.backgroundColor = .clear
-//        onboardingCollectionVC.collectionView?.backgroundColor = .clear
-//        onboardingCollectionVC.view.Top == titleLabel.Bottom + adaptConstant(34)
-//        onboardingCollectionVC.view.fillHorizontally()
-//        onboardingCollectionVC.view.Bottom == bottomView.Top
-//        pageControl.Bottom == onboardingCollectionVC.view.Bottom - spacing
-//        pageControl.centerHorizontally()
+
         if screenHeight == iPhoneXScreenHeight {
             onboardingView.centerInContainer()
+            needAccountView.centerVertically()
         } else {
             onboardingView.Bottom == bottomView.Top - adaptConstant(60)
+            needAccountView.Top == cancelButton.Bottom + adaptConstant(40)
         }
         onboardingView.left(adaptConstant(60)).right(adaptConstant(60))
+        
+        needAccountView.left(adaptConstant(30)).right(adaptConstant(30))
+        
+        cancelButton.left(adaptConstant(12))
+        cancelButton.Top == view.safeAreaLayoutGuide.Top + adaptConstant(12)
         
         // Bottom View
         var bottomHeight = adaptConstant(146)
@@ -274,6 +312,31 @@ class AccountAccessVC: UIViewController {
             signInButton.Top == stackView.Bottom
             signInButton.bottom(0)
         }
+    }
+    
+    func needAccount() {
+        titleLabel.isHidden = true
+        
+        cancelButton.isHidden = false
+        needAccountView.isHidden = false
+        
+        skipButton.isHidden = true
+        onboardingView.isHidden = true
+    }
+    
+    @objc func cancelTapped() {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    @objc func skipTapped() {
+        UserDefaults.standard.set(true, forKey: "isBrowsing")
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        
+        appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
+        
+        UIView.transition(with: appDelegate.window!, duration: 0.5, options: .transitionFlipFromBottom, animations: {
+            appDelegate.window?.rootViewController = MainTabBarController()
+        }, completion: nil)
     }
     
     @objc func signInButtonTapped() {
@@ -317,19 +380,14 @@ class AccountAccessVC: UIViewController {
                             "jewish": [CLLocationCoordinate2D(latitude: 31.783333, longitude: 35.216667),
                                        CLLocationCoordinate2D(latitude: 32.066667, longitude: 34.783333),
                                        CLLocationCoordinate2D(latitude: 32.816667, longitude: 34.983333)],
-//                            "american": [CLLocationCoordinate2D(latitude: 34.05, longitude: -118.25),
-//                                         CLLocationCoordinate2D(latitude: 29.762778, longitude: -95.383056),
-//                                         CLLocationCoordinate2D(latitude: 30.336944, longitude: -81.661389),
-//                                         CLLocationCoordinate2D(latitude: 40.7127, longitude: -74.0059),
-//                                         CLLocationCoordinate2D(latitude: 40.009376, longitude: -75.133346)],
                             "greek": [CLLocationCoordinate2D(latitude: 37.983972, longitude: 23.727806),
                                       CLLocationCoordinate2D(latitude: 40.65, longitude: 22.9),
                                       CLLocationCoordinate2D(latitude: 38.25, longitude: 21.733333)],
                             "german": [CLLocationCoordinate2D(latitude: 52.516667, longitude: 13.388889),
                                        CLLocationCoordinate2D(latitude: 53.565278, longitude: 10.001389),
                                        CLLocationCoordinate2D(latitude: 48.133333, longitude: 11.566667)],
-                            "nordic": [CLLocationCoordinate2D(latitude: 59.329444, longitude: 18.068611),  // sweden - 633830, 658970, 535892, 195336
-                                       CLLocationCoordinate2D(latitude: 59.916667, longitude: 10.733333)], // norway - 660225, 648980, 551392, 447965
+                            "nordic": [CLLocationCoordinate2D(latitude: 59.329444, longitude: 18.068611),
+                                       CLLocationCoordinate2D(latitude: 59.916667, longitude: 10.733333)],
                             ]
     
     var recipesUploaded = [String]()
@@ -343,8 +401,6 @@ class AccountAccessVC: UIViewController {
 
         let numberOfRecipes = 100
         let cuisine = "nordic"
-        
-//        for cuisine in cuisineLocations.keys {
         
             ws.get("/random", params: ["limitLicense": false, "number": numberOfRecipes, "tags": cuisine]).then { (json: JSON) in
                 
@@ -562,6 +618,7 @@ class AccountAccessVC: UIViewController {
         FirebaseController.shared.isUsernameStored(uid: user.uid, completion: { (result) in
             SVProgressHUD.dismiss()
             if result {
+                UserDefaults.standard.set(false, forKey: "isBrowsing")
                 let mainTabBarController = MainTabBarController()
                 guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
                 

@@ -360,7 +360,6 @@ extension HomeVC {
     }
     
     func getRecipeData(forDict recipeDictionary: [String:Any], key: String, group: DispatchGroup) {
-        guard let userID = Auth.auth().currentUser?.uid else { return }
         guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
         
         group.enter()
@@ -370,34 +369,43 @@ extension HomeVC {
             
             var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
             
-            FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
-                if (snapshot.value as? Double) != nil {
-                    recipe.hasFavorited = true
-                } else {
-                    recipe.hasFavorited = false
-                }
+            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+                recipe.hasFavorited = false
+                recipe.hasCooked = false
+                self.incomingRecipes.append(recipe)
+                group.leave()
                 
-                FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+            } else {
+                guard let userID = Auth.auth().currentUser?.uid else { return }
+
+                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
                     if (snapshot.value as? Double) != nil {
-                        recipe.hasCooked = true
-                        let timestamp = (snapshot.value as! Double)
-                        recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
+                        recipe.hasFavorited = true
                     } else {
-                        recipe.hasCooked = false
+                        recipe.hasFavorited = false
                     }
                     
-                    self.incomingRecipes.append(recipe)
+                    FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                        if (snapshot.value as? Double) != nil {
+                            recipe.hasCooked = true
+                            let timestamp = (snapshot.value as! Double)
+                            recipe.cookedDate = Date(timeIntervalSince1970: timestamp)
+                        } else {
+                            recipe.hasCooked = false
+                        }
+                        
+                        self.incomingRecipes.append(recipe)
+                        
+                        group.leave()
+                        
+                    })
                     
+                    
+                }, withCancel: { (error) in
+                    print("Failed to fetch favorite info for recipe: ", error)
                     group.leave()
-                    
                 })
-                
-                
-            }, withCancel: { (error) in
-                print("Failed to fetch favorite info for recipe: ", error)
-                group.leave()
-            })
-            
+            }
         })
     }
     
@@ -415,7 +423,9 @@ extension HomeVC {
         })
         
         group.notify(queue: .main) {
-            self.updateData()
+            if !self.incomingRecipes.isEmpty {
+                self.updateData()
+            }
         }
     }
     
@@ -474,6 +484,8 @@ extension HomeVC {
     func openMapView() {
         let mapView = RecipesMapView()
         mapView.filteredRecipes = self.searchResultRecipes
+        let viewContentEvent = AppEvent.viewedContent(contentType: "interactive-map", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["numberOfRecipes": self.searchResultRecipes.count])
+        AppEventsLogger.log(viewContentEvent)
         self.navigationController?.pushViewController(mapView, animated: true)
     }
 }
@@ -610,57 +622,63 @@ extension HomeVC: UITextFieldDelegate {
 
 extension HomeVC: RecipeCellDelegate {
     func didTapFavorite(for cell: RecipeCell) {
-        guard let indexPath = tableView?.indexPath(for: cell) else { return }
-        
-        var recipe = self.searchResultRecipes[indexPath.item]
-        
-        let recipeID = recipe.uid
-        
-        guard let userID = Auth.auth().currentUser?.uid else { return }
-        
-        if recipe.hasFavorited {
-            // remove
-            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
-            FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
-            
-            SVProgressHUD.showError(withStatus: "Removed")
-            SVProgressHUD.dismiss(withDelay: 1)
-            
-            recipe.hasFavorited = false
-            
-            self.searchResultRecipes[indexPath.item] = recipe
-            
-            self.tableView.reloadRows(at: [indexPath], with: .none)
-            
-            NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+        if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
         } else {
-            // add
-            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
-                if let error = error {
-                    print("Failed to favorite recipe:", error)
-                    return
-                }
+            guard let indexPath = tableView?.indexPath(for: cell) else { return }
+            
+            var recipe = self.searchResultRecipes[indexPath.item]
+            
+            let recipeID = recipe.uid
+            
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+            
+            if recipe.hasFavorited {
+                // remove
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
+                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
                 
-                let timestamp = Date().timeIntervalSince1970
+                SVProgressHUD.showError(withStatus: "Removed")
+                SVProgressHUD.dismiss(withDelay: 1)
                 
-                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+                recipe.hasFavorited = false
+                
+                self.searchResultRecipes[indexPath.item] = recipe
+                
+                self.tableView.reloadRows(at: [indexPath], with: .none)
+                
+                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+            } else {
+                // add
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
                     if let error = error {
-                        print("Failted to favorite recipe:", error)
+                        print("Failed to favorite recipe:", error)
                         return
                     }
                     
-                    print("Successfully favorited recipe.")
+                    let timestamp = Date().timeIntervalSince1970
                     
-                    SVProgressHUD.showSuccess(withStatus: "Saved")
-                    SVProgressHUD.dismiss(withDelay: 1)
-                    
-                    recipe.hasFavorited = true
-                    
-                    self.searchResultRecipes[indexPath.item] = recipe
-                    
-                    self.tableView.reloadRows(at: [indexPath], with: .none)
-                    
-                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                    FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+                        if let error = error {
+                            print("Failted to favorite recipe:", error)
+                            return
+                        }
+                        
+                        print("Successfully favorited recipe.")
+                        
+                        SVProgressHUD.showSuccess(withStatus: "Saved")
+                        SVProgressHUD.dismiss(withDelay: 1)
+                        
+                        recipe.hasFavorited = true
+                        
+                        self.searchResultRecipes[indexPath.item] = recipe
+                        
+                        self.tableView.reloadRows(at: [indexPath], with: .none)
+                        
+                        NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                    }
                 }
             }
         }

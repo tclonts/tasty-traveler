@@ -19,7 +19,7 @@ class MessageCell: UITableViewCell {
             detailTextLabel?.text = message?.text
             
             let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "hh:mm a"
+            dateFormatter.dateFormat = "MMM d, h:mm a"
             
             toggleUnreadIndicator()
             

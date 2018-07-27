@@ -20,11 +20,11 @@ import FacebookCore
 
 class RecipeDetailVC: UIViewController {
     
+    var isBrowsing = false
+    
     var recipe: Recipe? {
         didSet {
             
-            guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
-                
             if let countryCode = recipe?.countryCode, let locality = recipe?.locality {
                 recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
                 recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
@@ -59,32 +59,36 @@ class RecipeDetailVC: UIViewController {
                 globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showMapView)))
             }
             
-            if userID == recipe!.creator.uid {
-                isMyRecipe = true
-                // my recipe
-                recipeHeaderView.favoriteButton.isHidden = true
-                favoriteButtonNavBar.isHidden = true
-                self.bottomView.isHidden = true
+            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+                isBrowsing = true
             } else {
-                isMyRecipe = false
-                // someone else's recipe
-                if recipe!.hasFavorited {
-                    recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
-                    favoriteButtonNavBar.setTitle("SAVED", for: .normal)
-                    favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
+                guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
+                
+                if userID == recipe!.creator.uid {
+                    isMyRecipe = true
+                    // my recipe
+                    recipeHeaderView.favoriteButton.isHidden = true
+                    favoriteButtonNavBar.isHidden = true
+                    self.bottomView.isHidden = true
                 } else {
-                    recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
-                    favoriteButtonNavBar.setTitle("SAVE", for: .normal)
-                    favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
+                    isMyRecipe = false
+                    // someone else's recipe
+                    if recipe!.hasFavorited {
+                        recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
+                        favoriteButtonNavBar.setTitle("SAVED", for: .normal)
+                        favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
+                    } else {
+                        recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
+                        favoriteButtonNavBar.setTitle("SAVE", for: .normal)
+                        favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
+                    }
                 }
-            
-                formatCookButton()
             }
             
+            formatCookButton()
             fetchReviewData()
 
-            let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe!.uid,
-                                                                                                                                                          "userID": userID])
+            let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe!.uid])
             AppEventsLogger.log(viewContentEvent)
         }
     }
@@ -496,43 +500,50 @@ class RecipeDetailVC: UIViewController {
     }
     
     @objc func cookButtonTapped() {
-        
-        guard let userID = Auth.auth().currentUser?.uid else { return }
-        
-        if !recipe!.hasCooked {
-            recipe?.cookedDate = Date()
-            recipe?.hasCooked = true
-            let popup = CookedItAlertView()
-            popup.modalPresentationStyle = .overCurrentContext
-            popup.recipeID = recipe!.uid
-            self.present(popup, animated: false) {
-                popup.showAlertView()
-            }
-            
+        if isBrowsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
         } else {
-            let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (_) in
-                FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(self.recipe!.uid).removeValue()
-                FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").child(self.recipe!.uid).removeValue()
-                FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("reviews").child(userID).removeValue()
-                
-                NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
-                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
-                
-                
-                self.recipe?.cookedDate = nil
-                self.recipe?.hasCooked = false
-                
-                if !self.isFromFavorites {
-                    self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-                    self.homeVC?.recipeDataHasChanged = true
+            
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+            
+            if !recipe!.hasCooked {
+                recipe?.cookedDate = Date()
+                recipe?.hasCooked = true
+                let popup = CookedItAlertView()
+                popup.modalPresentationStyle = .overCurrentContext
+                popup.recipeID = recipe!.uid
+                self.present(popup, animated: false) {
+                    popup.showAlertView()
                 }
-
-                ac.dismiss(animated: true, completion: nil)
-            }))
-            ac.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
-            self.present(ac, animated: true, completion: nil)
+                
+            } else {
+                let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (_) in
+                    FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(self.recipe!.uid).removeValue()
+                    FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").child(self.recipe!.uid).removeValue()
+                    FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("reviews").child(userID).removeValue()
+                    
+                    NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
+                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                    
+                    
+                    self.recipe?.cookedDate = nil
+                    self.recipe?.hasCooked = false
+                    
+                    if !self.isFromFavorites {
+                        self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                        self.homeVC?.recipeDataHasChanged = true
+                    }
+                    
+                    ac.dismiss(animated: true, completion: nil)
+                }))
+                ac.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+                self.present(ac, animated: true, completion: nil)
+            }
         }
+        
     }
     
     func formatCookButton() {
@@ -570,21 +581,28 @@ class RecipeDetailVC: UIViewController {
     @objc func askButtonTapped() {
         print("ask button tapped")
         
-        if isFromChatLogVC {
-            dismiss(animated: true, completion: nil)
+        if isBrowsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
         } else {
-            
-            let chatLogVC = ChatLogVC()
-            let chat = Chat(recipe: self.recipe!, withUser: self.recipe!.creator)
-            chatLogVC.chat = chat
-            chatLogVC.isFromRecipeDetailView = true
-            let chatLogNav = UINavigationController(rootViewController: chatLogVC)
-            chatLogNav.navigationBar.isTranslucent = false
-            chatLogNav.modalPresentationStyle = .overCurrentContext
-            
-            self.present(chatLogNav, animated: true, completion: nil)
+        
+            if isFromChatLogVC {
+                dismiss(animated: true, completion: nil)
+            } else {
+                
+                let chatLogVC = ChatLogVC()
+                let chat = Chat(recipe: self.recipe!, withUser: self.recipe!.creator)
+                chatLogVC.chat = chat
+                chatLogVC.isFromRecipeDetailView = true
+                let chatLogNav = UINavigationController(rootViewController: chatLogVC)
+                chatLogNav.navigationBar.isTranslucent = false
+                chatLogNav.modalPresentationStyle = .overCurrentContext
+                
+                self.present(chatLogNav, animated: true, completion: nil)
+            }
+            //navigationController?.pushViewController(chatLogVC, animated: true)
         }
-        //navigationController?.pushViewController(chatLogVC, animated: true)
     }
     
     func setUpFavoriteButtons() {
@@ -601,56 +619,62 @@ class RecipeDetailVC: UIViewController {
     }
     
     func favoriteRecipe() {
-        guard let recipeID = recipe?.uid else { return }
-        
-        guard let userID = Auth.auth().currentUser?.uid else { return }
-        
-        if self.recipe!.hasFavorited {
-            // remove
-            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
-            FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
-            
-            SVProgressHUD.showError(withStatus: "Removed")
-            SVProgressHUD.dismiss(withDelay: 1)
-            
-            self.recipe?.hasFavorited = false
-            
-            if !isFromFavorites {
-                self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-                self.homeVC?.recipeDataHasChanged = true
-            }
-            
-            NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
-            
+        if isBrowsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
         } else {
-            // add
-            FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
-                if let error = error {
-                    print("Failed to favorite recipe:", error)
-                    return
+            guard let recipeID = recipe?.uid else { return }
+            
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+            
+            if self.recipe!.hasFavorited {
+                // remove
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
+                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
+                
+                SVProgressHUD.showError(withStatus: "Removed")
+                SVProgressHUD.dismiss(withDelay: 1)
+                
+                self.recipe?.hasFavorited = false
+                
+                if !isFromFavorites {
+                    self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                    self.homeVC?.recipeDataHasChanged = true
                 }
                 
-                let timestamp = Date().timeIntervalSince1970
+                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                 
-                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+            } else {
+                // add
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
                     if let error = error {
-                        print("Failted to favorite recipe:", error)
+                        print("Failed to favorite recipe:", error)
                         return
                     }
                     
-                    print("Successfully favorited recipe.")
+                    let timestamp = Date().timeIntervalSince1970
                     
-                    SVProgressHUD.showSuccess(withStatus: "Saved")
-                    SVProgressHUD.dismiss(withDelay: 1)
-                    
-                    self.recipe?.hasFavorited = true
-                    
-                    if !self.isFromFavorites {
-                        self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-                        self.homeVC?.recipeDataHasChanged = true
+                    FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+                        if let error = error {
+                            print("Failted to favorite recipe:", error)
+                            return
+                        }
+                        
+                        print("Successfully favorited recipe.")
+                        
+                        SVProgressHUD.showSuccess(withStatus: "Saved")
+                        SVProgressHUD.dismiss(withDelay: 1)
+                        
+                        self.recipe?.hasFavorited = true
+                        
+                        if !self.isFromFavorites {
+                            self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                            self.homeVC?.recipeDataHasChanged = true
+                        }
+                        
+                        NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                     }
-                    
-                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                 }
             }
         }
@@ -808,7 +832,7 @@ class RecipeDetailVC: UIViewController {
             scrollView.contentInset = UIEdgeInsets(top: -20, left: 0, bottom: 0, right: 0)
         }
         
-        scrollView.contentInset.bottom = adaptConstant(57)
+        scrollView.contentInset.bottom = adaptConstant(65)
         
         scrollView.sv(
             containerView.sv(
@@ -1088,15 +1112,21 @@ extension RecipeDetailVC: MenuBarDelegate {
 
 extension RecipeDetailVC: AboutCellDelegate {
     func presentComposeReviewView() {
-        guard let userID = Auth.auth().currentUser?.uid, let recipeID = recipe?.uid else { return }
-        
-        let composeVC = ComposeReviewVC(style: .plain)
-        composeVC.recipeID = recipeID
-        composeVC.userID = userID
-        composeVC.recipeDetailVC = self
-        
-        let composeNav = UINavigationController(rootViewController: composeVC)
-        present(composeNav, animated: true, completion: nil)
+        if isBrowsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
+        } else {
+            guard let userID = Auth.auth().currentUser?.uid, let recipeID = recipe?.uid else { return }
+            
+            let composeVC = ComposeReviewVC(style: .plain)
+            composeVC.recipeID = recipeID
+            composeVC.userID = userID
+            composeVC.recipeDetailVC = self
+            
+            let composeNav = UINavigationController(rootViewController: composeVC)
+            present(composeNav, animated: true, completion: nil)
+        }
     }
     
     func resizeCollectionView(forHeight height: CGFloat, cell: UICollectionViewCell) {

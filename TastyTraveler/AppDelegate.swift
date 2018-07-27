@@ -42,16 +42,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if Auth.auth().currentUser != nil {
             Auth.auth().currentUser?.reload(completion: { (error) in
                 if let error = error {
-                    let code = (error as NSError).code
-                    if code == AuthErrorCode.userNotFound.rawValue {
-                        do {
-                            try Auth.auth().signOut()
-                        } catch let error {
-                            print(error.localizedDescription)
-                        }
-                    }
-                    let accountAccessVC = AccountAccessVC()
-                    self.window?.rootViewController = accountAccessVC
+//                    let code = (error as NSError).code
+//                    if code == AuthErrorCode.userNotFound.rawValue {
+//                        do {
+//                            try Auth.auth().signOut()
+//                        } catch let error {
+//                            print(error.localizedDescription)
+//                        }
+//                    }
+//                    let accountAccessVC = AccountAccessVC()
+//                    self.window?.rootViewController = accountAccessVC
                 } else {
                     FirebaseController.shared.isUsernameStored(uid: Auth.auth().currentUser!.uid, completion: { (result) in
                         if result {
@@ -66,14 +66,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 }
             })
         } else {
-            let accountAccessVC = AccountAccessVC()
-            window?.rootViewController = accountAccessVC
+            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+                self.window?.rootViewController = MainTabBarController()
+            } else {
+                let accountAccessVC = AccountAccessVC()
+                window?.rootViewController = accountAccessVC
+            }
         }
         
         return true
     }
-    
-    
     
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
         print("Registered with FCM with token:", fcmToken)
@@ -128,42 +130,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         application.applicationIconBadgeNumber = 0
         FirebaseController.shared.resetBadgeCount()
         
-        guard let userID = Auth.auth().currentUser?.uid else { return }
-        guard let username = Auth.auth().currentUser?.displayName else { return }
         
-        if let scheduledDate = defaults.object(forKey: "scheduledDate") as? Date {
-            
-            // if scheduled date has passed
-            let currentDate = Date()
-            if scheduledDate <= currentDate {
-        
-                let ref = FirebaseController.shared.ref.child("messages")
-                let childRef = ref.childByAutoId()
-                let toID = userID
-                let fromID = "Zzk10HjWRWOXlBnCmbK2STYBj2N2"// Tasty Traveler account uid
-                let timestamp = currentDate.timeIntervalSince1970
-                
-                let values: [String:Any] = ["toID": toID,
-                                            "fromID": fromID,
-                                            "timestamp": timestamp,
-                                            "text": "Hello \(username), thank you for joining Tasty Traveler, a place where people can cook, share, and communicate with one another about everyone's favorite thing...food. \n\nWe want to let you know that Tasty Traveler will never flood your email inbox with spam mail, and will never use your info for anything outside of Tasty Traveler. \n\nWe welcome and encourage you to be an active member of this community and share your talent with the world! By contributing recipes or cooking recipes created by others, you are helping to build a better community for all of us here. \n\nAlso, this communication portal is for you to give us your feedback and send us any ideas you have about how to improve the overall experience of Tasty Traveler. \n\nIf you have any questions, please ask them here. We'd love to hear from you. \n\nThank you and have fun discovering and cooking delicious recipes.",
-                                            "unread": true]
-                
-                childRef.updateChildValues(values) { (error, ref) in
-                    if let error = error { print(error); return }
-                    
-                    let userMessagesRef = FirebaseController.shared.ref.child("userMessages").child(fromID).child(toID)
-                    let messageID = childRef.key
-                    userMessagesRef.updateChildValues([messageID: true])
-                    
-                    let recipientUserMessagesRef = FirebaseController.shared.ref.child("userMessages").child(toID).child(fromID)
-                    recipientUserMessagesRef.updateChildValues([messageID: true])
-                }
-                defaults.removeObject(forKey: "scheduledDate")
-            }
-        } else {
-            print("NO SCHEDULED DATE")
-        }
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
