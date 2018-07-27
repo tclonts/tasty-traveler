@@ -239,6 +239,11 @@ class SettingsVC: FormViewController {
             guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
             do {
                 try Auth.auth().signOut()
+                FirebaseController.shared.userNotifications.removeAll()
+                FirebaseController.shared.messages.removeAll()
+                FirebaseController.shared.messagesDictionary.removeAll()
+                FirebaseController.shared.unreadMessagesCount = 0
+                FirebaseController.shared.unreadNotificationsCount = 0
                 
                 appDelegate.window?.rootViewController?.dismiss(animated: true, completion: nil)
                 

@@ -63,6 +63,7 @@ class MessagesVC: UITableViewController {
             self.navigationItem.title = "Messages (\(FirebaseController.shared.unreadMessagesCount))"
         } else {
             self.navigationItem.title = "Messages"
+            
         }
     }
     
@@ -91,6 +92,8 @@ class MessagesVC: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = FirebaseController.shared.messages[indexPath.row]
+        
+        updateTitle()
         
         guard let chatPartnerID = message.chatPartnerID() else { return }
         SVProgressHUD.show()

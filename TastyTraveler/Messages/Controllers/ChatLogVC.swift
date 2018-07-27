@@ -66,7 +66,10 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
                         self.tableView?.reloadData()
                         // scroll to the last index
                         let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
-                        self.tableView?.scrollToRow(at: indexPath, at: .bottom, animated: true)
+                        
+                        self.tableView?.scrollToRow(at: indexPath, at: .bottom, animated: false)
+                        NotificationCenter.default.post(name: Notification.Name("UpdateTabBadge"), object: nil)
+                        
                     }
                 }
             })
