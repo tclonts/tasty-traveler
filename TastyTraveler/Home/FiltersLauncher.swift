@@ -259,43 +259,53 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         guard !selectedFilters.isEmpty else {
             handleDismiss()
             filtersApplied = false
-            homeVC!.searchResultRecipes = Array(homeVC!.recipes.prefix(25));
-            homeVC?.tableView.reloadData()
+            
+            if homeVC!.isSearching {
+                homeVC!.searchRecipes(text: homeVC!.lastSearchText)
+            } else {
+                homeVC!.searchResultRecipes = Array(homeVC!.recipes.prefix(25));
+                homeVC?.tableView.reloadData()
+            }
             return
         }
         
         let data = homeVC!.isSearching ? homeVC!.filteredRecipes : homeVC!.recipes
-        var filteredByMeal = [Recipe]()
-        var filteredByLocation = [Recipe]()
-        var filteredByTag = [Recipe]()
+
+        var filteredRecipes = [Recipe]()
         
         if !selectedMeals.isEmpty {
-            filteredByMeal = data.filter { selectedMeals.contains($0.meal!) }
+            filteredRecipes = data.filter { selectedMeals.contains($0.meal!) }
         }
         
         if !selectedLocations.isEmpty {
-            filteredByLocation = data.filter { recipe in
+            var locationsData = [Recipe]()
+            locationsData = filteredRecipes.isEmpty ? data : filteredRecipes
+            
+            filteredRecipes = locationsData.filter { recipe in
                 guard let country = recipe.country else { return false }
                 return selectedLocations.contains(country)
             }
         }
         
         if !selectedTags.isEmpty {
-            filteredByTag = data.filter { recipe in
+            var tagData = [Recipe]()
+            tagData = filteredRecipes.isEmpty ? data : filteredRecipes
+            
+            filteredRecipes = tagData.filter { recipe in
                 guard let recipeTags = recipe.tags else { return false }
                 let selectedTagsSet = Set(selectedTags)
                 let tagsArray = recipeTags.map { $0.rawValue }
                 let recipeTagsSet = Set(tagsArray)
                 
-                return !selectedTagsSet.isDisjoint(with: recipeTagsSet)
+                return selectedTagsSet.isSubset(of: recipeTagsSet)
+                //return !selectedTagsSet.isDisjoint(with: recipeTagsSet)
             }
         }
         
-        homeVC?.filteredRecipes = filteredByMeal + filteredByLocation + filteredByTag
-        homeVC?.searchResultRecipes = Array(homeVC!.filteredRecipes.prefix(25))
+        homeVC?.filteredRecipes = filteredRecipes
         
         filtersApplied = true
-        handleDismiss()
+        homeVC?.searchResultRecipes = Array(homeVC!.filteredRecipes.prefix(25))
         homeVC?.tableView.reloadData()
         
         if homeVC!.searchResultRecipes.isEmpty {
@@ -303,6 +313,8 @@ class FiltersLauncher: NSObject, UICollectionViewDataSource, UICollectionViewDel
         } else {
             homeVC?.hideEmptyView()
         }
+        
+        handleDismiss()
     }
     
     @objc func clearFilters() {

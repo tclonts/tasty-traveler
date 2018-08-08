@@ -199,10 +199,13 @@ class HomeVC: UITableViewController {
         handleRefresh()
     }
     
+    var isRefreshing = false
+    
     @objc func handleRefresh() {
         hideEmptyView()
         print("Handling refresh..")
         self.tableView.refreshControl?.beginRefreshing()
+        isRefreshing = true
         recipes.removeAll()
         refreshPage = 25
         fetchAllRecipes()
@@ -215,13 +218,15 @@ class HomeVC: UITableViewController {
         lastSearchText = ""
         searchField.resignFirstResponder()
         
+        sortData()
+        self.hideEmptyView()
+        
         if self.filtersLauncher.filtersApplied {
             self.filtersLauncher.applyFilters()
         } else {
-            self.searchResultRecipes = self.recipes
+            self.searchResultRecipes = Array(self.recipes.prefix(25))
         }
         
-        self.hideEmptyView()
         UIView.animate(withDuration: 0.3, animations: {
             self.cancelButton.alpha = 0
         }) { (_) in
@@ -229,22 +234,9 @@ class HomeVC: UITableViewController {
             self.isCancelButtonShowing = false
         }
         cancelButton.removeFromSuperview()
-        self.tableView.reloadSections([1], with: .automatic)
+//        self.tableView.reloadSections([1], with: .automatic)
+        self.tableView.reloadData()
     }
-    
-    // TABLEVIEW FUNCTIONS
-    
-//    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-//        if section == 0 {
-//            if filtersLauncher.filtersApplied {
-//                return adaptConstant(165)
-//            } else {
-//                return adaptConstant(125)
-//            }
-//        } else {
-//            return 0
-//        }
-//    }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
@@ -268,8 +260,15 @@ class HomeVC: UITableViewController {
             
             if filtersLauncher.filtersApplied {
                 header.filterStatusView.isHidden = false
+                header.filterStatusView.filtersCollectionView.collectionViewLayout.invalidateLayout()
                 header.filterStatusView.filtersCollectionView.reloadData()
+                header.filterStatusView.filtersCollectionView.setNeedsLayout()
+                header.filterStatusView.filtersCollectionView.layoutIfNeeded()
             } else {
+                header.filterStatusView.filtersCollectionView.collectionViewLayout.invalidateLayout()
+                header.filterStatusView.filtersCollectionView.reloadData()
+                header.filterStatusView.filtersCollectionView.setNeedsLayout()
+                header.filterStatusView.filtersCollectionView.layoutIfNeeded()
                 header.filterStatusView.isHidden = true
             }
             
@@ -351,6 +350,7 @@ class HomeVC: UITableViewController {
 extension HomeVC {
     func fetchAllRecipes() {
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        SVProgressHUD.show(withStatus: "Loading Recipes")
         
         let ref = FirebaseController.shared.ref.child("recipes")
         
@@ -365,7 +365,14 @@ extension HomeVC {
         group.enter()
         
         FirebaseController.shared.fetchUserWithUID(uid: creatorID, completion: { (creator) in
-            guard let creator = creator else { group.leave(); self.tableView.refreshControl?.endRefreshing(); return }
+            guard let creator = creator else {
+                group.leave()
+                UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                self.tableView.refreshControl?.endRefreshing()
+                SVProgressHUD.dismiss()
+                self.isRefreshing = false
+                return
+            }
             
             var recipe = Recipe(uid: key, creator: creator, dictionary: recipeDictionary)
             
@@ -412,7 +419,7 @@ extension HomeVC {
     
     func createRecipes(from snapshot: DataSnapshot) {
         
-        self.tableView.refreshControl?.endRefreshing()
+        //self.tableView.refreshControl?.endRefreshing()
         
         guard let recipeIDsDictionary = snapshot.value as? [String:Any] else { return }
         let group = DispatchGroup()
@@ -430,55 +437,66 @@ extension HomeVC {
     }
     
     func updateData() {
+        // First load or when handling a refresh
         
         self.recipes = incomingRecipes
         
         if self.lastSearchText != "" {
             self.searchRecipes(text: self.lastSearchText)
         } else {
-            if let sortQuery = sortQuery {
-                switch sortQuery {
-                case "timestamp":
-                    self.recipes.sort { (r1, r2) -> Bool in
-                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
-                    }
-                case "reviews":
-                    self.recipes = incomingRecipes.filter { $0.reviewsDictionary != nil }
-                    self.recipes.sort(by: { (r1, r2) -> Bool in
-                        
-                        if r1.reviewsDictionary!.count == r2.reviewsDictionary!.count {
-                            return r1.creationDate.compare(r2.creationDate) == .orderedDescending
-                        } else {
-                            return r1.reviewsDictionary!.count > r2.reviewsDictionary!.count
-                        }
-                    })
-                case "recipeScore":
-                    self.recipes.sort {
-                        if $0.recipeScore == $1.recipeScore {
-                            return $0.creationDate.compare($1.creationDate) == .orderedDescending
-                        } else {
-                            return $0.recipeScore > $1.recipeScore
-                        }
-                    }
-                default:
-                    print("No sort")
-                }
-            } else {
-                self.recipes.shuffle()
-            }
-            
+            sortData()            
+        }
+        
+        if self.filtersLauncher.filtersApplied {
+            self.filtersLauncher.applyFilters()
+        }
+        
+        if !self.filtersLauncher.filtersApplied && self.lastSearchText == "" {
             self.searchResultRecipes = Array(self.recipes.prefix(25))
+            self.tableView.reloadData()
+            
+            self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
         }
         
         self.tableView.refreshControl?.endRefreshing()
+        isRefreshing = false
+        SVProgressHUD.dismiss()
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
-        self.tableView.reloadData()
-        
-        if self.filtersLauncher.filtersApplied { self.filtersLauncher.applyFilters() }
-        
-        self.searchResultRecipes.isEmpty ? self.showEmptyView() : self.hideEmptyView()
         
         self.incomingRecipes.removeAll()
+    }
+    
+    func sortData() {
+        if let query = self.sortQuery {
+            switch query {
+            case "timestamp":
+                self.recipes.sort { (r1, r2) -> Bool in
+                    return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                }
+            case "reviews":
+                self.recipes = incomingRecipes.filter { $0.reviewsDictionary != nil }
+                self.recipes.sort(by: { (r1, r2) -> Bool in
+                    
+                    if r1.reviewsDictionary!.count == r2.reviewsDictionary!.count {
+                        return r1.creationDate.compare(r2.creationDate) == .orderedDescending
+                    } else {
+                        return r1.reviewsDictionary!.count > r2.reviewsDictionary!.count
+                    }
+                })
+            case "recipeScore":
+                self.recipes.sort {
+                    if $0.recipeScore == $1.recipeScore {
+                        return $0.creationDate.compare($1.creationDate) == .orderedDescending
+                    } else {
+                        return $0.recipeScore > $1.recipeScore
+                    }
+                }
+            default:
+                print("No sort")
+            }
+        } else {
+            self.recipes.shuffle()
+        }
     }
     
     func openMapView() {
@@ -576,29 +594,22 @@ extension HomeVC: UITextFieldDelegate {
     func searchRecipes(text: String) {
         
         let splitText = text.lowercased().components(separatedBy: " ")
+        let recipesToSearch = filtersLauncher.filtersApplied ? filteredRecipes : recipes
         
-        if filtersLauncher.filtersApplied {
-            let matchingRecipes = filteredRecipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
-            
-            self.filteredRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
-                calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
-            })
-            
-        } else {
-            let matchingRecipes = recipes.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
-            
-            let successful = matchingRecipes.count > 0
-            let searchEvent = AppEvent.searched(contentId: nil, searchedString: text.lowercased(), successful: successful, valueToSum: 1.0, extraParameters: ["numberOfResults": matchingRecipes.count])
-            AppEventsLogger.log(searchEvent)
-            
-            self.filteredRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
-                calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
-            })
-        }
+        let matchingRecipes = recipesToSearch.filter { calculateSearchScore(recipe: $0, text: splitText) > 0 }
+        
+        let successful = matchingRecipes.count > 0
+        let searchEvent = AppEvent.searched(contentId: nil, searchedString: text.lowercased(), successful: successful, valueToSum: 1.0, extraParameters: ["numberOfResults": matchingRecipes.count])
+        AppEventsLogger.log(searchEvent)
+        
+        self.filteredRecipes = matchingRecipes.sorted(by: { (r1, r2) -> Bool in
+            calculateSearchScore(recipe: r1, text: splitText) > calculateSearchScore(recipe: r2, text: splitText)
+        })
         
         self.searchResultRecipes = Array(filteredRecipes.prefix(25))
         
-        self.tableView.reloadSections([1], with: .automatic)
+//        self.tableView.reloadSections([1], with: .automatic)
+        self.tableView.reloadData()
         self.lastSearchText = text
         self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
     }

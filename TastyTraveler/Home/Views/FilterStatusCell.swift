@@ -76,6 +76,7 @@ class FilterStatusCell: UIView, UICollectionViewDelegate, UICollectionViewDelega
         
         filtersCollectionView.Left == filteringLabel.Right + adaptConstant(8)
         filtersCollectionView.top(0).bottom(0).right(adaptConstant(8))
+        filtersCollectionView.height(adaptConstant(30))
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

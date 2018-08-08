@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 import FacebookCore
 import UserNotifications
+import FBSDKCoreKit.FBSDKAppLinkUtility
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
@@ -28,6 +29,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         
         SDKApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
+        FBSDKAppLinkUtility.fetchDeferredAppLink { (url, error) in
+            if let error = error { print(error); return }
+            
+            if let url = url {
+                print(url)
+            }
+        }
         
         FirebaseApp.configure(options: options)
         
@@ -80,6 +88,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String) {
         print("Registered with FCM with token:", fcmToken)
     }
+    
+    
     
     // listen for user notifications
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {

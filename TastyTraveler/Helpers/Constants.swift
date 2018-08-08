@@ -22,6 +22,7 @@ func adaptConstant(_ constant: CGFloat) -> CGFloat {
 }
 
 struct Color {
+    static let offWhite      = UIColor(hexString: "F8F8FB")
     static let blackText     = UIColor(hexString: "2A2A2A")
     static let darkText      = UIColor(hexString: "4D4D4D")
     static let darkGrayText  = UIColor(hexString: "717171")

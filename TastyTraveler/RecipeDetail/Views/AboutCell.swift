@@ -10,37 +10,15 @@ import UIKit
 import Stevia
 import MapKit
 
-class FlowLayout: UICollectionViewFlowLayout {
-    
-    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        let attributesForElementsInRect = super.layoutAttributesForElements(in: rect)
-        var newAttributesForElementsInRect = [UICollectionViewLayoutAttributes]()
-        
-        var leftMargin: CGFloat = 0.0;
-        
-        for attributes in attributesForElementsInRect! {
-            if (attributes.frame.origin.x == self.sectionInset.left) {
-                leftMargin = self.sectionInset.left
-            } else {
-                var newLeftAlignedFrame = attributes.frame
-                newLeftAlignedFrame.origin.x = leftMargin
-                attributes.frame = newLeftAlignedFrame
-            }
-            leftMargin += attributes.frame.size.width + 8
-            newAttributesForElementsInRect.append(attributes)
-        }
-        
-        return newAttributesForElementsInRect
-    }
-}
-
 class AboutCell: BaseCell {
     
+    // MARK: - Views
     let scrollView = UIScrollView()
     
+    /// Container view for the Servings, Time, and Difficulty boxes
     let infoView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(hexString: "F8F8FB")
+        view.backgroundColor = Color.offWhite
         view.height(adaptConstant(138))
         return view
     }()
@@ -71,7 +49,7 @@ class AboutCell: BaseCell {
     let descriptionLabel: UILabel = {
         let label = UILabel()
         label.text = "Description"
-        label.font = UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))
+        label.font = ProximaNova.bold.of(size: 20)
         label.textColor = Color.darkText
         return label
     }()
@@ -98,6 +76,8 @@ class AboutCell: BaseCell {
     
     let ratingsView = RatingsView()
     
+    let reviewsStackView = UIStackView()
+    
     let reviewsLabel: UILabel = {
         let label = UILabel()
         label.text = "Reviews"
@@ -119,13 +99,6 @@ class AboutCell: BaseCell {
         return button
     }()
     
-    let activityIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView()
-        indicator.activityIndicatorViewStyle = .gray
-        indicator.hidesWhenStopped = true
-        return indicator
-    }()
-    
     lazy var reviewsTableView: UITableView = {
         let tableView = UITableView()
         tableView.isScrollEnabled = false
@@ -139,6 +112,7 @@ class AboutCell: BaseCell {
         return tableView
     }()
     
+    // MARK: - Properties
     var review: Review? {
         didSet {
             if review?.rating != nil {
@@ -148,54 +122,98 @@ class AboutCell: BaseCell {
     }
     
     var reviewsWithText = [Review]()
-    
     var recipeDetailVC: RecipeDetailVC?
     var recipeID: String!
-    
     weak var delegate: AboutCellDelegate?
+    let margin = adaptConstant(16)
     
+    // MARK: - Override Methods
     override func setUpViews() {
         super.setUpViews()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(loadReviews), name: Notification.Name("ReviewsLoaded"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(refreshUserRating), name: Notification.Name("submittedReview"), object: nil)
+        setUpNotifications()
         
-        infoView.sv(servingsInfoBox, timeInfoBox, difficultyInfoBox)
-        ratingsView.aboutCell = self
+        setUpInfoView()
+        setUpDescriptionView()
         
-        descriptionStackView.addArrangedSubview(descriptionLabel)
-        descriptionStackView.addArrangedSubview(descriptionText)
-        descriptionStackView.axis = .vertical
-        descriptionStackView.spacing = adaptConstant(18)
-        
-        let reviewsStackView = UIStackView(arrangedSubviews: [reviewsLabel, writeReviewButton])
-        reviewsStackView.axis = .horizontal
-        reviewsLabel.left(0)
-        reviewsLabel.textAlignment = .left
-        writeReviewButton.right(0)
-        writeReviewButton.contentHorizontalAlignment = .right
+        tagsCollectionView.left(adaptConstant(25)).right(adaptConstant(25)).height(100)
+
+        setUpRatingsView()
+        setUpReviewsView()
         
         let stackView = UIStackView(arrangedSubviews: [infoView, descriptionStackView, tagsCollectionView, ratingsView, reviewsStackView, reviewsTableView])
         
-        reviewsStackView.left(adaptConstant(25)).right(adaptConstant(12))
-        tagsCollectionView.left(adaptConstant(25)).right(adaptConstant(25))
-        tagsCollectionView.height(100)
-        activityIndicator.centerInContainer()
-        
-        let margin = adaptConstant(16)
-        
         scrollView.sv(stackView)
-        
         stackView.fillContainer()
         stackView.Width == scrollView.Width
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.spacing = adaptConstant(27)
         
-        reviewsTableView.left(adaptConstant(12)).right(adaptConstant(12)).height(110)
+        sv(scrollView)
+        scrollView.contentInset.bottom = 20
+        scrollView.fillContainer()
+        scrollView.isScrollEnabled = false
+        
+        backgroundColor = .white
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        setUpRatings()
+    }
+    
+    // MARK: - Private Methods
+    private func setUpNotifications() {
+        NotificationCenter.default.addObserver(self, selector: #selector(loadReviews), name: Notification.Name("ReviewsLoaded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshUserRating), name: Notification.Name("submittedReview"), object: nil)
+    }
+    
+    private func setUpInfoView() {
+        infoView.sv(servingsInfoBox, timeInfoBox, difficultyInfoBox)
+        
+        infoView.top(0).left(0).right(0).width(self.frame.width)
+        
+        infoBoxConstraints(for: servingsInfoBox, imageWidth: 48, imageHeight: 31)
+        infoBoxConstraints(for: timeInfoBox, imageWidth: 38, imageHeight: 38)
+        infoBoxConstraints(for: difficultyInfoBox, imageWidth: 36, imageHeight: 36)
+        
+        infoView.layout(
+            margin,
+            |-margin-servingsInfoBox-margin-timeInfoBox-margin-difficultyInfoBox-margin-|,
+            margin
+        )
+    }
+    
+    private func infoBoxConstraints(for infoBox: InfoBox, imageWidth: CGFloat, imageHeight: CGFloat) {
+        infoBox.width((self.frame.width - (margin * 4)) / 3)
+        infoBox.heightEqualsWidth()
+        infoBox.infoImageView.centerHorizontally()
+        infoBox.infoImageView.width(adaptConstant(imageWidth)).height(adaptConstant(imageHeight))
+        infoBox.infoLabel.centerHorizontally()
+        infoBox.infoLabel.Top == infoBox.infoImageView.Bottom + adaptConstant(12)
+        infoBox.infoLabel.bottom(adaptConstant(16))
+    }
+    
+    private func setUpDescriptionView() {
+        descriptionStackView.addArrangedSubview(descriptionLabel)
+        descriptionStackView.addArrangedSubview(descriptionText)
+        descriptionStackView.axis = .vertical
+        descriptionStackView.spacing = adaptConstant(18)
+        
         descriptionStackView.left(adaptConstant(25)).right(adaptConstant(25))
+    }
+    
+    private func setUpRatingsView() {
+        ratingsView.aboutCell = self
+        
         ratingsView.height(adaptConstant(160)).left(0).right(0)
         
+        toggleRatingsView()
+    }
+    
+    private func toggleRatingsView() {
         if let hasCooked = recipeDetailVC?.recipe?.hasCooked, hasCooked {
             ratingsView.errorText.isHidden = true
             ratingsView.tapToRateLabel.isHidden = false
@@ -205,53 +223,60 @@ class AboutCell: BaseCell {
             ratingsView.tapToRateLabel.isHidden = true
             ratingsView.ratingControl.isHidden = true
         }
-        
-        setUpRatings()
-        
-        sv(scrollView)
-        scrollView.contentInset.bottom = 20
-        scrollView.fillContainer()
-        scrollView.isScrollEnabled = false
-        
-        infoView.top(0).left(0).right(0).width(self.frame.width)
-        
-        let width = (self.frame.width - (margin * 4)) / 3
-        
-        servingsInfoBox.width(width)
-        servingsInfoBox.heightEqualsWidth()
-        servingsInfoBox.infoImageView.centerHorizontally()
-        servingsInfoBox.infoImageView.width(adaptConstant(48)).height(adaptConstant(31))
-        servingsInfoBox.infoLabel.centerHorizontally()
-        servingsInfoBox.infoLabel.Top == servingsInfoBox.infoImageView.Bottom + adaptConstant(12)
-        servingsInfoBox.infoLabel.bottom(adaptConstant(16))
-        
-        timeInfoBox.width(width)
-        timeInfoBox.heightEqualsWidth()
-        timeInfoBox.infoImageView.centerHorizontally()
-        timeInfoBox.infoImageView.width(adaptConstant(38)).height(adaptConstant(38))
-        timeInfoBox.infoLabel.centerHorizontally()
-        timeInfoBox.infoLabel.Top == timeInfoBox.infoImageView.Bottom + adaptConstant(12)
-        timeInfoBox.infoLabel.bottom(adaptConstant(16))
-        
-        difficultyInfoBox.width(width)
-        difficultyInfoBox.heightEqualsWidth()
-        difficultyInfoBox.infoImageView.centerHorizontally()
-        difficultyInfoBox.infoImageView.width(adaptConstant(36)).height(adaptConstant(36))
-        difficultyInfoBox.infoLabel.centerHorizontally()
-        difficultyInfoBox.infoLabel.Top == difficultyInfoBox.infoImageView.Bottom + adaptConstant(12)
-        difficultyInfoBox.infoLabel.bottom(adaptConstant(16))
-        
-        infoView.layout(
-            margin,
-            |-margin-servingsInfoBox-margin-timeInfoBox-margin-difficultyInfoBox-margin-|,
-            margin
-        )
-        
-        reviewsLabel.left(adaptConstant(25))
-        
-        backgroundColor = .white
     }
     
+    private func setUpReviewsView() {
+        reviewsStackView.addArrangedSubview(reviewsLabel)
+        reviewsStackView.addArrangedSubview(writeReviewButton)
+        reviewsStackView.axis = .horizontal
+        
+        reviewsLabel.left(0)
+        reviewsLabel.textAlignment = .left
+        //reviewsLabel.left(adaptConstant(25))
+
+        writeReviewButton.right(0)
+        writeReviewButton.contentHorizontalAlignment = .right
+        
+        reviewsStackView.left(adaptConstant(25)).right(adaptConstant(12))
+        reviewsTableView.left(adaptConstant(12)).right(adaptConstant(12)).height(110)
+    }
+    
+    private func setUpRatings() {
+        guard let ratings = recipeDetailVC?.ratings, let averageRating = recipeDetailVC?.averageRating else {
+            ratingsView.oneStarBar.fillRatio = CGFloat(0)
+            ratingsView.twoStarBar.fillRatio = CGFloat(0)
+            ratingsView.threeStarBar.fillRatio = CGFloat(0)
+            ratingsView.fourStarBar.fillRatio = CGFloat(0)
+            ratingsView.fiveStarBar.fillRatio = CGFloat(0)
+            
+            let ratingText = String(format: "%.1f", 0)
+            ratingsView.ratingLabel.text = ratingText
+            ratingsView.numberOfRatingsLabel.text = "0 Ratings"
+            return
+        }
+        
+        let numberOfRatings = ratings.count
+        let oneStarRatio = (ratings.filter { $0 == 1 }.count) / numberOfRatings
+        let twoStarRatio = (ratings.filter { $0 == 2 }.count) / numberOfRatings
+        let threeStarRatio = (ratings.filter { $0 == 3 }.count) / numberOfRatings
+        let fourStarRatio = (ratings.filter { $0 == 4 }.count) / numberOfRatings
+        let fiveStarRatio = (ratings.filter { $0 == 5 }.count) / numberOfRatings
+        
+        ratingsView.oneStarBar.fillRatio = CGFloat(oneStarRatio)
+        ratingsView.twoStarBar.fillRatio = CGFloat(twoStarRatio)
+        ratingsView.threeStarBar.fillRatio = CGFloat(threeStarRatio)
+        ratingsView.fourStarBar.fillRatio = CGFloat(fourStarRatio)
+        ratingsView.fiveStarBar.fillRatio = CGFloat(fiveStarRatio)
+        
+        let ratingText = String(format: "%.1f", averageRating)
+        ratingsView.ratingLabel.text = ratingText
+        ratingsView.numberOfRatingsLabel.text = "\(numberOfRatings) Ratings"
+        
+        ratingsView.layoutSubviews()
+        ratingsView.oneStarBar.layoutSubviews()
+    }
+    
+    // MARK: - Selector Methods
     @objc func loadReviews() {
         setUpRatings()
         
@@ -284,74 +309,18 @@ class AboutCell: BaseCell {
             self.review = review
         }
         
-        if let hasCooked = recipeDetailVC?.recipe?.hasCooked, hasCooked {
-            self.ratingsView.errorText.isHidden = true
-            self.ratingsView.tapToRateLabel.isHidden = false
-            self.ratingsView.ratingControl.isHidden = false
-            self.writeReviewButton.isHidden = false
-        } else {
-            self.ratingsView.errorText.isHidden = false
-            self.ratingsView.tapToRateLabel.isHidden = true
-            self.ratingsView.ratingControl.isHidden = true
-            self.writeReviewButton.isHidden = true
-        }
-    }
-    
-    func setUpRatings() {
-        guard let ratings = recipeDetailVC?.ratings, let averageRating = recipeDetailVC?.averageRating else {
-            ratingsView.oneStarBar.fillRatio = CGFloat(0)
-            ratingsView.twoStarBar.fillRatio = CGFloat(0)
-            ratingsView.threeStarBar.fillRatio = CGFloat(0)
-            ratingsView.fourStarBar.fillRatio = CGFloat(0)
-            ratingsView.fiveStarBar.fillRatio = CGFloat(0)
-            
-            let ratingText = String(format: "%.1f", 0)
-            ratingsView.ratingLabel.text = ratingText
-            ratingsView.numberOfRatingsLabel.text = "0 Ratings"
-            return
-        }
-        
-        let numberOfRatings = ratings.count
-        let oneStarRatio = (ratings.filter { $0 == 1 }.count) / numberOfRatings
-        let twoStarRatio = (ratings.filter { $0 == 2 }.count) / numberOfRatings
-        let threeStarRatio = (ratings.filter { $0 == 3 }.count) / numberOfRatings
-        let fourStarRatio = (ratings.filter { $0 == 4 }.count) / numberOfRatings
-        let fiveStarRatio = (ratings.filter { $0 == 5 }.count) / numberOfRatings
-
-        ratingsView.oneStarBar.fillRatio = CGFloat(oneStarRatio)
-        ratingsView.twoStarBar.fillRatio = CGFloat(twoStarRatio)
-        ratingsView.threeStarBar.fillRatio = CGFloat(threeStarRatio)
-        ratingsView.fourStarBar.fillRatio = CGFloat(fourStarRatio)
-        ratingsView.fiveStarBar.fillRatio = CGFloat(fiveStarRatio)
-        
-        let ratingText = String(format: "%.1f", averageRating)
-        ratingsView.ratingLabel.text = ratingText
-        ratingsView.numberOfRatingsLabel.text = "\(numberOfRatings) Ratings"
-        
-        ratingsView.layoutSubviews()
-        ratingsView.oneStarBar.layoutSubviews()
+        toggleRatingsView()
     }
     
     @objc func writeReviewButtonTapped() {
         delegate?.presentComposeReviewView()
     }
-    
-    var oneLineHeight: CGFloat {
-        return 54.0
-    }
-    
-    var longTagIndex: Int {
-        return 1
-    }
 }
 
 extension AboutCell: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if let tags = recipeDetailVC?.recipe?.tags {
-            return tags.count
-        } else {
-            return 0
-        }
+        guard let tags = recipeDetailVC?.recipe?.tags else { return 0 }
+        return tags.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -361,7 +330,8 @@ extension AboutCell: UICollectionViewDelegate, UICollectionViewDataSource, UICol
         
         let tag = tags[indexPath.item].rawValue
         
-        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: UIColor.white])
+        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
+                                                                            NSAttributedStringKey.foregroundColor: UIColor.white])
         cell.tagLabel.attributedText = attributedString
         cell.isSelected = true
         cell.setUpViews()
@@ -373,16 +343,13 @@ extension AboutCell: UICollectionViewDelegate, UICollectionViewDataSource, UICol
         return 8.0
     }
     
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-//        return adaptConstant(12)
-//    }
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         guard let tags = recipeDetailVC?.recipe?.tags else { return CGSize.zero }
         
         let tag = tags[indexPath.item].rawValue
         
-        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-SemiBold", size: adaptConstant(16))!, NSAttributedStringKey.foregroundColor: UIColor.white])
+        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
+                                                                            NSAttributedStringKey.foregroundColor: UIColor.white])
         return CGSize(width: attributedString.size().width + adaptConstant(24), height: adaptConstant(27))
     }
 }
@@ -405,5 +372,4 @@ extension AboutCell: UITableViewDelegate, UITableViewDataSource {
 protocol AboutCellDelegate: class {
     func presentComposeReviewView()
     func resizeCollectionView(forHeight height: CGFloat, cell: UICollectionViewCell)
-    func scrollToBottom()
 }

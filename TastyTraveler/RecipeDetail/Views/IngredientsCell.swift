@@ -34,7 +34,6 @@ class IngredientsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
     }()
     
     var ingredients = [String]()
-    
     var delegate: AboutCellDelegate?
 
     override func setUpViews() {
