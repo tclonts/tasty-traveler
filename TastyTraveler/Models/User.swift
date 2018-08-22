@@ -14,6 +14,8 @@ struct TTUser {
 //    var country: String?
     var username: String
     var bio: String?
+    var points: Int = 0
+    
     
 //    var cookedRecipes: [String]?   // recipe IDs
 //    var favoriteRecipes: [String]? // recipe IDs

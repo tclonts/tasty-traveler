@@ -45,7 +45,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     lazy var pointsButton: UIButton = {
         let button = UIButton(type: .system)
-        let title = NSAttributedString(string: "0", attributes: [
+        let title = NSAttributedString(string: "\(0)", attributes: [
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
             NSAttributedStringKey.foregroundColor: Color.primaryOrange])
         button.setAttributedTitle(title, for: .normal)
@@ -64,12 +64,17 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return imageView
     }()
     
+    
     lazy var profilePhotoButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "profilePhotoButton"), for: .normal)
         button.addTarget(self, action: #selector(didTapProfilPhotoButton), for: .touchUpInside)
         return button
     }()
+    
+
+    
+    
     
     let followerLabel: UILabel = {
         let label = UILabel()
@@ -93,6 +98,27 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         label.textColor = Color.blackText
         label.text = "Username"
         return label
+    }()
+    
+    lazy var bronzeBadge: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
+        button.addTarget(self, action: #selector(didTapNotificationsButton), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var silverBadge: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
+        button.addTarget(self, action: #selector(didTapNotificationsButton), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var goldBadge: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
+        button.addTarget(self, action: #selector(didTapNotificationsButton), for: .touchUpInside)
+        return button
     }()
     
     let countryFlagImageView: UIImageView = {
@@ -186,7 +212,11 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         stackView.axis = .horizontal
         stackView.spacing = 8
         
-        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, pointsLabel, pointsButton, usernameLabel, stackView, bioLabel, separatorLine, unreadIndicator)
+        let stackView2 = UIStackView(arrangedSubviews: [bronzeBadge, silverBadge, goldBadge])
+        stackView2.axis = .horizontal
+        stackView2.spacing = 8
+        
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, pointsLabel, pointsButton, usernameLabel, stackView, stackView2, bioLabel, separatorLine, unreadIndicator)
         
         backButton.left(20)
         backButton.Top == safeAreaLayoutGuide.Top + 12
@@ -219,7 +249,11 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         
         pointsButton.Top == pointsLabel.Bottom
         pointsButton.CenterX == pointsLabel.CenterX
-    
+        
+        stackView2.Top == pointsButton.Bottom
+        stackView2.CenterX == pointsButton.CenterX
+//        stackView2.centerVertically()
+        
         usernameLabel.Top == profilePhotoButton.Bottom + 8
         usernameLabel.centerHorizontally()
         
@@ -294,6 +328,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             
             if let urlString = user!.avatarURL {
                 self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+            }
+            
+            if let userPoints = user?.points {
+                self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
+                let title = NSAttributedString(string: "\(userPoints)", attributes: [
+                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                    NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
         }
     }
@@ -467,6 +509,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
 
             if let username = user?.username {
                 headerView.usernameLabel.text = username
+            }
+            
+            if let userPoints = user?.points {
+                headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
+                let title = NSAttributedString(string: "\(userPoints)", attributes: [
+                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                    NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
             
             if let bio = user?.bio, bio != "" {
