@@ -43,6 +43,16 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return button
     }()
     
+    lazy var pointsButton: UIButton = {
+        let button = UIButton(type: .system)
+        let title = NSAttributedString(string: "0", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        button.addTarget(self, action: #selector(pointsButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
     let profilePhotoImageView: CustomImageView = {
         let imageView = CustomImageView()
         imageView.image = #imageLiteral(resourceName: "avatar")
@@ -59,6 +69,22 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.setImage(#imageLiteral(resourceName: "profilePhotoButton"), for: .normal)
         button.addTarget(self, action: #selector(didTapProfilPhotoButton), for: .touchUpInside)
         return button
+    }()
+    
+    let followerLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 12)
+        label.textColor = Color.blackText
+        label.text = "Followers"
+        return label
+    }()
+    
+    let pointsLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 12)
+        label.textColor = Color.blackText
+        label.text = "Points"
+        return label
     }()
     
     let usernameLabel: UILabel = {
@@ -160,7 +186,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         stackView.axis = .horizontal
         stackView.spacing = 8
         
-        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, usernameLabel, stackView, bioLabel, separatorLine, unreadIndicator)
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, pointsLabel, pointsButton, usernameLabel, stackView, bioLabel, separatorLine, unreadIndicator)
         
         backButton.left(20)
         backButton.Top == safeAreaLayoutGuide.Top + 12
@@ -183,7 +209,17 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         
         profilePhotoButton.CenterY == profilePhotoImageView.Bottom
         profilePhotoButton.centerHorizontally()
+                
+        pointsLabel.CenterX == bioLabel.CenterX - contentView.frame.width/4
+        pointsLabel.centerVertically()
         
+//        pointsLabel.CenterX == usernameLabel.CenterX
+//        pointsLabel.Right == usernameLabel.CenterX + contentView.frame.width/3.2
+//        pointsLabel.centerVertically()
+        
+        pointsButton.Top == pointsLabel.Bottom
+        pointsButton.CenterX == pointsLabel.CenterX
+    
         usernameLabel.Top == profilePhotoButton.Bottom + 8
         usernameLabel.centerHorizontally()
         
@@ -215,6 +251,10 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     @objc func didTapProfilPhotoButton() {
         self.delegate?.didTapProfilePhotoButton()
+    }
+    
+    @objc func pointsButtonTapped() {
+        
     }
     
     
