@@ -15,6 +15,7 @@ struct TTUser {
     var username: String
     var bio: String?
     var points: Int = 0
+    var badgeStatus: Int = 1
     
     
 //    var cookedRecipes: [String]?   // recipe IDs

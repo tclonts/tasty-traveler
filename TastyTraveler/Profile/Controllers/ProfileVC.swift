@@ -337,6 +337,19 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     NSAttributedStringKey.foregroundColor: Color.primaryOrange])
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
+            
+            if let badgeCount = user?.badgeStatus {
+                if badgeCount == 0 {
+                    self.headerView.bronzeBadge.isHidden = true
+                    self.headerView.silverBadge.isHidden = true
+                    self.headerView.goldBadge.isHidden = true
+                } else if badgeCount == 1 {
+                    self.headerView.silverBadge.isHidden = true
+                    self.headerView.goldBadge.isHidden = true
+                } else if badgeCount == 2 {
+                    self.headerView.goldBadge.isHidden = true
+                }
+            }
         }
     }
     
@@ -518,6 +531,20 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     NSAttributedStringKey.foregroundColor: Color.primaryOrange])
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
+            
+            if let badgeCount = user?.badgeStatus {
+                if badgeCount == 0 {
+                    self.headerView.bronzeBadge.isHidden = true
+                    self.headerView.silverBadge.isHidden = true
+                    self.headerView.goldBadge.isHidden = true
+                } else if badgeCount == 1 {
+                    self.headerView.silverBadge.isHidden = true
+                    self.headerView.goldBadge.isHidden = true
+                } else if badgeCount == 2 {
+                    self.headerView.goldBadge.isHidden = true
+                }
+            }
+
             
             if let bio = user?.bio, bio != "" {
                 headerView.bioLabel.text = bio
