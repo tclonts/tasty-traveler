@@ -72,10 +72,6 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return button
     }()
     
-
-    
-    
-    
     let followerLabel: UILabel = {
         let label = UILabel()
         label.font = ProximaNova.semibold.of(size: 12)
