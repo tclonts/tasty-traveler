@@ -359,6 +359,9 @@ extension HomeVC {
         }
     }
     
+    
+    
+    
     func getRecipeData(forDict recipeDictionary: [String:Any], key: String, group: DispatchGroup) {
         guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }
         
@@ -656,9 +659,23 @@ extension HomeVC: RecipeCellDelegate {
                 
                 recipe.hasFavorited = false
                 
+                    FirebaseController.shared.fetchRecipeWithUID(uid: recipe.uid) { (recipe) in
+                        guard let cook = recipe?.creator else {return}
+                        var points = recipe?.creator.points
+                        
+                        if points != nil {
+                            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! - 1)
+                        } else {
+                            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points)
+                        }
+                    }
+                
+                
                 self.searchResultRecipes[indexPath.item] = recipe
                 
                 self.tableView.reloadRows(at: [indexPath], with: .none)
+                
+                
                 
                 NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
             } else {
@@ -683,6 +700,18 @@ extension HomeVC: RecipeCellDelegate {
                         SVProgressHUD.dismiss(withDelay: 1)
                         
                         recipe.hasFavorited = true
+                        
+                        FirebaseController.shared.fetchRecipeWithUID(uid: recipe.uid) { (recipe) in
+                            guard let cook = recipe?.creator else {return}
+                            var points = recipe?.creator.points
+                            
+                            if points != nil {
+                                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! + 1)
+                            } else {
+                                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points)
+                            }
+                        }
+                        
                         
                         self.searchResultRecipes[indexPath.item] = recipe
                         

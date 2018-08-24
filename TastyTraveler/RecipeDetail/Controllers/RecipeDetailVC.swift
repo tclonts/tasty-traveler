@@ -551,31 +551,7 @@ class RecipeDetailVC: UIViewController {
         if recipe!.hasCooked {
             guard let cookedDate = recipe?.cookedDate else { return }
      
-             guard let userID = Auth.auth().currentUser?.uid else { return }
-            
-            guard let recipeUID = recipe?.uid else { return }
-            
-            FirebaseController.shared.fetchRecipeWithUID(uid: recipeUID) { (recipe) in
-                guard let cook = recipe?.creator else {return}
-                var points = recipe?.creator.points
-                
-                if points != nil {
-                    FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! + 200)
-                } else {
-                    FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(8)
-                }
-            }
-    
-//            FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
-//                guard let user = user else {return}
-//                var points = user.points
-//
-//                if points != nil {
-//                    FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(points + 200)
-//                    } else {
-//                    FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(8)
-//                    }
-//            }
+            pointAdder(numberOfPoints: 5)
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "MM/dd/yy"
