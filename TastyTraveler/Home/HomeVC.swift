@@ -662,12 +662,8 @@ extension HomeVC: RecipeCellDelegate {
                     FirebaseController.shared.fetchRecipeWithUID(uid: recipe.uid) { (recipe) in
                         guard let cook = recipe?.creator else {return}
                         var points = recipe?.creator.points
-                        
-                        if points != nil {
-                            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! - 1)
-                        } else {
-                            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points)
-                        }
+                        let newPoints = points! + 1
+                        FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
                     }
                 
                 
@@ -704,13 +700,10 @@ extension HomeVC: RecipeCellDelegate {
                         FirebaseController.shared.fetchRecipeWithUID(uid: recipe.uid) { (recipe) in
                             guard let cook = recipe?.creator else {return}
                             var points = recipe?.creator.points
-                            
-                            if points != nil {
-                                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! + 1)
-                            } else {
-                                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points)
-                            }
+                            let newPoints = points! - 1
+                            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
                         }
+
                         
                         
                         self.searchResultRecipes[indexPath.item] = recipe

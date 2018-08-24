@@ -17,14 +17,17 @@ extension RecipeDetailVC {
         guard let recipeUID = recipe?.uid else { return }
         
         FirebaseController.shared.fetchRecipeWithUID(uid: recipeUID) { (recipe) in
-            guard let cook = recipe?.creator else {return}
-            var points = recipe?.creator.points
-            
-            if points != nil {
-                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! + numberOfPoints)
-            } else {
-                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(8)
-            }
+            guard let recipe = recipe else { return }
+            let cook = recipe.creator
+            var points = recipe.creator.points
+            let newPoints = points! + numberOfPoints
+            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
+
+//            if points != nil {
+//                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(points! + numberOfPoints)
+//            } else {
+//                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(8)
+//            }
         }
     }
     
@@ -37,7 +40,7 @@ extension RecipeDetailVC {
             var points = user.points
             
             if points != nil {
-                FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(points + numberOfPoints)
+                FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(points! + numberOfPoints)
             } else {
                 FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(8)
             }
