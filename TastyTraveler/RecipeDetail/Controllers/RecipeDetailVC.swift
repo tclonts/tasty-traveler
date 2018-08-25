@@ -514,11 +514,13 @@ class RecipeDetailVC: UIViewController {
                 let popup = CookedItAlertView()
                 popup.modalPresentationStyle = .overCurrentContext
                 popup.recipeID = recipe!.uid
+                pointAdder(numberOfPoints: 5)
                 self.present(popup, animated: false) {
                     popup.showAlertView()
                 }
                 
             } else {
+                pointAdder(numberOfPoints: -5)
                 let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
                 ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (_) in
                     FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(self.recipe!.uid).removeValue()
@@ -550,8 +552,6 @@ class RecipeDetailVC: UIViewController {
         
         if recipe!.hasCooked {
             guard let cookedDate = recipe?.cookedDate else { return }
-     
-            pointAdder(numberOfPoints: 5)
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "MM/dd/yy"
@@ -570,7 +570,6 @@ class RecipeDetailVC: UIViewController {
         } else {
             cookLabel.text = "Cooked it!"
             cookLabel.textColor = Color.primaryOrange
-            
             
             UIView.animate(withDuration: 0.3, animations: {
                 self.cookedDateLabel.isHidden = true
@@ -633,6 +632,8 @@ class RecipeDetailVC: UIViewController {
             guard let userID = Auth.auth().currentUser?.uid else { return }
             
             if self.recipe!.hasFavorited {
+                
+                pointAdder(numberOfPoints: -1)
                 // remove
                 FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
                 FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
@@ -651,7 +652,10 @@ class RecipeDetailVC: UIViewController {
                 
             } else {
                 // add
-                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
+                
+                pointAdder(numberOfPoints: 1)
+                
+               FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
                     if let error = error {
                         print("Failed to favorite recipe:", error)
                         return

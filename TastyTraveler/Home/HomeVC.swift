@@ -659,12 +659,7 @@ extension HomeVC: RecipeCellDelegate {
                 
                 recipe.hasFavorited = false
                 
-                    FirebaseController.shared.fetchRecipeWithUID(uid: recipe.uid) { (recipe) in
-                        guard let cook = recipe?.creator else {return}
-                        var points = recipe?.creator.points
-                        let newPoints = points! + 1
-                        FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
-                    }
+                self.pointAdder(numberOfPoints: -1, cell: cell)
                 
                 
                 self.searchResultRecipes[indexPath.item] = recipe
@@ -697,12 +692,7 @@ extension HomeVC: RecipeCellDelegate {
                         
                         recipe.hasFavorited = true
                         
-                        FirebaseController.shared.fetchRecipeWithUID(uid: recipe.uid) { (recipe) in
-                            guard let cook = recipe?.creator else {return}
-                            var points = recipe?.creator.points
-                            let newPoints = points! - 1
-                            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
-                        }
+                        self.pointAdder(numberOfPoints: 1, cell: cell)
 
                         
                         
@@ -717,3 +707,21 @@ extension HomeVC: RecipeCellDelegate {
         }
     }
 }
+
+extension HomeVC {
+    
+    func pointAdder(numberOfPoints: Int, cell: RecipeCell) {
+        guard let indexPath = tableView?.indexPath(for: cell) else { return }
+        var recipe = self.searchResultRecipes[indexPath.item]
+            
+        let recipeUID = recipe.uid
+            
+            FirebaseController.shared.fetchRecipeWithUID(uid: recipeUID) { (recipe) in
+                guard let recipe = recipe else { return }
+                let cook = recipe.creator
+                var points = recipe.creator.points
+                let newPoints = points != nil ? points! + numberOfPoints : numberOfPoints
+                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
+            }
+        }
+    }
