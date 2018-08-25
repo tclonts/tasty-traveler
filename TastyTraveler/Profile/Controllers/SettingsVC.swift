@@ -144,15 +144,15 @@ class SettingsVC: FormViewController {
 
             SKStoreReviewController.requestReview()
 
-                guard let userID = Auth.auth().currentUser?.uid else { return }
-            
-            FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
-                guard let user = user else { return }
-                
-                var points = user.points
-                let newPoints = user.points != nil ? points! + 50 : 50
-                FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
-            }
+//                guard let userID = Auth.auth().currentUser?.uid else { return }
+//
+//            FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+//                guard let user = user else { return }
+//
+//                var points = user.points
+//                let newPoints = user.points != nil ? points! + 50 : 50
+//                FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
+//            }
         }
     }
     
@@ -276,6 +276,8 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     
     var bio: String? {
         didSet {
+            pointAdder(numberOfPoints: 20)
+
             let bioRow = form.rowBy(tag: "Bio")
             bioRow?.baseValue = bio
             bioRow?.updateCell()
@@ -641,10 +643,12 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     
     @objc func saveAccountInfo() {
         guard let user = Auth.auth().currentUser else { return }
+//        pointAdder(numberOfPoints: 20)
         
         if let bioRow = self.form.rowBy(tag: "Bio") {
             
             if let newBio = self.newBio {
+                
                 FirebaseController.shared.ref.child("users").child(user.uid).updateChildValues(["bio": newBio])
                 NotificationCenter.default.post(name: Notification.Name("UserInfoUpdated"), object: nil)
 
@@ -825,6 +829,23 @@ class AccountVC: FormViewController, UITextFieldDelegate {
                     
                     SVProgressHUD.dismiss()
                 })
+            }
+        }
+    }
+}
+
+extension AccountVC {
+    
+    func pointAdder(numberOfPoints: Int) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            var points = user.points
+            let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
+            if user.bio == nil || user.bio == "" {
+                FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
             }
         }
     }

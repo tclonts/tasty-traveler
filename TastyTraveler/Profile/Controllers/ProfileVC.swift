@@ -726,9 +726,12 @@ extension ProfileVC {
             avatarImage = possibleImage
         } else if let possibleImage = info["UIImagePickerControllerOriginalImage"] as? UIImage {
             avatarImage = possibleImage
+            
         } else {
             return
         }
+        
+        
         
         picker.dismiss(animated: true) {
             var imageCropVC: RSKImageCropViewController!
@@ -745,6 +748,7 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
         dismiss(animated: true, completion: nil)
         
         let imageData = resize(croppedImage)
+        pointAdder(numberOfPoints: 10)
         FirebaseController.shared.uploadProfilePhoto(data: imageData!)
     }
     
@@ -822,4 +826,21 @@ extension ProfileVC: ProfileHeaderViewDelegate {
             navController.pushViewController(settingsVC.accountVC, animated: true)
         }
     }
+}
+
+extension ProfileVC {
+    
+    func pointAdder(numberOfPoints: Int) {
+                guard let userID = Auth.auth().currentUser?.uid else { return }
+
+            FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+                guard let user = user else { return }
+
+                var points = user.points
+                let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
+                if user.avatarURL == nil || user.avatarURL == "" {
+                FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
+                }
+            }
+        }
 }

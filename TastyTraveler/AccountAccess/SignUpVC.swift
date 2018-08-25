@@ -538,7 +538,7 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
         let values: [String:Any] = ["toID": toID,
                                     "fromID": fromID,
                                     "timestamp": timestamp,
-                                    "text": "Hello \(username), thank you for joining Tasty Traveler, a place where people can cook, share, and communicate with one another about everyone's favorite thing...food. \n\nWe want to let you know that Tasty Traveler will never flood your email inbox with spam mail, and will never use your info for anything outside of Tasty Traveler. \n\nWe welcome and encourage you to be an active member of this community and share your talent with the world! By contributing recipes or cooking recipes created by others, you are helping to build a better community for all of us here. \n\nAlso, this communication portal is for you to give us your feedback and send us any ideas you have about how to improve the overall experience of Tasty Traveler. \n\nIf you have any questions, please ask them here. We'd love to hear from you. \n\nThank you and have fun discovering and cooking delicious recipes.",
+                                    "text": "Hello \(username), Thank you so much for joining tasty traveler where cooks like yourself create recipes for the whole world. \n\nWe want to be brief and promise we will never flood your emails with scam, we will always be free and you can reach out to us here in this comment section with any questions. \n\nBefore we go, Question of the day. What is your favorite dessert?",
             "unread": true]
         
         childRef.updateChildValues(values) { (error, ref) in
