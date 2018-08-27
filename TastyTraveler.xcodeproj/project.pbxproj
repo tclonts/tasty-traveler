@@ -95,6 +95,8 @@
 		2ADA49BA20572D240024C8EE /* OnboardingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49B920572D240024C8EE /* OnboardingCell.swift */; };
 		2ADA49BC20572DA20024C8EE /* Validator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49BB20572DA20024C8EE /* Validator.swift */; };
 		2AEF1C6A2056E667001DBB98 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF1C692056E667001DBB98 /* GradientButton.swift */; };
+		BE25D1A2213222FE00D2940D /* CookedImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A1213222FE00D2940D /* CookedImageCell.swift */; };
+		BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */; };
 		BEBA9BDA212E734300E4B145 /* ExtensionsForPointSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */; };
 		BEBA9BDC212F8B5300E4B145 /* ExtensionForHomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */; };
 /* End PBXBuildFile section */
@@ -192,6 +194,8 @@
 		2AEF1C692056E667001DBB98 /* GradientButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientButton.swift; sourceTree = "<group>"; };
 		60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.debug.xcconfig"; sourceTree = "<group>"; };
 		7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TastyTraveler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE25D1A1213222FE00D2940D /* CookedImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookedImageCell.swift; sourceTree = "<group>"; };
+		BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForImagePicker.swift; sourceTree = "<group>"; };
 		BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionsForPointSystem.swift; sourceTree = "<group>"; };
 		BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForHomeVC.swift; sourceTree = "<group>"; };
 		F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.release.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.release.xcconfig"; sourceTree = "<group>"; };
@@ -304,6 +308,7 @@
 				2A665ACF206C17D70014A464 /* RecipeDetailVC.swift */,
 				2A2D480520A204BE00705D70 /* ComposeReviewVC.swift */,
 				BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */,
+				BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -312,6 +317,7 @@
 			isa = PBXGroup;
 			children = (
 				2A665AD5206D8ECD0014A464 /* AboutCell.swift */,
+				BE25D1A1213222FE00D2940D /* CookedImageCell.swift */,
 				2A665AD7206D8EE10014A464 /* IngredientsCell.swift */,
 				2A665AD9206D8EF90014A464 /* DirectionsCell.swift */,
 				2A35F5A720A0DC14009899AA /* InfoBox.swift */,
@@ -815,6 +821,7 @@
 				2A9BA328209A23DE00AC3E42 /* Chat.swift in Sources */,
 				2A9BA3242099FE7C00AC3E42 /* MessagesVC.swift in Sources */,
 				2A665AD2206C1C790014A464 /* RecipeHeaderView.swift in Sources */,
+				BE25D1A2213222FE00D2940D /* CookedImageCell.swift in Sources */,
 				2ABEE58120B31BE40000519A /* UserNotification.swift in Sources */,
 				2A8D899720978E5A009505B4 /* CookedItAlertView.swift in Sources */,
 				2ADA49BA20572D240024C8EE /* OnboardingCell.swift in Sources */,
@@ -842,6 +849,7 @@
 				BEBA9BDA212E734300E4B145 /* ExtensionsForPointSystem.swift in Sources */,
 				2A2D480C20A3986D00705D70 /* RecipeAnnotationView.swift in Sources */,
 				2A8FE11620B5C71B008BA9F4 /* ErrorLabel.swift in Sources */,
+				BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */,
 				2AC67E2B2086A2F700C0E828 /* FiltersLauncher.swift in Sources */,
 				2A35F5A820A0DC14009899AA /* InfoBox.swift in Sources */,
 				2A0B4DF7205988510056F7D5 /* Constants.swift in Sources */,

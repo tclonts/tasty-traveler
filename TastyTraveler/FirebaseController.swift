@@ -291,8 +291,68 @@ class FirebaseController {
         }
     }
     
+    func uploadCookedRecipeImage(recipe: Recipe, data: Data) {
+        
+        guard let userID = Auth.auth().currentUser?.uid else {return }
+        
+        let localData = data
+        let identifier = recipe.uid
+        let fileRef = storageRef.child("recipes/\(identifier)")
+        
+        let uploadTask = fileRef.putData(localData, metadata: nil) { (metadata, error) in
+            guard let metadata = metadata else {
+                return
+            }
+            // Metadata contains file metadata such as size, content-type, and download URL.
+            guard let downloadURL = metadata.downloadURL()?.absoluteString else { print("No Download URL"); return }
+            
+            // store downloadURL at database
+            self.ref.child("recipes").child(recipe.uid).child("cookedImages").setValue([userID: downloadURL])
+            
+//            let changeRequest = recipe.createProfileChangeRequest()
+//            changeRequest.photoURL = URL(string: downloadURL)
+//            changeRequest.commitChanges { (error) in
+//                if let error = error {
+//                    print(error.localizedDescription)
+//                }
+//            }
+        }
+        
+        // Listen for state changes, errors, and completion of the upload.
+        uploadTask.observe(.resume) { (snapshot) in
+            // Upload resumed, also fires when the upload starts
+        }
+        
+        uploadTask.observe(.pause) { (snapshot) in
+            // Upload paused
+        }
+        
+        uploadTask.observe(.progress) { (snapshot) in
+            // Upload reported progress
+            let percentComplete = 100.0 * Double(snapshot.progress!.completedUnitCount) / Double(snapshot.progress!.totalUnitCount)
+            print(percentComplete)
+        }
+        
+        uploadTask.observe(.success) { (snapshot) in
+            // Upload completed successfully
+            // store downloadURL
+            
+        }
+        
+        uploadTask.observe(.failure) { (snapshot) in
+            if let error = snapshot.error {
+                print(error.localizedDescription)
+            }
+        }
+        
+        
+        
+    }
+    
+    
     func uploadProfilePhoto(data: Data) {
         guard let currentUser = Auth.auth().currentUser else { return }
+        
         
         let localData = data
         let identifier = currentUser.uid

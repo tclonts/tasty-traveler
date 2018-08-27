@@ -37,6 +37,8 @@ struct Recipe {
     static let tagsKey = "tags"
     static let hasFavoritedKey = "hasFavorited"
     static let hasCookedKey = "hasCooked"
+    static let cookedImagesKey = "cookedImages"
+    static let cookedImagesIDKey = "cookedImagesIDs"
     
     var uid: String
     
@@ -67,6 +69,7 @@ struct Recipe {
     var thumbnailURL: String?
     
     var tags: [Tag]?
+    var cookedImages: [[String:String]]?
     
     // PERSONAL
     var hasFavorited = false
@@ -95,11 +98,16 @@ struct Recipe {
             self.reviewsDictionary = reviewIDsDict
         }
         
+        if let cookedImagesIDsDict = dictionary["cookedImages"] as? [[String:String]] {
+            self.cookedImages = cookedImagesIDsDict
+        }
+        
+        
         self.difficulty = dictionary[Recipe.difficultyKey] as? String ?? "Easy"
         
-//        if let ratings = self.ratings {
-//            self.overallRating = averageRating(ratings)
-//        }
+        //        if let ratings = self.ratings {
+        //            self.overallRating = averageRating(ratings)
+        //        }
         self.recipeScore = dictionary["recipeScore"] as? Double ?? 0
         self.description = dictionary[Recipe.descriptionKey] as? String
         self.servings = dictionary[Recipe.servingsKey] as? Int ?? 0

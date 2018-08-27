@@ -17,8 +17,12 @@ import MapKit
 import Social
 import FacebookShare
 import FacebookCore
+import RSKImageCropper
 
-class RecipeDetailVC: UIViewController {
+class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    let imagePicker = UIImagePickerController()
+    var isRecipeDetailVC = true
     
     var isBrowsing = false
     
@@ -87,7 +91,7 @@ class RecipeDetailVC: UIViewController {
             
             formatCookButton()
             fetchReviewData()
-
+            
             let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe!.uid])
             AppEventsLogger.log(viewContentEvent)
         }
@@ -143,7 +147,7 @@ class RecipeDetailVC: UIViewController {
         button.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
         
         let attributedText = NSAttributedString(string: "SHARE", attributes: [NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(13))!,
-                                                                             NSAttributedStringKey.foregroundColor: Color.darkGrayText])
+                                                                              NSAttributedStringKey.foregroundColor: Color.darkGrayText])
         
         button.setImage(#imageLiteral(resourceName: "shareNav"), for: .normal)
         button.setAttributedTitle(attributedText, for: .normal)
@@ -247,7 +251,7 @@ class RecipeDetailVC: UIViewController {
         
         let stackView = UIStackView(arrangedSubviews: [cookLabel, cookedDateLabel])
         stackView.axis = .vertical
-//        stackView.alignment = .center
+        //        stackView.alignment = .center
         
         button.sv(stackView)
         stackView.left(0).right(0)
@@ -325,7 +329,14 @@ class RecipeDetailVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-                
+        
+//        if isRecipeDetailVC {
+//            
+//            imagePicker.delegate = self
+//            imagePicker.sourceType = .photoLibrary
+//        }
+       
+        
         self.isHeroEnabled = true
         self.view.backgroundColor = .white
         navigationController?.setNavigationBarHidden(true, animated: false)
@@ -334,7 +345,7 @@ class RecipeDetailVC: UIViewController {
         
         //edgesForExtendedLayout = UIRectEdge.top
         //extendedLayoutIncludesOpaqueBars = true
-
+        
         recipeHeaderView.heroID = "recipeHeaderView"
         
         NotificationCenter.default.addObserver(self, selector: #selector(reloadRecipe), name: Notification.Name("submittedReview"), object: nil)
@@ -343,7 +354,7 @@ class RecipeDetailVC: UIViewController {
         applyHeroModifiers()
         
         viewIsDark = true
-                
+        
         if isMyRecipe { reloadRecipe() }
         
         if !isMyRecipe {
@@ -384,6 +395,12 @@ class RecipeDetailVC: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        if isRecipeDetailVC {
+            
+            imagePicker.delegate = self
+            imagePicker.sourceType = .photoLibrary
+        }
+        
         topView.topConstraint?.constant = 0
         UIView.animate(withDuration: 0.3) {
             self.view.layoutIfNeeded()
@@ -398,7 +415,7 @@ class RecipeDetailVC: UIViewController {
             guard let recipe = recipe else { return }
             
             var updatedRecipe = recipe
-    
+            
             FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
                 if (snapshot.value as? Double) != nil {
                     updatedRecipe.hasFavorited = true
@@ -506,47 +523,15 @@ class RecipeDetailVC: UIViewController {
             self.present(accountAccessVC, animated: true, completion: nil)
         } else {
             
-            guard let userID = Auth.auth().currentUser?.uid else { return }
             
-            if !recipe!.hasCooked {
-                recipe?.cookedDate = Date()
-                recipe?.hasCooked = true
-                let popup = CookedItAlertView()
-                popup.modalPresentationStyle = .overCurrentContext
-                popup.recipeID = recipe!.uid
-                pointAdder(numberOfPoints: 5)
-                self.present(popup, animated: false) {
-                    popup.showAlertView()
-                }
-                
+            if !self.recipe!.hasCooked == true {
+            self.present(imagePicker, animated: false, completion: nil)
             } else {
-                pointAdder(numberOfPoints: -5)
-                let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
-                ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (_) in
-                    FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(self.recipe!.uid).removeValue()
-                    FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").child(self.recipe!.uid).removeValue()
-                    FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("reviews").child(userID).removeValue()
-                    
-                    NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
-                    NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
-                    
-                    
-                    self.recipe?.cookedDate = nil
-                    self.recipe?.hasCooked = false
-                    
-                    if !self.isFromFavorites {
-                        self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-                        self.homeVC?.recipeDataHasChanged = true
-                    }
-                    
-                    ac.dismiss(animated: true, completion: nil)
-                }))
-                ac.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
-                self.present(ac, animated: true, completion: nil)
+                uncookRecipe()
             }
         }
-        
     }
+    
     
     func formatCookButton() {
         
@@ -578,7 +563,6 @@ class RecipeDetailVC: UIViewController {
                 self.cookButton.layoutIfNeeded()
             })
         }
-        
     }
     
     @objc func askButtonTapped() {
@@ -589,7 +573,7 @@ class RecipeDetailVC: UIViewController {
             accountAccessVC.needAccount()
             self.present(accountAccessVC, animated: true, completion: nil)
         } else {
-        
+            
             if isFromChatLogVC {
                 dismiss(animated: true, completion: nil)
             } else {
@@ -655,7 +639,7 @@ class RecipeDetailVC: UIViewController {
                 
                 pointAdder(numberOfPoints: 1)
                 
-               FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
                     if let error = error {
                         print("Failed to favorite recipe:", error)
                         return
@@ -825,8 +809,8 @@ class RecipeDetailVC: UIViewController {
         shareButton.centerVertically()
     }
     
-//    lazy var topMenuBarConstraintFixed = menuBar.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 0)
-//    lazy var topMenuBarConstraint = menuBar.topAnchor.constraint(equalTo: recipeHeaderView.bottomAnchor, constant: adaptConstant(12))
+    //    lazy var topMenuBarConstraintFixed = menuBar.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 0)
+    //    lazy var topMenuBarConstraint = menuBar.topAnchor.constraint(equalTo: recipeHeaderView.bottomAnchor, constant: adaptConstant(12))
     
     func setUpScrollView() {
         scrollView.delegate = self
@@ -929,7 +913,7 @@ class RecipeDetailVC: UIViewController {
 extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-
+        
         if scrollView == self.scrollView {
             
             if viewIsDark == nil { return }
@@ -953,42 +937,42 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
             let indexPath = IndexPath(item: Int(index), section: 0)
             menuBar.collectionView.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition())
             
-//            let position = CGPoint(x: 0, y: self.menuBar.frame.origin.y)
-//            if position.y < self.scrollView.contentOffset.y {
-//
-                if indexPath.item == 0 {
-                    self.ingredientsCellScrollPosition = self.scrollView.contentOffset
-                    //                guard aboutCellScrollPosition != nil else { return }
-                    //                self.scrollView.setContentOffset(aboutCellScrollPosition!, animated: true)
+            //            let position = CGPoint(x: 0, y: self.menuBar.frame.origin.y)
+            //            if position.y < self.scrollView.contentOffset.y {
+            //
+            if indexPath.item == 0 {
+                self.ingredientsCellScrollPosition = self.scrollView.contentOffset
+                //                guard aboutCellScrollPosition != nil else { return }
+                //                self.scrollView.setContentOffset(aboutCellScrollPosition!, animated: true)
+            }
+            
+            if indexPath.item == 1 {
+                if velocity.x > 0 {
+                    print("FROM ABOUT")
+                    self.aboutCellScrollPosition = self.scrollView.contentOffset
+                    guard ingredientsCellScrollPosition != nil else {
+                        let position = CGPoint(x: 0, y: self.menuBar.frame.origin.y)
+                        self.scrollView.setContentOffset(position, animated: true)
+                        return
+                    }
+                    self.scrollView.setContentOffset(ingredientsCellScrollPosition!, animated: true)
                 }
                 
-                if indexPath.item == 1 {
-                    if velocity.x > 0 {
-                        print("FROM ABOUT")
-                        self.aboutCellScrollPosition = self.scrollView.contentOffset
-                        guard ingredientsCellScrollPosition != nil else {
-                            let position = CGPoint(x: 0, y: self.menuBar.frame.origin.y)
-                            self.scrollView.setContentOffset(position, animated: true)
-                            return
-                        }
-                        self.scrollView.setContentOffset(ingredientsCellScrollPosition!, animated: true)
-                    }
-                    
-                    if velocity.x < 0 {
-                        print("FROM DIRECTIONS")
-                        self.directionsCellScrollPosition = self.scrollView.contentOffset
-                        guard ingredientsCellScrollPosition != nil else { return }
-                        self.scrollView.setContentOffset(ingredientsCellScrollPosition!, animated: true)
-                    }
-                    
+                if velocity.x < 0 {
+                    print("FROM DIRECTIONS")
+                    self.directionsCellScrollPosition = self.scrollView.contentOffset
+                    guard ingredientsCellScrollPosition != nil else { return }
+                    self.scrollView.setContentOffset(ingredientsCellScrollPosition!, animated: true)
                 }
                 
-                if indexPath.item == 2 {
-                    self.ingredientsCellScrollPosition = self.scrollView.contentOffset
-                    guard directionsCellScrollPosition != nil else { return }
-                    self.scrollView.setContentOffset(directionsCellScrollPosition!, animated: true)
-                }
-//            }
+            }
+            
+            if indexPath.item == 2 {
+                self.ingredientsCellScrollPosition = self.scrollView.contentOffset
+                guard directionsCellScrollPosition != nil else { return }
+                self.scrollView.setContentOffset(directionsCellScrollPosition!, animated: true)
+            }
+            //            }
         }
     }
     
@@ -1184,3 +1168,4 @@ func starRating(ns: [Double]) -> Double {
     let val = (f(s2, ns) - pow(fsns, 2)) / (N + K + 1.0)
     return fsns - (z * val.squareRoot())
 }
+

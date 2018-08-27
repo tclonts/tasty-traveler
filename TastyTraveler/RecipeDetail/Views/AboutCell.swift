@@ -9,6 +9,8 @@
 import UIKit
 import Stevia
 import MapKit
+import FirebaseAuth
+import Firebase
 
 class AboutCell: BaseCell {
     
@@ -61,7 +63,7 @@ class AboutCell: BaseCell {
         label.textColor = Color.darkGrayText
         return label
     }()
-
+    
     lazy var tagsCollectionView: UICollectionView = {
         let layout = FlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -71,6 +73,18 @@ class AboutCell: BaseCell {
         collectionView.isScrollEnabled = false
         collectionView.backgroundColor = .white
         collectionView.register(TagCell.self, forCellWithReuseIdentifier: "tagCell")
+        return collectionView
+    }()
+    
+    lazy var cookedItImageCollectionView: UICollectionView = {
+        let layout = FlowLayout()
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.allowsSelection = false
+        collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = .blue
+        collectionView.register(cookedImageCell.self, forCellWithReuseIdentifier: "cookedImageCell")
         return collectionView
     }()
     
@@ -137,11 +151,12 @@ class AboutCell: BaseCell {
         setUpDescriptionView()
         
         tagsCollectionView.left(adaptConstant(25)).right(adaptConstant(25)).height(100)
-
+        cookedItImageCollectionView.left(adaptConstant(25)).right(adaptConstant(25)).height(100)
+        
         setUpRatingsView()
         setUpReviewsView()
         
-        let stackView = UIStackView(arrangedSubviews: [infoView, descriptionStackView, tagsCollectionView, ratingsView, reviewsStackView, reviewsTableView])
+        let stackView = UIStackView(arrangedSubviews: [infoView, descriptionStackView, tagsCollectionView, cookedItImageCollectionView, ratingsView, reviewsStackView, reviewsTableView])
         
         scrollView.sv(stackView)
         stackView.fillContainer()
@@ -233,7 +248,7 @@ class AboutCell: BaseCell {
         reviewsLabel.left(0)
         reviewsLabel.textAlignment = .left
         //reviewsLabel.left(adaptConstant(25))
-
+        
         writeReviewButton.right(0)
         writeReviewButton.contentHorizontalAlignment = .right
         
@@ -284,7 +299,7 @@ class AboutCell: BaseCell {
         
         reviewsTableView.reloadData()
         
-        if recipeDetailVC!.didSubmitReview {            
+        if recipeDetailVC!.didSubmitReview {
             recipeDetailVC?.didSubmitReview = false
         }
         
@@ -294,6 +309,14 @@ class AboutCell: BaseCell {
             tagsCollectionView.heightConstraint?.constant = height
         } else {
             tagsCollectionView.heightConstraint?.constant = 0
+        }
+        
+        if recipeDetailVC?.recipe?.cookedImages != nil {
+            cookedItImageCollectionView.reloadData()
+            let height = cookedItImageCollectionView.collectionViewLayout.collectionViewContentSize.height
+            cookedItImageCollectionView.heightConstraint?.constant = height
+        } else {
+            cookedItImageCollectionView.heightConstraint?.constant = 0
         }
         
         self.layoutIfNeeded()
@@ -320,23 +343,58 @@ class AboutCell: BaseCell {
 extension AboutCell: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         guard let tags = recipeDetailVC?.recipe?.tags else { return 0 }
-        return tags.count
+        guard let cookedImages = recipeDetailVC?.recipe?.cookedImages else { return 0 }
+        if collectionView == tagsCollectionView {
+            return tags.count
+        } else if collectionView == cookedItImageCollectionView {
+            return cookedImages.count
+        } else {
+            return 0
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tagCell", for: indexPath) as! TagCell
         
-        guard let tags = recipeDetailVC?.recipe?.tags else { return UICollectionViewCell() }
-        
-        let tag = tags[indexPath.item].rawValue
-        
-        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
-                                                                            NSAttributedStringKey.foregroundColor: UIColor.white])
-        cell.tagLabel.attributedText = attributedString
-        cell.isSelected = true
-        cell.setUpViews()
-        
-        return cell
+        if collectionView == tagsCollectionView {
+            
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tagCell", for: indexPath) as! TagCell
+            
+            guard let tags = recipeDetailVC?.recipe?.tags else { return UICollectionViewCell() }
+            
+            let tag = tags[indexPath.item].rawValue
+            
+            let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font:             ProximaNova.semibold.of(size: 16),
+                                                                                NSAttributedStringKey.foregroundColor: UIColor.white])
+            cell.tagLabel.attributedText = attributedString
+            cell.isSelected = true
+            cell.setUpViews()
+            
+            return cell
+        } else if collectionView == self.cookedItImageCollectionView {
+            
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cookedImageCell", for: indexPath) as? cookedImageCell else { return UICollectionViewCell() }
+            
+            guard let cookedImage = recipeDetailVC?.recipe?.cookedImages![indexPath.row] else { return UICollectionViewCell() }
+            
+            
+            for value in cookedImage.values {
+                cell.cookedImageView.loadImage(urlString: value, placeholder: #imageLiteral(resourceName: "avatar"))
+            }
+            
+            let userID = Auth.auth().currentUser?.uid
+            FirebaseController.shared.fetchUserWithUID(uid: userID!) { (user) in
+                guard let user = user else { return}
+                
+                cell.userNameLabel.text = user.username
+                cell.isSelected = true
+                cell.setUpViews()
+            }
+            
+            return cell
+            
+        } else {
+            return UICollectionViewCell()
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -344,13 +402,30 @@ extension AboutCell: UICollectionViewDelegate, UICollectionViewDataSource, UICol
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        guard let tags = recipeDetailVC?.recipe?.tags else { return CGSize.zero }
+        if collectionView == tagsCollectionView {
+            guard let tags = recipeDetailVC?.recipe?.tags else { return CGSize.zero }
+            
+            let tag = tags[indexPath.item].rawValue
+            
+            let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
+                                                                                NSAttributedStringKey.foregroundColor: UIColor.white])
+            return CGSize(width: attributedString.size().width + adaptConstant(24), height: adaptConstant(27))
+            
+        } else if collectionView == cookedItImageCollectionView {
+            guard let cookedImages = recipeDetailVC?.recipe?.cookedImages else { return CGSize.zero }
+            
+            let images = cookedImages.reduce([], +)
+            
+            let image = images[indexPath.row].value
+           
+            let attributedString = NSAttributedString(string: image, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
+                                                                                        NSAttributedStringKey.foregroundColor: UIColor.white])
+            return CGSize(width: attributedString.size().width + adaptConstant(24), height: adaptConstant(27))
         
-        let tag = tags[indexPath.item].rawValue
-        
-        let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
-                                                                            NSAttributedStringKey.foregroundColor: UIColor.white])
-        return CGSize(width: attributedString.size().width + adaptConstant(24), height: adaptConstant(27))
+            
+        } else {
+            return CGSize()
+        }
     }
 }
 

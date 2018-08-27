@@ -74,6 +74,7 @@ class CookedItAlertView: UIViewController {
         button.setCustomTitle(string: "Done", font: ProximaNova.semibold.of(size: 16), textColor: .white, for: .normal)
         button.backgroundColor = Color.primaryOrange
         button.addTarget(self, action: #selector(doneButtonTapped), for: .touchUpInside)
+
         return button
     }()
     
@@ -123,6 +124,7 @@ class CookedItAlertView: UIViewController {
             self.overlayView.alpha = 1
             self.backgroundView.transform = .identity
         }, completion: nil)
+        
     }
     
     func handleDismiss() {
@@ -131,6 +133,11 @@ class CookedItAlertView: UIViewController {
             self.backgroundView.transform = CGAffineTransform(translationX: 0, y: self.view.frame.height - self.backgroundView.frame.height / 2)
         }) { (_) in
             self.dismiss(animated: false, completion: nil)
+            
+//            let recipeDetailVC = RecipeDetailVC()
+//
+//            recipeDetailVC.imagePicker.modalPresentationStyle = .overCurrentContext
+//            recipeDetailVC.present(recipeDetailVC.imagePicker, animated: false)
         }
     }
     
@@ -138,6 +145,7 @@ class CookedItAlertView: UIViewController {
 //        guard let rating = rating else { return }
 //        delegate?.submitRating(rating)
 //
+        
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         let rating = Int(self.ratingControl.rating)
