@@ -909,16 +909,6 @@ extension ProfileVC {
     }
     
     func badgeIncrementor() {
-       
-//        var hasMoreThanFiftyFavs = moreThanFiftyFavorites(completion: { (val) in
-//            return val
-//        })
-//
-//        var hasMoreThanTwentyUploadedRecipes = moreThanTwentyUploadedRecipes(completion: { (val) in
-//            return val
-//        })
-        
-        
         
         //GOLD
 
@@ -932,7 +922,7 @@ extension ProfileVC {
                 FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
                     print(snapshot.children.allObjects)
                     
-                    if snapshot.childrenCount >= 3 {
+                    if snapshot.childrenCount >= 50 {
                         FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
                             if snapshot.childrenCount >= 20 {
                                 FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
@@ -946,8 +936,7 @@ extension ProfileVC {
                                                 // INCREMENT TO GOLD
                                                 self.pointAdder(numberOfPoints: 500)
                                                 self.badgeStatusPointAdder(badgeStatusNumber: 3)
-
-
+                                                
                                                 return
                                             }
                                             
@@ -961,19 +950,62 @@ extension ProfileVC {
                 }
             }
         }
-
         
-//        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
-//            if snapshot.childrenCount >= 20,  {
-//                print("NICE!")
-//            }
-//
-//        }
+        //SILVER
         
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
+                    print(snapshot.children.allObjects)
+                    
+                    if snapshot.childrenCount >= 20 {
+                        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
+                            if snapshot.childrenCount >= 10 {
+                                FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                                        
+                                        let recipeUID = recipe.key
+                                        
+                                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
+                                            
+                                            if snapshot.childrenCount >= 5 {
+                                                // INCREMENT TO GOLD
+                                                self.pointAdder(numberOfPoints: 250)
+                                                self.badgeStatusPointAdder(badgeStatusNumber: 2)
+                                                
+                                                return
+                                            }
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+            }
         }
-    
+        //BRONZE
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+        
+            if user.avatarURL != nil, user.avatarURL != "", user.bio != nil, user.bio != "" {
+                FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
+                    if snapshot.childrenCount >= 3 {
+                        self.pointAdder(numberOfPoints: 100)
+                        self.badgeStatusPointAdder(badgeStatusNumber: 1)
+                    }
+                }
+            }
+            
     }
-
+}
+}
 
 
 
