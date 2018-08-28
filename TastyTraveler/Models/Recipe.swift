@@ -70,6 +70,7 @@ struct Recipe {
     
     var tags: [Tag]?
     var cookedImages: [[String:String]]?
+//    var continentsReach: [String]?
     
     // PERSONAL
     var hasFavorited = false

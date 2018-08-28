@@ -334,15 +334,15 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
             
-            if let badgeCount = user?.badgeStatus {
-                if badgeCount == 0 {
+            if let badgeStatus = user?.badgeStatus {
+                if badgeStatus == 0 || badgeStatus == nil {
                     self.headerView.bronzeBadge.isHidden = true
                     self.headerView.silverBadge.isHidden = true
                     self.headerView.goldBadge.isHidden = true
-                } else if badgeCount == 1 {
+                } else if badgeStatus == 1 {
                     self.headerView.silverBadge.isHidden = true
                     self.headerView.goldBadge.isHidden = true
-                } else if badgeCount == 2 {
+                } else if badgeStatus == 2 {
                     self.headerView.goldBadge.isHidden = true
                 }
             }
@@ -528,15 +528,15 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
             
-            if let badgeCount = user?.badgeStatus {
-                if badgeCount == 0 {
+            if let badgeStatus = user?.badgeStatus {
+                if badgeStatus == 0 || badgeStatus == nil {
                     self.headerView.bronzeBadge.isHidden = true
                     self.headerView.silverBadge.isHidden = true
                     self.headerView.goldBadge.isHidden = true
-                } else if badgeCount == 1 {
+                } else if badgeStatus == 1 {
                     self.headerView.silverBadge.isHidden = true
                     self.headerView.goldBadge.isHidden = true
-                } else if badgeCount == 2 {
+                } else if badgeStatus == 2 {
                     self.headerView.goldBadge.isHidden = true
                 }
             }
@@ -795,6 +795,7 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
 
 extension ProfileVC: ProfileHeaderViewDelegate {
     func didTapProfilePhotoButton() {
+        
         print("profile photo")
         present(imagePicker!, animated: true, completion: nil)
     }
@@ -843,4 +844,138 @@ extension ProfileVC {
                 }
             }
         }
-}
+    func badgeStatusPointAdder(badgeStatusNumber: Int) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            FirebaseController.shared.ref.child("users").child((user.uid)).child("badgeStatus").setValue(badgeStatusNumber)
+        }
+    }
+    
+    func moreThanFiftyFavorites(completion: @escaping (Bool)->()) -> Void{
+        
+        guard let userID = Auth.auth().currentUser?.uid else {return}
+        
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
+                    print(snapshot.children.allObjects)
+                    
+                    if snapshot.childrenCount >= 50 {
+                        completion(true)
+                    }
+                    
+                }
+            }
+            completion(false)
+        }
+        return
+    }
+    
+    func moreThanTwentyUploadedRecipes(completion: @escaping (Bool)->()) -> Void {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
+            if snapshot.childrenCount >= 20 {
+                completion(true)
+                } else {
+                completion(false)
+            }
+
+        }
+        return
+    }
+    
+    func moreThanTenCooked(completion: @escaping (Bool)->()) -> Void {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
+                    
+                    if snapshot.childrenCount >= 10 {
+                        completion(true)
+                    }
+                    
+                }
+            }
+        }
+        return
+    }
+    
+    func badgeIncrementor() {
+       
+//        var hasMoreThanFiftyFavs = moreThanFiftyFavorites(completion: { (val) in
+//            return val
+//        })
+//
+//        var hasMoreThanTwentyUploadedRecipes = moreThanTwentyUploadedRecipes(completion: { (val) in
+//            return val
+//        })
+        
+        
+        
+        //GOLD
+
+        guard let userID = Auth.auth().currentUser?.uid else {return}
+        
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
+                    print(snapshot.children.allObjects)
+                    
+                    if snapshot.childrenCount >= 3 {
+                        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
+                            if snapshot.childrenCount >= 20 {
+                                FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                                        
+                                        let recipeUID = recipe.key
+                                        
+                                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
+                                            
+                                            if snapshot.childrenCount >= 10 {
+                                                // INCREMENT TO GOLD
+                                                self.pointAdder(numberOfPoints: 500)
+                                                self.badgeStatusPointAdder(badgeStatusNumber: 3)
+
+
+                                                return
+                                            }
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+        
+//        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
+//            if snapshot.childrenCount >= 20,  {
+//                print("NICE!")
+//            }
+//
+//        }
+        
+        }
+    
+    }
+
+
+
+
+
+
