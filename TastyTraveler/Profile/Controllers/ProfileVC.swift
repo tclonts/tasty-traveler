@@ -49,7 +49,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
             NSAttributedStringKey.foregroundColor: Color.primaryOrange])
         button.setAttributedTitle(title, for: .normal)
-        button.addTarget(self, action: #selector(pointsButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         return button
     }()
     
@@ -99,21 +99,25 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     lazy var bronzeBadge: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
-        button.addTarget(self, action: #selector(didTapNotificationsButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
+        button.isUserInteractionEnabled = false
         return button
     }()
     
     lazy var silverBadge: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
-        button.addTarget(self, action: #selector(didTapNotificationsButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
+        button.isUserInteractionEnabled = false
+
         return button
     }()
     
     lazy var goldBadge: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
-        button.addTarget(self, action: #selector(didTapNotificationsButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
+        button.isUserInteractionEnabled = false
         return button
     }()
     
@@ -283,8 +287,8 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         self.delegate?.didTapProfilePhotoButton()
     }
     
-    @objc func pointsButtonTapped() {
-        
+    @objc func didTapPointsButton() {
+        self.delegate?.didTapPointsButton()
     }
     
     
@@ -299,6 +303,7 @@ protocol ProfileHeaderViewDelegate: class {
     func didTapProfilePhotoButton()
     func didTapBackButton()
     func goToAccountInfo()
+    func didTapPointsButton()
 }
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -393,37 +398,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        fetchUserInfo()
-        
-        self.view.sv(emptyDataView, userHasNoRecipesLabel)
-        emptyDataView.centerInContainer()
-        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
-        
-        if isMyProfile {
-            imagePicker = UIImagePickerController()
-            imagePicker!.delegate = self
-            imagePicker!.sourceType = .photoLibrary
-        }
-        
-        if let userPoints = user?.points {
-            headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
-            let title = NSAttributedString(string: "\(userPoints)", attributes: [
-                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-            headerView.pointsButton.setAttributedTitle(title, for: .normal)
-        }
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
-        
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.collectionView?.backgroundColor = .white
-        self.collectionView?.contentInsetAdjustmentBehavior = .never
-        self.collectionView?.showsVerticalScrollIndicator = false
-        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
-        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
+      
     }
     
     @objc func fetchUserInfo() {
@@ -601,6 +576,8 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        viewLoadSetup()
         
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
@@ -835,6 +812,13 @@ extension ProfileVC: ProfileHeaderViewDelegate {
         self.present(navController, animated: true, completion: nil)
     }
     
+    func didTapPointsButton() {
+        print("points")
+        let pointsVC = PointsVC()
+        let navController = UINavigationController(rootViewController: pointsVC)
+        self.present(navController, animated: true, completion: nil)
+    }
+    
     func didTapBackButton() {
         self.dismiss(animated: true, completion: nil)
     }
@@ -846,6 +830,40 @@ extension ProfileVC: ProfileHeaderViewDelegate {
             settingsVC.accountVC.bio = self.user?.bio ?? ""
             navController.pushViewController(settingsVC.accountVC, animated: true)
         }
+    }
+    
+    func viewLoadSetup(){
+        badgeIncrementor()
+        fetchUserInfo()
+        
+        self.view.sv(emptyDataView, userHasNoRecipesLabel)
+        emptyDataView.centerInContainer()
+        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
+        
+        if isMyProfile {
+            imagePicker = UIImagePickerController()
+            imagePicker!.delegate = self
+            imagePicker!.sourceType = .photoLibrary
+        }
+        
+        if let userPoints = user?.points {
+            headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
+            let title = NSAttributedString(string: "\(userPoints)", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            headerView.pointsButton.setAttributedTitle(title, for: .normal)
+        }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
+        
+        self.navigationController?.navigationBar.isTranslucent = false
+        self.collectionView?.backgroundColor = .white
+        self.collectionView?.contentInsetAdjustmentBehavior = .never
+        self.collectionView?.showsVerticalScrollIndicator = false
+        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
+        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
     }
 }
 
@@ -1026,6 +1044,8 @@ extension ProfileVC {
     }
 }
 }
+
+
 
 
 

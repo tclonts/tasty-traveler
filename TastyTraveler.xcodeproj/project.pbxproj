@@ -97,6 +97,7 @@
 		2AEF1C6A2056E667001DBB98 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF1C692056E667001DBB98 /* GradientButton.swift */; };
 		BE25D1A2213222FE00D2940D /* CookedImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A1213222FE00D2940D /* CookedImageCell.swift */; };
 		BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */; };
+		BE25D1A62136697B00D2940D /* PointsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A52136697B00D2940D /* PointsVC.swift */; };
 		BEBA9BDA212E734300E4B145 /* ExtensionsForPointSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */; };
 		BEBA9BDC212F8B5300E4B145 /* ExtensionForHomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */; };
 /* End PBXBuildFile section */
@@ -196,6 +197,7 @@
 		7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TastyTraveler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE25D1A1213222FE00D2940D /* CookedImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookedImageCell.swift; sourceTree = "<group>"; };
 		BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForImagePicker.swift; sourceTree = "<group>"; };
+		BE25D1A52136697B00D2940D /* PointsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsVC.swift; sourceTree = "<group>"; };
 		BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionsForPointSystem.swift; sourceTree = "<group>"; };
 		BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForHomeVC.swift; sourceTree = "<group>"; };
 		F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.release.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.release.xcconfig"; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 				2A0B4E062059B8ED0056F7D5 /* ProfileVC.swift */,
 				2ACCCB2D20ADE6F700CA8B69 /* SettingsVC.swift */,
 				2ABEE58420B31C1F0000519A /* UserNotificationsVC.swift */,
+				BE25D1A52136697B00D2940D /* PointsVC.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -860,6 +863,7 @@
 				2A665AD4206D8BBB0014A464 /* MenuBar.swift in Sources */,
 				2ABEE58520B31C1F0000519A /* UserNotificationsVC.swift in Sources */,
 				2A665AD0206C17D70014A464 /* RecipeDetailVC.swift in Sources */,
+				BE25D1A62136697B00D2940D /* PointsVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
