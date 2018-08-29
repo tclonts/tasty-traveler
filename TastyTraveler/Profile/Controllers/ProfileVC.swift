@@ -334,20 +334,26 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
             
-            if let badgeStatus = user?.badgeStatus {
-                if badgeStatus == 0 || badgeStatus == nil {
-                    self.headerView.bronzeBadge.isHidden = true
-                    self.headerView.silverBadge.isHidden = true
-                    self.headerView.goldBadge.isHidden = true
-                } else if badgeStatus == 1 {
-                    self.headerView.silverBadge.isHidden = true
-                    self.headerView.goldBadge.isHidden = true
-                } else if badgeStatus == 2 {
-                    self.headerView.goldBadge.isHidden = true
-                }
+            if user?.badgeStatus == 0 || user?.badgeStatus == nil {
+                self.headerView.bronzeBadge.isHidden = true
+                self.headerView.silverBadge.isHidden = true
+                self.headerView.goldBadge.isHidden = true
+            } else if user?.badgeStatus == 1 {
+                self.headerView.bronzeBadge.isHidden = true
+                self.headerView.silverBadge.isHidden = true
+                self.headerView.goldBadge.isHidden = false
+            } else if user?.badgeStatus == 2 {
+                self.headerView.bronzeBadge.isHidden = true
+                self.headerView.silverBadge.isHidden = false
+                self.headerView.goldBadge.isHidden = false
+            }else if user?.badgeStatus == 3 {
+                self.headerView.bronzeBadge.isHidden = false
+                self.headerView.silverBadge.isHidden = false
+                self.headerView.goldBadge.isHidden = false
+            }
             }
         }
-    }
+    
     
     lazy var emptyDataView: UIStackView = {
         let label = UILabel()
@@ -398,6 +404,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             imagePicker = UIImagePickerController()
             imagePicker!.delegate = self
             imagePicker!.sourceType = .photoLibrary
+        }
+        
+        if let userPoints = user?.points {
+            headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
+            let title = NSAttributedString(string: "\(userPoints)", attributes: [
+                NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+            headerView.pointsButton.setAttributedTitle(title, for: .normal)
         }
         
         NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
@@ -520,25 +534,31 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.usernameLabel.text = username
             }
             
-            if let userPoints = user?.points {
-                headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
-                let title = NSAttributedString(string: "\(userPoints)", attributes: [
-                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                    NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-                headerView.pointsButton.setAttributedTitle(title, for: .normal)
-            }
+//            if let userPoints = user?.points {
+//                headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
+//                let title = NSAttributedString(string: "\(userPoints)", attributes: [
+//                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+//                    NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+//                headerView.pointsButton.setAttributedTitle(title, for: .normal)
+//            }
             
-            if let badgeStatus = user?.badgeStatus {
-                if badgeStatus == 0 || badgeStatus == nil {
-                    self.headerView.bronzeBadge.isHidden = true
-                    self.headerView.silverBadge.isHidden = true
-                    self.headerView.goldBadge.isHidden = true
-                } else if badgeStatus == 1 {
-                    self.headerView.silverBadge.isHidden = true
-                    self.headerView.goldBadge.isHidden = true
-                } else if badgeStatus == 2 {
-                    self.headerView.goldBadge.isHidden = true
-                }
+            
+            if user?.badgeStatus == 0 || user?.badgeStatus == nil {
+                self.headerView.bronzeBadge.isHidden = true
+                self.headerView.silverBadge.isHidden = true
+                self.headerView.goldBadge.isHidden = true
+            } else if user?.badgeStatus == 1 {
+                self.headerView.bronzeBadge.isHidden = false
+                self.headerView.silverBadge.isHidden = true
+                self.headerView.goldBadge.isHidden = true
+            } else if user?.badgeStatus == 2 {
+                self.headerView.bronzeBadge.isHidden = false
+                self.headerView.silverBadge.isHidden = false
+                self.headerView.goldBadge.isHidden = true
+            }else if user?.badgeStatus == 3 {
+                self.headerView.bronzeBadge.isHidden = false
+                self.headerView.silverBadge.isHidden = false
+                self.headerView.goldBadge.isHidden = false
             }
 
             

@@ -594,11 +594,13 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     func setUpFavoriteButtons() {
         if recipe!.hasFavorited {
+            pointAdder(numberOfPoints: -1)
             SVProgressHUD.showSuccess(withStatus: "Saved")
             SVProgressHUD.dismiss(withDelay: 1)
             recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
             
         } else {
+            pointAdder(numberOfPoints: 1)
             SVProgressHUD.showError(withStatus: "Removed")
             SVProgressHUD.dismiss(withDelay: 1)
             recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
