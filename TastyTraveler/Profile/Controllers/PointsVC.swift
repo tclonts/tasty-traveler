@@ -12,7 +12,7 @@ import FirebaseAuth
 class PointsVC: UIViewController {
     
     var updatedNotifications = [UserNotification]()
-    
+        
     override func viewDidLoad() {
         super.viewDidLoad()
 

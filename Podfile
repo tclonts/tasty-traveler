@@ -50,5 +50,7 @@ target 'TastyTraveler' do
   pod 'SwiftySound'
   pod 'ws', :git => 'https://github.com/freshOS/ws'
   
-  pod 'LinearProgressBar'
+
+  pod 'AMProgressBar'
+  
 end
