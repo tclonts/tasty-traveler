@@ -9,9 +9,10 @@
 import UIKit
 import Stevia
 
-class cookedImageCell: BaseCell {
+class CookedImageCell: BaseCell {
     
-    static let shared = cookedImageCell()
+    static let shared = CookedImageCell()
+
     
     var userNameLabel: UILabel = {
         let label = UILabel()
@@ -68,11 +69,10 @@ class cookedImageCell: BaseCell {
     override func setUpViews() {
         
         sv(userNameLabel, cookedImageView)
-        userNameLabel.centerInContainer()
-        
+
         backgroundView = unselectedBackgroundView
         selectedBackgroundView = customSelectedBackgroundView
         
     }
-    
+
 }

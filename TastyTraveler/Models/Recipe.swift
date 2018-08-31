@@ -99,7 +99,7 @@ struct Recipe {
             self.reviewsDictionary = reviewIDsDict
         }
         
-        if let cookedImagesIDsDict = dictionary["cookedImages"] as? [[String:String]] {
+        if let cookedImagesIDsDict = [dictionary["cookedImages"]] as? [[String:String]] {
             self.cookedImages = cookedImagesIDsDict
         }
         

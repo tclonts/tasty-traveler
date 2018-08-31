@@ -676,8 +676,6 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     override func viewDidLayoutSubviews() {
         print("layed out")
-        print(recipeHeaderView.photoImageView.image?.size)
-        
         print(recipeHeaderView.photoImageView.frame.size)
     }
     

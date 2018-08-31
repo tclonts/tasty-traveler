@@ -17,6 +17,8 @@ class PointsVC: UIViewController {
         super.viewDidLoad()
 
         navBarConfiguration()
+        
+        
     
     }
     

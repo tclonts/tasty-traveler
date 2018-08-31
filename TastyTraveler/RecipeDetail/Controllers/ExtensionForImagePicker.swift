@@ -40,7 +40,7 @@ extension RecipeDetailVC: RSKImageCropViewControllerDelegate  {
 
     func imageCropViewController(_ controller: RSKImageCropViewController, didCropImage croppedImage: UIImage, usingCropRect cropRect: CGRect, rotationAngle: CGFloat) {
         
-        cookedImageCell.shared.cookedImageView.image = croppedImage
+        CookedImageCell.shared.cookedImageView.image = croppedImage
         
         dismiss(animated: true, completion: {(() -> Void).self
             

@@ -121,6 +121,12 @@ class RatingsView: UIView {
         errorText.left(0).right(0)
         errorText.CenterY == ratingControl.CenterY
         
+//        infoView.layout(
+//            margin,
+//            |-margin-servingsInfoBox-margin-timeInfoBox-margin-difficultyInfoBox-margin-|,
+//            margin
+//        )
+        
         ratingControl.didFinishTouchingCosmos = { rating in
             self.submitRating(Int(rating))
         }

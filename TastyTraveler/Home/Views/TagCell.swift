@@ -31,7 +31,7 @@ class TagCell: BaseCell {
         let view = UIView()
         backgroundView.sv(view)
         
-        view.height(adaptConstant(27))
+        view.height(adaptConstant(12))
         view.fillHorizontally()
         view.centerVertically()
         view.layer.borderWidth = 1

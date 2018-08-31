@@ -398,7 +398,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
 
     override func viewDidLoad() {
         super.viewDidLoad()
-      
+
     }
     
     @objc func fetchUserInfo() {
@@ -715,20 +715,19 @@ extension ProfileVC {
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
     }
-    
+
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         var avatarImage: UIImage
-        
+
         if let possibleImage = info["UIImagePickerControllerEditedImage"] as? UIImage {
             avatarImage = possibleImage
+            
         } else if let possibleImage = info["UIImagePickerControllerOriginalImage"] as? UIImage {
             avatarImage = possibleImage
-            
+
         } else {
             return
         }
-        
-        
         
         picker.dismiss(animated: true) {
             var imageCropVC: RSKImageCropViewController!
@@ -737,7 +736,21 @@ extension ProfileVC {
             self.present(imageCropVC, animated: true, completion: nil)
         }
     }
+    
+    private func registerUserImageInfoIntFB(values: [String: String]) {
+        
+        let reference = Database.database().reference(fromURL: "https://utahfishingapp-450d9.firebaseio.com/")
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        var usersRef: DatabaseReference! = Database.database().reference().root.child("users")
+        usersRef.child(uid).updateChildValues(values, withCompletionBlock: { (err, ref) in
+            if err != nil {
+                print(err!)
+                return
+            }
+        })
+    }
 }
+
 
 extension ProfileVC: RSKImageCropViewControllerDelegate {
     func imageCropViewController(_ controller: RSKImageCropViewController, didCropImage croppedImage: UIImage, usingCropRect cropRect: CGRect, rotationAngle: CGFloat) {
@@ -844,6 +857,9 @@ extension ProfileVC: ProfileHeaderViewDelegate {
             imagePicker = UIImagePickerController()
             imagePicker!.delegate = self
             imagePicker!.sourceType = .photoLibrary
+        }
+        if let userPI = user?.avatarURL {
+            headerView.profilePhotoImageView.loadImage(urlString: userPI, placeholder: #imageLiteral(resourceName: "avatar"))
         }
         
         if let userPoints = user?.points {
