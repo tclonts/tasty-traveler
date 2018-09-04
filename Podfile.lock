@@ -1,5 +1,6 @@
 PODS:
   - Alamofire (4.5.1)
+  - AMProgressBar (0.1.0)
   - Arrow (3.0.5)
   - Bolts (1.9.0):
     - Bolts/AppLinks (= 1.9.0)
@@ -50,14 +51,14 @@ PODS:
   - FirebaseAnalytics (4.0.5):
     - FirebaseCore (~> 4.0)
     - FirebaseInstanceID (~> 2.0)
-    - GoogleToolboxForMac/NSData+zlib (~> 2.1)
+    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
     - nanopb (~> 0.3)
   - FirebaseAuth (4.4.1):
     - FirebaseAnalytics (~> 4.0)
-    - GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)
+    - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
     - GTMSessionFetcher/Core (~> 1.1)
   - FirebaseCore (4.0.13):
-    - GoogleToolboxForMac/NSData+zlib (~> 2.1)
+    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
   - FirebaseDatabase (4.1.3):
     - FirebaseAnalytics (~> 4.0)
     - FirebaseCore (~> 4.0)
@@ -79,13 +80,13 @@ PODS:
   - GoogleToolboxForMac/Defines (2.1.3)
   - GoogleToolboxForMac/Logger (2.1.3):
     - GoogleToolboxForMac/Defines (= 2.1.3)
-  - GoogleToolboxForMac/NSData+zlib (2.1.3):
+  - "GoogleToolboxForMac/NSData+zlib (2.1.3)":
     - GoogleToolboxForMac/Defines (= 2.1.3)
-  - GoogleToolboxForMac/NSDictionary+URLArguments (2.1.3):
+  - "GoogleToolboxForMac/NSDictionary+URLArguments (2.1.3)":
     - GoogleToolboxForMac/DebugUtils (= 2.1.3)
     - GoogleToolboxForMac/Defines (= 2.1.3)
-    - GoogleToolboxForMac/NSString+URLArguments (= 2.1.3)
-  - GoogleToolboxForMac/NSString+URLArguments (2.1.3)
+    - "GoogleToolboxForMac/NSString+URLArguments (= 2.1.3)"
+  - "GoogleToolboxForMac/NSString+URLArguments (2.1.3)"
   - GSKStretchyHeaderView (1.0.4)
   - GTMSessionFetcher/Core (1.1.12)
   - Hero (1.0.1)
@@ -97,6 +98,7 @@ PODS:
   - nanopb/encode (0.3.8)
   - Popover (1.2.0)
   - Protobuf (3.5.0)
+  - RKPieChart (0.0.1)
   - RSKImageCropper (2.0.0)
   - SteviaLayout (4.2.0)
   - SVProgressHUD (2.2.2)
@@ -109,6 +111,7 @@ PODS:
     - thenPromise (~> 4.0.0)
 
 DEPENDENCIES:
+  - AMProgressBar
   - CodableFirebase
   - Cosmos (~> 15.0)
   - Crashlytics (~> 3.10.2)
@@ -125,12 +128,53 @@ DEPENDENCIES:
   - GSKStretchyHeaderView
   - Hero
   - Popover
+  - RKPieChart
   - RSKImageCropper
   - SteviaLayout
   - SVProgressHUD
   - SwiftySound
   - TagCellLayout (from `https://github.com/riteshhgupta/TagCellLayout.git`)
   - ws (from `https://github.com/freshOS/ws`)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Alamofire
+    - AMProgressBar
+    - Arrow
+    - Bolts
+    - CodableFirebase
+    - Cosmos
+    - Crashlytics
+    - Eureka
+    - Fabric
+    - FacebookCore
+    - FacebookLogin
+    - FacebookShare
+    - FBSDKCoreKit
+    - FBSDKLoginKit
+    - FBSDKShareKit
+    - Firebase
+    - FirebaseAnalytics
+    - FirebaseAuth
+    - FirebaseCore
+    - FirebaseDatabase
+    - FirebaseInstanceID
+    - FirebaseMessaging
+    - FirebaseStorage
+    - GoogleToolboxForMac
+    - GSKStretchyHeaderView
+    - GTMSessionFetcher
+    - Hero
+    - leveldb-library
+    - nanopb
+    - Popover
+    - Protobuf
+    - RKPieChart
+    - RSKImageCropper
+    - SteviaLayout
+    - SVProgressHUD
+    - SwiftySound
+    - thenPromise
 
 EXTERNAL SOURCES:
   TagCellLayout:
@@ -148,6 +192,7 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a
+  AMProgressBar: 3f4671c4af4cb4fc9864ddc0a688450c8c7d1561
   Arrow: b696d6173296da330d1a995019db42f693249cd6
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   CodableFirebase: 8310f6336b2f6aba70b023389bee2a104b6a9033
@@ -177,6 +222,7 @@ SPEC CHECKSUMS:
   nanopb: 5601e6bca2dbf1ed831b519092ec110f66982ca3
   Popover: 28c1ac8e937ab2b3965bd2da7dd18324357abc41
   Protobuf: 8a9838fba8dae3389230e1b7f8c104aa32389c03
+  RKPieChart: 8e643c505d24e61574f3a2fd6bd807403840b24b
   RSKImageCropper: d9a1acbc0600bf8decc8f0d21895872c99a9e4cf
   SteviaLayout: 0d2112caea45707695e8c718262c8ea3dd37ef17
   SVProgressHUD: 59b2d3dabacbd051576d21d32293ca7228dc18b0
@@ -185,6 +231,6 @@ SPEC CHECKSUMS:
   thenPromise: 7093eaa2d2da9fef15240ccc48a213dc2e7befb1
   ws: b4ba7990810def956eab2af2b97a85646b164fe2
 
-PODFILE CHECKSUM: f36ae8cb9a1b71aa9ba30999600478912301ffaa
+PODFILE CHECKSUM: 3ee54f8630914ad7588805ae4e29cf2d6b2cfeb9
 
-COCOAPODS: 1.3.1
+COCOAPODS: 1.5.0

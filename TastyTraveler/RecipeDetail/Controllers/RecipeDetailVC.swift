@@ -523,8 +523,13 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             self.present(accountAccessVC, animated: true, completion: nil)
         } else {
             
+             guard let recipeID = recipe?.uid else { return }
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+
             
             if !self.recipe!.hasCooked == true {
+                let timestamp = Date().timeIntervalSince1970
+                
             self.present(imagePicker, animated: false, completion: nil)
             } else {
                 uncookRecipe()

@@ -199,6 +199,19 @@ class FirebaseController {
         }
     }
     
+        func fetchPointsForCurrentUser() {
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+    
+            self.ref.child("users").child(userID).child("points").observeSingleEvent(of: .value) { (snapshot) in
+                for totalPoints in snapshot.children.allObjects as! [DataSnapshot] {
+    
+                    totalPoints.priority
+            }
+    
+            }
+    
+        }
+    
     func observeNotifications() {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         

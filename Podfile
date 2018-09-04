@@ -4,6 +4,7 @@
 target 'TastyTraveler' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
+  
 
   # Pods for TastyTraveler
   # Firebase
@@ -50,7 +51,8 @@ target 'TastyTraveler' do
   pod 'SwiftySound'
   pod 'ws', :git => 'https://github.com/freshOS/ws'
   
-
+  # Progress Bar
   pod 'AMProgressBar'
+  pod 'RKPieChart'
   
 end

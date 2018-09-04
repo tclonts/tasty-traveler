@@ -96,6 +96,7 @@ extension RecipeDetailVC: RSKImageCropViewControllerDelegate  {
     
     func cookedItReviewPopup() {
             guard let userID = Auth.auth().currentUser?.uid else { return }
+            guard let recipeID = recipe?.uid else { return }
         
             if !self.recipe!.hasCooked {
             self.recipe?.cookedDate = Date()
@@ -104,6 +105,16 @@ extension RecipeDetailVC: RSKImageCropViewControllerDelegate  {
             popup.modalPresentationStyle = .overCurrentContext
             popup.recipeID = self.recipe!.uid
             self.pointAdder(numberOfPoints: 5)
+            self.pointAdderForCurrentUserID(numberOfPoints: 5)
+            let timestamp = Date().timeIntervalSince1970
+
+                
+                FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(recipeID).setValue(timestamp) { (error, _) in
+                    if let error = error {
+                        print("Failed to save cooked recipe:", error)
+                        return
+                    }
+                }
             self.present(popup, animated: false) {
             popup.showAlertView()
                 
@@ -116,6 +127,8 @@ extension RecipeDetailVC: RSKImageCropViewControllerDelegate  {
         
         guard let userID = Auth.auth().currentUser?.uid else { return }
         self.pointAdder(numberOfPoints: -5)
+        self.pointAdderForCurrentUserID(numberOfPoints: -5)
+        FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("cookedRecipes").child(userID).removeValue()
         
         let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
         
