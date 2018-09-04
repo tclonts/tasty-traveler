@@ -398,6 +398,8 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadSetup()
+
 
     }
     
@@ -541,10 +543,6 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.bioLabel.text = bio
                 headerView.bioLabel.textColor = Color.darkText
                 headerView.bioLabel.isUserInteractionEnabled = false
-            }
-            
-            if let urlString = user?.avatarURL {
-                headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
             }
             
             if FirebaseController.shared.unreadNotificationsCount > 0 {
@@ -736,20 +734,6 @@ extension ProfileVC {
             self.present(imageCropVC, animated: true, completion: nil)
         }
     }
-    
-    private func registerUserImageInfoIntFB(values: [String: String]) {
-        
-        let reference = Database.database().reference(fromURL: "https://utahfishingapp-450d9.firebaseio.com/")
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        var usersRef: DatabaseReference! = Database.database().reference().root.child("users")
-        usersRef.child(uid).updateChildValues(values, withCompletionBlock: { (err, ref) in
-            if err != nil {
-                print(err!)
-                return
-            }
-        })
-    }
-    
 }
 
 
@@ -759,7 +743,7 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
         dismiss(animated: true, completion: nil)
         
         let imageData = resize(croppedImage)
-        pointAdder(numberOfPoints: 10)
+        pointAdder(numberOfPoints: 20)
         FirebaseController.shared.uploadProfilePhoto(data: imageData!)
     }
     
@@ -848,20 +832,11 @@ extension ProfileVC: ProfileHeaderViewDelegate {
     
     func viewLoadSetup(){
         badgeIncrementor()
-        fetchUserInfo()
+//        fetchUserInfo()
         
-        self.view.sv(emptyDataView, userHasNoRecipesLabel)
-        emptyDataView.centerInContainer()
-        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
-        
-        if isMyProfile {
-            imagePicker = UIImagePickerController()
-            imagePicker!.delegate = self
-            imagePicker!.sourceType = .photoLibrary
-        }
-        if let userPI = user?.avatarURL {
-            headerView.profilePhotoImageView.loadImage(urlString: userPI, placeholder: #imageLiteral(resourceName: "avatar"))
-        }
+//        self.view.sv(emptyDataView, userHasNoRecipesLabel)
+//        emptyDataView.centerInContainer()
+//        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
         
         if let userPoints = user?.points {
             headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
@@ -870,6 +845,42 @@ extension ProfileVC: ProfileHeaderViewDelegate {
                 NSAttributedStringKey.foregroundColor: Color.primaryOrange])
             headerView.pointsButton.setAttributedTitle(title, for: .normal)
         }
+
+//
+//        if isMyProfile {
+//            imagePicker = UIImagePickerController()
+//            imagePicker!.delegate = self
+//            imagePicker!.sourceType = .photoLibrary
+//        }
+        //   self.view.sv(emptyDataView, userHasNoRecipesLabel)
+//        emptyDataView.centerInContainer()
+//        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
+//
+//        NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
+//
+//        self.navigationController?.navigationBar.isTranslucent = false
+//        self.collectionView?.backgroundColor = .white
+//        self.collectionView?.contentInsetAdjustmentBehavior = .never
+//        self.collectionView?.showsVerticalScrollIndicator = false
+//        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
+//        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
+    }
+    
+    func loadSetup() {
+        
+        fetchUserInfo()
+        
+        if isMyProfile {
+            imagePicker = UIImagePickerController()
+            imagePicker!.delegate = self
+            imagePicker!.sourceType = .photoLibrary
+        }
+        
+        self.view.sv(emptyDataView, userHasNoRecipesLabel)
+        emptyDataView.centerInContainer()
+        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
         
         NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)

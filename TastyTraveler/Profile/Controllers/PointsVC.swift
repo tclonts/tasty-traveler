@@ -62,16 +62,24 @@ class PointsVC: UIViewController {
         super.viewDidLoad()
         
         navBarConfiguration()
+        
+        youCooked()
+        youFavorited()
+        theyCookedRecipes()
+        theyFavorite()
+        theyReview()
+        youReview()
    
         fetchUserInfo {
             
             
-            let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(20)), color: Color.filledBar, title: "meals cooked by you")
-            let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(40)), color: Color.blackText, title: "recipes saved by you")
-            let thirdItem: RKPieChartItem = RKPieChartItem(ratio: (uint(20)), color: Color.darkText , title: "reviews left by you")
-            let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(10)), color: Color.primaryOrange , title: "meals cooked by others")
-            let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(10)), color: Color.lightGray, title: "review left by others")
-            let chartView = RKPieChartView(items: [firstItem, secondItem, thirdItem, fourthItem, fifthItem], centerTitle: ("Total Points \(self.totalPoints)"))
+            let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourCooked)), color: Color.filledBar, title: "recipes cooked by you")
+            let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourFavorited)), color: Color.blackText, title: "recipes saved by you")
+            let thirdItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourReviewed)), color: Color.darkText , title: "reviews left by you")
+            let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyCooked)), color: Color.primaryOrange , title: "recipes cooked by others")
+            let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyFavorited)), color: Color.primaryOrange , title: "recipes favorited by others")
+            let sixthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyReviewed)), color: Color.lightGray, title: "review left by others")
+            let chartView = RKPieChartView(items: [firstItem, secondItem, thirdItem, fourthItem, fifthItem, sixthItem], centerTitle: ("Total Points \(self.totalPoints)"))
             
             chartView.circleColor = .clear
             chartView.translatesAutoresizingMaskIntoConstraints = false
@@ -124,19 +132,18 @@ class PointsVC: UIViewController {
         self.navigationController?.navigationBar.tintColor = Color.blackText
     }
     
-    var favoritedPointsTotal = 0
-    var theyCookedPoints = 0
+    var theyFavorited = 0
+    var theyCooked = 0
     var yourFavorited = 0
+    var yourReviewed = 0
     var yourCooked = 0
+    var theyReviewed = 0
     var totalPoints = 0
 }
 
 extension PointsVC {
     
-
-    // These are the points all broken down.
-    
-    func favoritedByTheyPoints() {
+    func theyFavorite() {
         
     guard let userID = Auth.auth().currentUser?.uid else { return }
     
@@ -148,12 +155,9 @@ extension PointsVC {
     FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
     print(snapshot.children.allObjects)
         
-        self.favoritedPointsTotal = Int(snapshot.childrenCount)
-    
-    
+        self.theyFavorited = Int(snapshot.childrenCount) * 1
                 }
             }
-    
         }
     }
     
@@ -169,7 +173,7 @@ extension PointsVC {
     
     FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
     
-    self.theyCookedPoints = Int(snapshot.childrenCount)
+    self.theyCooked = Int(snapshot.childrenCount) * 5
         }}}}
     
     
@@ -178,7 +182,7 @@ extension PointsVC {
         
         FirebaseController.shared.ref.child("users").child(userID).child("favorites").observe(.value) { (snapshot) in
             print(snapshot.childrenCount)
-            self.yourFavorited = Int(snapshot.childrenCount)
+            self.yourFavorited = Int(snapshot.childrenCount) * 1
 
         }
     }
@@ -189,9 +193,39 @@ extension PointsVC {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").observe(.value) { (snapshot) in
-           self.yourCooked = Int(snapshot.childrenCount)
+           self.yourCooked = Int(snapshot.childrenCount) * 5
         }
     }
+    
+    func theyReview() {
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("reviews").observeSingleEvent(of: .value) { (snapshot) in
+                    print(snapshot.children.allObjects)
+                    
+                    self.theyReviewed = Int(snapshot.childrenCount) * 10
+                }
+            }
+        }
+    }
+    
+    func youReview() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.ref.child("users").child(userID).child("reviewRecipes").observe(.value) { (snapshot) in
+            print(snapshot.childrenCount)
+            self.yourReviewed = Int(snapshot.childrenCount) * 10
+            
+        }
+    }
+    
+
     
     @objc func fetchUserInfo(completion: @escaping() -> Void) {
         

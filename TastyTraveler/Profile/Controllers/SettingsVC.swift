@@ -643,7 +643,6 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     
     @objc func saveAccountInfo() {
         guard let user = Auth.auth().currentUser else { return }
-//        pointAdder(numberOfPoints: 20)
         
         if let bioRow = self.form.rowBy(tag: "Bio") {
             

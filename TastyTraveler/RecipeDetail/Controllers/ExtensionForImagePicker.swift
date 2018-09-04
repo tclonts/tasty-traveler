@@ -48,7 +48,6 @@ extension RecipeDetailVC: RSKImageCropViewControllerDelegate  {
         })
 
         guard let imageData = resize(croppedImage) else { return }
-//        pointAdder(numberOfPoints: 10)
         guard let recipe = recipe else { return }
 
         FirebaseController.shared.uploadCookedRecipeImage(recipe: recipe, data: imageData)
