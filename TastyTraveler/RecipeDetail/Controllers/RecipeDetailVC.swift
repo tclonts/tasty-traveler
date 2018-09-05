@@ -1027,8 +1027,9 @@ extension RecipeDetailVC: UICollectionViewDataSource, UICollectionViewDelegate, 
             // directions array
             directionsCell.steps = recipe.steps
             if let videoURL = recipe.videoURL {
+                
                 directionsCell.videoURL = videoURL
-                directionsCell.thumbnailURL = recipe.thumbnailURL!
+                directionsCell.thumbnailURL = recipe.thumbnailURL
                 directionsCell.hasVideo = true
             }
             directionsCell.recipeDetailVC = self

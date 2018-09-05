@@ -168,7 +168,8 @@ class DirectionsCell: BaseCell, UITableViewDelegate, UITableViewDataSource {
 class VideoCell: UITableViewCell {
     var thumbnailURL: String? {
         didSet {
-            tutorialVideoImageView.loadImage(urlString: thumbnailURL!, placeholder: nil)
+            guard let thumbNailURL = thumbnailURL else { return }
+            tutorialVideoImageView.loadImage(urlString: thumbNailURL, placeholder: nil)
         }
     }
     
