@@ -30,7 +30,6 @@ class CookedImageCell: BaseCell {
         //        imageView.layer.cornerRadius = 85 / 2
         imageView.clipsToBounds = true
         imageView.layer.borderWidth = 2
-        imageView.layer.borderColor = Color.primaryOrange.cgColor
         return imageView
     }()
     
@@ -59,7 +58,7 @@ class CookedImageCell: BaseCell {
         view.fillHorizontally()
         view.centerVertically()
         view.layer.cornerRadius = adaptConstant(27) / 2
-        view.backgroundColor = Color.primaryOrange
+        view.backgroundColor = Color.offWhite
         view.layer.masksToBounds = true
         backgroundView.alpha = 1
         view.alpha = 1
