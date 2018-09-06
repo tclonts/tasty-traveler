@@ -12,11 +12,11 @@ import Stevia
 class CookedImageCell: BaseCell {
     
     static let shared = CookedImageCell()
-
+    let margin = adaptConstant(16)
     
     var userNameLabel: UILabel = {
         let label = UILabel()
-        label.font = ProximaNova.bold.of(size: 14)
+        label.font = ProximaNova.bold.of(size: 16)
         label.textColor = Color.gray
         label.textAlignment = .center
         label.text = "out"
@@ -29,16 +29,14 @@ class CookedImageCell: BaseCell {
         imageView.contentMode = .scaleAspectFill
         //        imageView.layer.cornerRadius = 85 / 2
         imageView.clipsToBounds = true
-        imageView.layer.borderWidth = 2
         return imageView
     }()
     
     lazy var unselectedBackgroundView: UIView = {
         let backgroundView = UIView()
-        //backgroundView.backgroundColor = .white
+        //        backgroundView.backgroundColor = .white
         let view = UIView()
         backgroundView.sv(view)
-        
         view.height(adaptConstant(27))
         view.fillHorizontally()
         view.centerVertically()
@@ -58,7 +56,7 @@ class CookedImageCell: BaseCell {
         view.fillHorizontally()
         view.centerVertically()
         view.layer.cornerRadius = adaptConstant(27) / 2
-        view.backgroundColor = Color.offWhite
+        view.backgroundColor = .blue
         view.layer.masksToBounds = true
         backgroundView.alpha = 1
         view.alpha = 1
@@ -66,12 +64,20 @@ class CookedImageCell: BaseCell {
     }()
     
     override func setUpViews() {
-        
-        sv(userNameLabel, cookedImageView)
+        let stackView = UIStackView(arrangedSubviews: [cookedImageView, userNameLabel])
+        stackView.axis = .vertical
+        stackView.distribution = .fill
+        stackView.spacing = 0
+        userNameLabel.width(100)
+        userNameLabel.Top == cookedImageView.Bottom
 
-        backgroundView = unselectedBackgroundView
-        selectedBackgroundView = customSelectedBackgroundView
+//        stackView.height(self.frame.height)
+        cookedImageView.height(self.frame.height - 27)
+        cookedImageView.width(self.frame.width)
+        
+        sv(stackView)
+        
         
     }
-
+    
 }

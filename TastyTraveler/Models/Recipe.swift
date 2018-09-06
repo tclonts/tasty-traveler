@@ -69,7 +69,7 @@ struct Recipe {
     var thumbnailURL: String?
     
     var tags: [Tag]?
-    var cookedImages: [[String:String]]?
+    var cookedImages: [String:String]?
 //    var continentsReach: [String]?
     
     // PERSONAL
@@ -99,7 +99,7 @@ struct Recipe {
             self.reviewsDictionary = reviewIDsDict
         }
         
-        if let cookedImagesIDsDict = [dictionary["cookedImages"]] as? [[String:String]] {
+        if let cookedImagesIDsDict = dictionary["cookedImages"] as? [String:String] {
             self.cookedImages = cookedImagesIDsDict
         }
         

@@ -310,7 +310,7 @@ class FirebaseController {
         
         let localData = data
         let identifier = recipe.uid
-        let fileRef = storageRef.child("recipes/\(identifier)")
+        let fileRef = storageRef.child("recipes/\(identifier)/\(userID)")
         
         let uploadTask = fileRef.putData(localData, metadata: nil) { (metadata, error) in
             guard let metadata = metadata else {
@@ -320,7 +320,7 @@ class FirebaseController {
             guard let downloadURL = metadata.downloadURL()?.absoluteString else { print("No Download URL"); return }
             
             // store downloadURL at database
-            self.ref.child("recipes").child(recipe.uid).child("cookedImages").setValue([userID: downloadURL])
+            self.ref.child("recipes").child(recipe.uid).child("cookedImages").updateChildValues([userID: downloadURL])
             
 //            let changeRequest = recipe.createProfileChangeRequest()
 //            changeRequest.photoURL = URL(string: downloadURL)
