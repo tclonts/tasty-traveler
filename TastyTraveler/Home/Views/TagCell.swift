@@ -27,7 +27,7 @@ class TagCell: BaseCell {
     
     lazy var unselectedBackgroundView: UIView = {
         let backgroundView = UIView()
-        //backgroundView.backgroundColor = .white
+        backgroundView.backgroundColor = .white
         let view = UIView()
         backgroundView.sv(view)
         
@@ -61,7 +61,7 @@ class TagCell: BaseCell {
         
         sv(tagLabel)
         tagLabel.centerInContainer()
-        
+    
         backgroundView = unselectedBackgroundView
         selectedBackgroundView = customSelectedBackgroundView
         
