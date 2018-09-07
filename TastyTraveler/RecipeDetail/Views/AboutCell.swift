@@ -158,10 +158,12 @@ class AboutCell: BaseCell, UICollectionViewDelegate, UICollectionViewDataSource,
         setUpDescriptionView()
         
         cookedItImageCollectionView.left(adaptConstant(25)).right(adaptConstant(25)).height(130)
-                tagsCollectionView.height(adaptConstant(60))
+//        tagsCollectionView.height(adaptConstant(70))
         
         cookedItImageCollectionView.width(frame.width)
-                tagsCollectionView.width(frame.width - 25)
+        
+
+        tagsCollectionView.width(frame.width - 25).height(adaptConstant(77))
         
         
         let stackView = UIStackView(arrangedSubviews: [infoView, descriptionStackView, tagsCollectionView, cookedItImageCollectionView, ratingsView, reviewsStackView, reviewsTableView])
@@ -372,7 +374,7 @@ extension AboutCell {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return adaptConstant(8)
+        return 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -426,7 +428,13 @@ extension AboutCell {
 
                 let attributedString = NSAttributedString(string: tag, attributes: [NSAttributedStringKey.font: ProximaNova.semibold.of(size: 16),
                                                                                     NSAttributedStringKey.foregroundColor: UIColor.white])
-                return CGSize(width: attributedString.size().width + adaptConstant(24), height: adaptConstant(27))
+                let approximateWidthOfTag = attributedString.size().width + adaptConstant(27)
+                let size = CGSize(width: approximateWidthOfTag, height: adaptConstant(27))
+                
+                let estimatedFrame = NSAttributedString(string: tag).boundingRect(with: size, options: .usesLineFragmentOrigin,  context: nil)
+                
+                
+                return CGSize(width: attributedString.size().width + adaptConstant(24), height: estimatedFrame.height + adaptConstant(27))
 
             } else if collectionView == cookedItImageCollectionView {
                 

@@ -161,7 +161,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     lazy var favoriteButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        //button.addTarget(self, action: #selector(favoriteButtonNavTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(favoriteButtonNavTapped), for: .touchUpInside)
         button.isUserInteractionEnabled = false
         button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
         button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
@@ -600,12 +600,14 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     func setUpFavoriteButtons() {
         if recipe!.hasFavorited {
             pointAdder(numberOfPoints: -1)
+            pointAdderForCurrentUserID(numberOfPoints: -1)
             SVProgressHUD.showSuccess(withStatus: "Saved")
             SVProgressHUD.dismiss(withDelay: 1)
             recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
             
         } else {
             pointAdder(numberOfPoints: 1)
+            pointAdderForCurrentUserID(numberOfPoints: 1)
             SVProgressHUD.showError(withStatus: "Removed")
             SVProgressHUD.dismiss(withDelay: 1)
             recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
@@ -625,6 +627,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             if self.recipe!.hasFavorited {
                 
                 pointAdder(numberOfPoints: -1)
+                pointAdderForCurrentUserID(numberOfPoints: -1)
                 // remove
                 FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
                 FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
@@ -645,6 +648,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                 // add
                 
                 pointAdder(numberOfPoints: 1)
+                pointAdderForCurrentUserID(numberOfPoints: 1)
                 
                 FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
                     if let error = error {

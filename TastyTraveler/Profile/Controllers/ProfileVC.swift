@@ -398,8 +398,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadSetup()
-
+        viewLoadSetup()
 
     }
     
@@ -511,13 +510,13 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.usernameLabel.text = username
             }
             
-//            if let userPoints = user?.points {
-//                headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
-//                let title = NSAttributedString(string: "\(userPoints)", attributes: [
-//                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-//                    NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-//                headerView.pointsButton.setAttributedTitle(title, for: .normal)
-//            }
+            if let userPoints = user?.points {
+                headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
+                let title = NSAttributedString(string: "\(userPoints)", attributes: [
+                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                    NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                headerView.pointsButton.setAttributedTitle(title, for: .normal)
+            }
             
             
             if user?.badgeStatus == 0 || user?.badgeStatus == nil {
@@ -575,7 +574,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        viewLoadSetup()
+//        viewLoadSetup()
         
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
@@ -832,11 +831,11 @@ extension ProfileVC: ProfileHeaderViewDelegate {
     
     func viewLoadSetup(){
         badgeIncrementor()
-//        fetchUserInfo()
+        fetchUserInfo()
         
-//        self.view.sv(emptyDataView, userHasNoRecipesLabel)
-//        emptyDataView.centerInContainer()
-//        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
+        self.view.sv(emptyDataView, userHasNoRecipesLabel)
+        emptyDataView.centerInContainer()
+        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
         
         if let userPoints = user?.points {
             headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
@@ -846,13 +845,39 @@ extension ProfileVC: ProfileHeaderViewDelegate {
             headerView.pointsButton.setAttributedTitle(title, for: .normal)
         }
 
+
+        if isMyProfile {
+            imagePicker = UIImagePickerController()
+            imagePicker!.delegate = self
+            imagePicker!.sourceType = .photoLibrary
+        }
+           self.view.sv(emptyDataView, userHasNoRecipesLabel)
+        emptyDataView.centerInContainer()
+        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
+
+        self.navigationController?.navigationBar.isTranslucent = false
+        self.collectionView?.backgroundColor = .white
+        self.collectionView?.contentInsetAdjustmentBehavior = .never
+        self.collectionView?.showsVerticalScrollIndicator = false
+        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
+        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
+    }
+    
+//    func loadSetup() {
+//
+//        fetchUserInfo()
 //
 //        if isMyProfile {
 //            imagePicker = UIImagePickerController()
 //            imagePicker!.delegate = self
 //            imagePicker!.sourceType = .photoLibrary
 //        }
-        //   self.view.sv(emptyDataView, userHasNoRecipesLabel)
+    
+//        self.view.sv(emptyDataView, userHasNoRecipesLabel)
 //        emptyDataView.centerInContainer()
 //        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
 //
@@ -866,33 +891,7 @@ extension ProfileVC: ProfileHeaderViewDelegate {
 //        self.collectionView?.showsVerticalScrollIndicator = false
 //        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
 //        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
-    }
-    
-    func loadSetup() {
-        
-        fetchUserInfo()
-        
-        if isMyProfile {
-            imagePicker = UIImagePickerController()
-            imagePicker!.delegate = self
-            imagePicker!.sourceType = .photoLibrary
-        }
-        
-        self.view.sv(emptyDataView, userHasNoRecipesLabel)
-        emptyDataView.centerInContainer()
-        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
-        
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.collectionView?.backgroundColor = .white
-        self.collectionView?.contentInsetAdjustmentBehavior = .never
-        self.collectionView?.showsVerticalScrollIndicator = false
-        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
-        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
-    }
+//    }
 }
 
 extension ProfileVC {
