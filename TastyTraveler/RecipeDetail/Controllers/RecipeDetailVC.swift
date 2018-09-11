@@ -28,71 +28,73 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     var recipe: Recipe? {
         didSet {
+            DispatchQueue.main.async {
             
-            if let countryCode = recipe?.countryCode, let locality = recipe?.locality {
-                recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
-                recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
+                if let countryCode = self.recipe?.countryCode, let locality = self.recipe?.locality {
+                    self.recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
+                    self.recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
             } else {
-                recipeHeaderView.countryFlag.image = nil
-                recipeHeaderView.countryLabel.text = "Location Unavailable"
+                    self.recipeHeaderView.countryFlag.image = nil
+                    self.recipeHeaderView.countryLabel.text = "Location Unavailable"
             }
             
-            if let meal = recipe?.meal {
+                if let meal = self.recipe?.meal {
                 self.recipeHeaderView.mealLabel.text = "  \(meal)  "
             }
             
-            recipeHeaderView.recipeNameLabel.text = recipe?.name
-            recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
+                self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
+                self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
             
-            if recipe!.coordinate == nil {
+                if self.recipe!.coordinate == nil {
                 print("NO LOCATION DATA")
             } else {
-                recipeHeaderView.countryLabel.isUserInteractionEnabled = true
-                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showMapView))
+                    self.recipeHeaderView.countryLabel.isUserInteractionEnabled = true
+                    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.showMapView))
                 self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
                 
-                recipeHeaderView.countryLabel.textColor = Color.primaryOrange
+                    self.recipeHeaderView.countryLabel.textColor = Color.primaryOrange
                 
                 let globeIcon = UIImageView()
                 globeIcon.image = #imageLiteral(resourceName: "mapIcon")
-                recipeHeaderView.sv(globeIcon)
-                globeIcon.Left == recipeHeaderView.countryLabel.Right + 8
-                globeIcon.CenterY == recipeHeaderView.countryLabel.CenterY
+                    self.recipeHeaderView.sv(globeIcon)
+                    globeIcon.Left == self.recipeHeaderView.countryLabel.Right + 8
+                    globeIcon.CenterY == self.recipeHeaderView.countryLabel.CenterY
                 globeIcon.isUserInteractionEnabled = true
                 globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
-                globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(showMapView)))
+                    globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.showMapView)))
             }
             
             if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
-                isBrowsing = true
+                self.isBrowsing = true
             } else {
                 guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
                 
-                if userID == recipe!.creator.uid {
-                    isMyRecipe = true
+                if userID == self.recipe!.creator.uid {
+                    self.isMyRecipe = true
                     // my recipe
-                    recipeHeaderView.favoriteButton.isHidden = true
-                    favoriteButtonNavBar.isHidden = true
+                    self.recipeHeaderView.favoriteButton.isHidden = true
+                    self.favoriteButtonNavBar.isHidden = true
                     self.bottomView.isHidden = true
                 } else {
-                    isMyRecipe = false
+                    self.isMyRecipe = false
                     // someone else's recipe
-                    if recipe!.hasFavorited {
-                        recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
-                        favoriteButtonNavBar.setTitle("SAVED", for: .normal)
-                        favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
+                    if self.recipe!.hasFavorited {
+                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
+                        self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
+                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
                     } else {
-                        recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
-                        favoriteButtonNavBar.setTitle("SAVE", for: .normal)
-                        favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
+                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
+                        self.favoriteButtonNavBar.setTitle("SAVE", for: .normal)
+                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
                     }
                 }
             }
-            formatCookButton()
-            fetchReviewData()
+                self.formatCookButton()
+                self.fetchReviewData()
 
-            let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe!.uid])
+                let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])
             AppEventsLogger.log(viewContentEvent)
+            }
         }
     }
     
