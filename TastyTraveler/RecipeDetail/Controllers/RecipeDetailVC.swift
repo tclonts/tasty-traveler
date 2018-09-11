@@ -23,8 +23,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     let imagePicker = UIImagePickerController()
     var isRecipeDetailVC = true
-    
     var isBrowsing = false
+    
     
     var recipe: Recipe? {
         didSet {
@@ -88,10 +88,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                     }
                 }
             }
-            
             formatCookButton()
             fetchReviewData()
-            
+
             let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": recipe!.uid])
             AppEventsLogger.log(viewContentEvent)
         }
@@ -329,6 +328,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        
         
 //        if isRecipeDetailVC {
 //            

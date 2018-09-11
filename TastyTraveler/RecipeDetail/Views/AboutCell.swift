@@ -13,7 +13,6 @@ import FirebaseAuth
 import Firebase
 
 class AboutCell: BaseCell, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
     // MARK: - Views
     let scrollView = UIScrollView()
     let namesArray = ["Steve Jobs", "Satoshi", "Bill Gates"]
@@ -74,7 +73,7 @@ class AboutCell: BaseCell, UICollectionViewDelegate, UICollectionViewDataSource,
         collectionView.allowsSelection = false
         collectionView.isScrollEnabled = false
         collectionView.backgroundColor = UIColor.white
-        collectionView.layoutIfNeeded()
+//        collectionView.layoutIfNeeded()
         collectionView.register(TagCell.self, forCellWithReuseIdentifier: "tagCell")
         return collectionView
     }()
@@ -88,8 +87,6 @@ class AboutCell: BaseCell, UICollectionViewDelegate, UICollectionViewDataSource,
         collectionView.isScrollEnabled = true
         collectionView.backgroundColor = UIColor.white
         layout.scrollDirection = .horizontal
-        
-
 //        collectionView.layoutIfNeeded()
         collectionView.register(CookedImageCell.self, forCellWithReuseIdentifier: "cookedImageCell")
         return collectionView
@@ -353,16 +350,12 @@ class AboutCell: BaseCell, UICollectionViewDelegate, UICollectionViewDataSource,
 
 extension AboutCell {
     
-//    func numberOfSections(in collectionView: UICollectionView) -> Int {
-//        return 1
-//    }
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
         guard let cookedImages = recipeDetailVC?.recipe?.cookedImages != nil ? recipeDetailVC?.recipe?.cookedImages : [String:String]() else { return 0 }
-        
-//       let cookedImages = []
-        
         guard let tags = recipeDetailVC?.recipe?.tags else { return 0 }
         if collectionView == tagsCollectionView {
             return tags.count
@@ -400,12 +393,12 @@ extension AboutCell {
 
             guard let cookedImages = recipeDetailVC?.recipe?.cookedImages != nil ? recipeDetailVC?.recipe?.cookedImages : [String: String]() else { return UICollectionViewCell() }
             let myKey = Array(cookedImages.keys)[indexPath.item]
-//            let myValue = Array(cookedImages.values)[indexPath.item]
             FirebaseController.shared.fetchUserWithUID(uid: myKey) { (user) in
                 cell.userNameLabel.text = user?.username
                 cell.isSelected = true
                 cell.setUpViews()
             }
+            
             let myValue = Array(cookedImages.values)[indexPath.item]
 
             cell.cookedImageView.loadImage(urlString: myValue, placeholder: #imageLiteral(resourceName: "avatar"))
@@ -433,7 +426,7 @@ extension AboutCell {
                 
                 let estimatedFrame = NSAttributedString(string: tag).boundingRect(with: size, options: .usesLineFragmentOrigin,  context: nil)
                 
-                
+                // This is the width + the padding and same for the height
                 return CGSize(width: attributedString.size().width + adaptConstant(24), height: estimatedFrame.height + adaptConstant(27))
 
             } else if collectionView == cookedItImageCollectionView {

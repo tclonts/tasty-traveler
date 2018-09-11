@@ -574,7 +574,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-//        viewLoadSetup()
+        viewLoadSetup()
         
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
