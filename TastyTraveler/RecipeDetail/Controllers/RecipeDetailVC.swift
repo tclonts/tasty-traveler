@@ -88,7 +88,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                         self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
                     }
                 }
-            }
+            }                
                 self.formatCookButton()
                 self.fetchReviewData()
 
@@ -331,15 +331,6 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
-        
-//        if isRecipeDetailVC {
-//            
-//            imagePicker.delegate = self
-//            imagePicker.sourceType = .photoLibrary
-//        }
-       
-        
         self.isHeroEnabled = true
         self.view.backgroundColor = .white
         navigationController?.setNavigationBarHidden(true, animated: false)
@@ -351,7 +342,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         
         recipeHeaderView.heroID = "recipeHeaderView"
         
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadRecipe), name: Notification.Name("submittedReview"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(reloadRecipe), name: Notification.Name("submittedReview"), object: nil)
         
         setUpViews()
         applyHeroModifiers()
@@ -398,8 +389,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        reloadRecipe()
         if isRecipeDetailVC {
-            
             imagePicker.delegate = self
             imagePicker.sourceType = .photoLibrary
         }
@@ -425,7 +416,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                 } else {
                     updatedRecipe.hasFavorited = false
                 }
-                
+
                 FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
                     if (snapshot.value as? Double) != nil {
                         updatedRecipe.hasCooked = true
@@ -539,6 +530,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             }
         }
     }
+    
     
     
     func formatCookButton() {

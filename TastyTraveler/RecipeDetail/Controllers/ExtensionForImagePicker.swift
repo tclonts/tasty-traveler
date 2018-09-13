@@ -127,13 +127,13 @@ extension RecipeDetailVC: RSKImageCropViewControllerDelegate  {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         self.pointAdder(numberOfPoints: -5)
         self.pointAdderForCurrentUserID(numberOfPoints: -5)
-        FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("cookedRecipes").child(userID).removeValue()
         
         let ac = UIAlertController(title: "Mark this recipe as not cooked?", message: "This will permanently delete your rating/review for this recipe as well.", preferredStyle: .alert)
         
         ac.addAction(UIAlertAction(title: "Yes", style: .destructive, handler: { (_) in
 
         
+        FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("cookedRecipes").child(userID).removeValue()
         FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(self.recipe!.uid).removeValue()
         FirebaseController.shared.ref.child("recipes").child(self.recipe!.uid).child("cookedImages").child(userID).removeValue()
         FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").child(self.recipe!.uid).removeValue()
