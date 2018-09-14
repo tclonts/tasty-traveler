@@ -23,6 +23,13 @@ class MainTabBarController: UITabBarController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateTabBadge), name: Notification.Name("UpdateTabBadge"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(showAchievement), name: Notification.Name("FirstRecipe"), object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(bronzeAchievement), name: Notification.Name("BronzeBadge"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(silverAchievement), name: Notification.Name("SilverBadge"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(goldAchievement), name: Notification.Name("GoldBadge"), object: nil)
+
+
+
     }
     
     @objc func showAchievement() {
@@ -30,6 +37,29 @@ class MainTabBarController: UITabBarController {
         achievementVC.modalPresentationStyle = .overCurrentContext
         self.present(achievementVC, animated: false) {
             achievementVC.show()
+        }
+    }
+    
+    @objc func bronzeAchievement() {
+        let bronzeAchievementVC = BronzeAchievementVC()
+        bronzeAchievementVC.modalPresentationStyle = .overCurrentContext
+        self.present(bronzeAchievementVC, animated: false) {
+            bronzeAchievementVC.show()
+        }
+    }
+    
+    @objc func silverAchievement() {
+        let silverAchievementVC = SilverAchievementVC()
+        silverAchievementVC.modalPresentationStyle = .overCurrentContext
+        self.present(silverAchievementVC, animated: false) {
+            silverAchievementVC.show()
+        }
+    }
+    @objc func goldAchievement() {
+        let goldAchievementVC = GoldAchievementVC()
+        goldAchievementVC.modalPresentationStyle = .overCurrentContext
+        self.present(goldAchievementVC, animated: false) {
+            goldAchievementVC.show()
         }
     }
     

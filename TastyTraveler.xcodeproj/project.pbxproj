@@ -98,6 +98,9 @@
 		BE25D1A2213222FE00D2940D /* CookedImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A1213222FE00D2940D /* CookedImageCell.swift */; };
 		BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */; };
 		BE25D1A62136697B00D2940D /* PointsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A52136697B00D2940D /* PointsVC.swift */; };
+		BE7E803C214BE6F8002646AF /* BronzeAchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */; };
+		BE7E803E214C00F7002646AF /* SilverAchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */; };
+		BE7E8040214C0239002646AF /* GoldAchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E803F214C0239002646AF /* GoldAchievementVC.swift */; };
 		BEBA9BDA212E734300E4B145 /* ExtensionsForPointSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */; };
 		BEBA9BDC212F8B5300E4B145 /* ExtensionForHomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */; };
 /* End PBXBuildFile section */
@@ -198,6 +201,9 @@
 		BE25D1A1213222FE00D2940D /* CookedImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookedImageCell.swift; sourceTree = "<group>"; };
 		BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForImagePicker.swift; sourceTree = "<group>"; };
 		BE25D1A52136697B00D2940D /* PointsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsVC.swift; sourceTree = "<group>"; };
+		BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BronzeAchievementVC.swift; sourceTree = "<group>"; };
+		BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilverAchievementVC.swift; sourceTree = "<group>"; };
+		BE7E803F214C0239002646AF /* GoldAchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoldAchievementVC.swift; sourceTree = "<group>"; };
 		BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionsForPointSystem.swift; sourceTree = "<group>"; };
 		BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForHomeVC.swift; sourceTree = "<group>"; };
 		F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.release.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.release.xcconfig"; sourceTree = "<group>"; };
@@ -455,6 +461,9 @@
 				2A0B4DFF2059978A0056F7D5 /* Profile */,
 				2A805AE32049BF45004BEEF3 /* AppDelegate.swift */,
 				2A54425020D949A500727BFA /* AchievementVC.swift */,
+				BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */,
+				BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */,
+				BE7E803F214C0239002646AF /* GoldAchievementVC.swift */,
 				2A665ACA2069B2F10014A464 /* FirebaseController.swift */,
 				2A54A969205077CE008255A9 /* MainTabBarController.swift */,
 				2AD34F0B2049C902004F2EF3 /* Models */,
@@ -779,9 +788,11 @@
 				2AD34F10204F0AE7004F2EF3 /* AccountAccessVC.swift in Sources */,
 				2A0B4E052059A6BA0056F7D5 /* HomeVC.swift in Sources */,
 				2A665AD6206D8ECD0014A464 /* AboutCell.swift in Sources */,
+				BE7E803C214BE6F8002646AF /* BronzeAchievementVC.swift in Sources */,
 				2ACCCB2E20ADE6F700CA8B69 /* SettingsVC.swift in Sources */,
 				2AA2520D2062BC9500BA9775 /* CreateRecipeForm.swift in Sources */,
 				2A76AA88208F83320030BE8F /* FilterStatusCell.swift in Sources */,
+				BE7E8040214C0239002646AF /* GoldAchievementVC.swift in Sources */,
 				2A0B4E0E205AFDDC0056F7D5 /* RecipeCell.swift in Sources */,
 				2A35F5AA20A0DD58009899AA /* Review.swift in Sources */,
 				2ADA49B720570EF70024C8EE /* SignUpVC.swift in Sources */,
@@ -820,6 +831,7 @@
 				2A338968209B953E000238D2 /* SectionHeaderView.swift in Sources */,
 				2A338962209B9046000238D2 /* FavoritesSection.swift in Sources */,
 				2A0B4E10205B02050056F7D5 /* CustomImageView.swift in Sources */,
+				BE7E803E214C00F7002646AF /* SilverAchievementVC.swift in Sources */,
 				2A3BE8AD2098CFDC0095CDA5 /* QuestionsVC.swift in Sources */,
 				2A76AA82208A70A20030BE8F /* MealSection.swift in Sources */,
 				2A35F5B020A0E56A009899AA /* RatingBar.swift in Sources */,

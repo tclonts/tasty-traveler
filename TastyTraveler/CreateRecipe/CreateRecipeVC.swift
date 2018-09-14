@@ -303,13 +303,13 @@ class CreateRecipeVC: UIViewController {
         }
         
         self.dismiss(animated: true, completion: {
-//            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
-//                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
-//            } else {
-//                UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
-//
+            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
+                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+            } else {
+                UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
+
                 NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
-//            }
+            }            
         })
     }
     
@@ -489,8 +489,23 @@ class CreateRecipeVC: UIViewController {
 //                    print("First recipe has already been uploaded: \(firstRecipeUploaded)")
 //                } else {
 //                    UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
-                    NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
 //                }
+//                guard let userID = Auth.auth().currentUser?.uid else { return }
+//
+//                FirebaseController.shared.fetchUserWithUID(uid: userID, completion: { (userr) in
+//                    guard let userr = userr else { return }
+//
+//                FirebaseController.shared.ref.child("users").child(userr.uid).child("uploadedRecipes").observe(.value) { (snapshot) in
+//
+//                    if snapshot.childrenCount <= 1 {
+//                        NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
+//
+//                    } else if snapshot.childrenCount >= 3 {
+//
+//                        NotificationCenter.default.post(Notification(name: Notification.Name("BronzeBadge")))
+//                    }
+//                }
+//                })
             })
         }))
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))

@@ -1153,6 +1153,7 @@ extension ProfileVC {
                                                 self.pointAdderTwo(numberOfPoints: 500)
                                                 self.badgeStatusPointAdder(badgeStatusNumber: 3)
                                                 self.headerView.goldBadge.isHidden = false
+                                                NotificationCenter.default.post(Notification(name: Notification.Name("GoldBadge")))
 
                                                 return
                                             }
@@ -1195,6 +1196,7 @@ extension ProfileVC {
                                                 self.pointAdderTwo(numberOfPoints: 250)
                                                 self.badgeStatusPointAdder(badgeStatusNumber: 2)
                                                 self.headerView.silverBadge.isHidden = false
+                                                NotificationCenter.default.post(Notification(name: Notification.Name("SilverBadge")))
 
                                                 return
                                             }
@@ -1223,6 +1225,8 @@ extension ProfileVC {
                         self.pointAdderTwo(numberOfPoints: 100)
                         self.badgeStatusPointAdder(badgeStatusNumber: 1)
                         self.headerView.bronzeBadge.isHidden = false
+                        NotificationCenter.default.post(Notification(name: Notification.Name("BronzeBadge")))
+
 
                     }
                 }
