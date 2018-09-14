@@ -29,7 +29,18 @@ struct Color {
     static let primaryOrange = UIColor(hexString: "FF8200")
     static let gray          = UIColor(hexString: "999999")
     static let lightGray     = UIColor(hexString: "CECECE")
-    
+    static let blue          = UIColor(hexString: "5DA5DA")
+    static let orange        = UIColor(hexString: "FAA43A")
+    static let green         = UIColor(hexString: "60BD68")
+    static let pink          = UIColor(hexString: "F17CB0")
+    static let purple        = UIColor(hexString: "B276B2")
+    static let yellow         = UIColor(hexString: "DECF3F")
+
+
+
+
+
+
     static let emptyBar      = UIColor(hexString: "E9E9EB")
     static let filledBar     = UIColor(hexString: "86868A")
 }

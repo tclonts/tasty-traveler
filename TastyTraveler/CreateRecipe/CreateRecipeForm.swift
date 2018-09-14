@@ -8,6 +8,8 @@
 
 import UIKit
 import Stevia
+import Firebase
+
 
 class CreateRecipeForm: UIView {
     
@@ -645,11 +647,22 @@ class CreateRecipeForm: UIView {
 //        print(createRecipeVC?.ingredientsDataSource.ingredients.count)
     }
     
-    
+//    func pointAdder(numberOfPoints: Int) {
+//        guard let userID = Auth.auth().currentUser?.uid else { return }
+//        
+//        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+//            guard let user = user else { return }
+//            
+//            var points = user.points
+//            let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
+//            FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
+//            
+//        }
+//    }
     
     @objc fileprivate func doneButtonTapped() {
         print("Done tapped")
-        
+//        pointAdder(numberOfPoints: 10)
         
         self.recipeNameTextInputView.textView.text = self.recipeNameTextInputView.textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
         

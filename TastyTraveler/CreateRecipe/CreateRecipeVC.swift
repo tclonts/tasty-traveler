@@ -153,10 +153,23 @@ class CreateRecipeVC: UIViewController {
         }
     }
     
+    func pointAdder(numberOfPoints: Int) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            var points = user.points
+            let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
+            FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
+            
+        }
+    }
     
     
     func submitRecipe() {
-        
+        pointAdder(numberOfPoints: 10)
+
         guard let photo = formView.photoImageView.image else { return }
         guard let name = formView.recipeNameTextInputView.textView.text else { return }
         guard let servings = servings else { return }
@@ -476,7 +489,6 @@ class CreateRecipeVC: UIViewController {
 //                    print("First recipe has already been uploaded: \(firstRecipeUploaded)")
 //                } else {
 //                    UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
-//
                     NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
 //                }
             })

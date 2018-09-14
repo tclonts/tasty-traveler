@@ -661,6 +661,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     
                     FirebaseController.shared.ref.child("users").child(recipe.creator.uid).child("uploadedRecipes").child(recipe.uid).removeValue()
                     FirebaseController.shared.ref.child("recipes").child(recipe.uid).removeValue()
+                    self.pointAdderTwo(numberOfPoints: -10)
                     if let country = recipe.country { FirebaseController.shared.ref.child("locations").child(country).child("recipes").child(recipe.uid).removeValue() }
                     
                     FirebaseController.shared.ref.child("messages").observeSingleEvent(of: .value, with: { (snapshot) in
@@ -910,6 +911,18 @@ extension ProfileVC {
                 }
             }
         }
+    
+    func pointAdderTwo(numberOfPoints: Int) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            var points = user.points
+            let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
+            FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
+        }
+    }
     func badgeStatusPointAdder(badgeStatusNumber: Int) {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
@@ -1114,8 +1127,9 @@ extension ProfileVC {
         
         //GOLD
         guard let userID = Auth.auth().currentUser?.uid else {return}
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (userr) in
         
-        if user?.badgeStatus == 2 {
+            if (userr?.badgeStatus) == 2 {
         FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
             for recipe in result.children.allObjects as! [DataSnapshot] {
                 
@@ -1136,9 +1150,10 @@ extension ProfileVC {
                                             
                                             if snapshot.childrenCount >= 10 {
                                                 // INCREMENT TO GOLD
-                                                self.pointAdder(numberOfPoints: 500)
+                                                self.pointAdderTwo(numberOfPoints: 500)
                                                 self.badgeStatusPointAdder(badgeStatusNumber: 3)
-                                                
+                                                self.headerView.goldBadge.isHidden = false
+
                                                 return
                                             }
                                             
@@ -1152,7 +1167,8 @@ extension ProfileVC {
                 }
             }
         }
-        } else if user?.badgeStatus == 1 {
+            
+        } else if userr?.badgeStatus == 1 {
         
         //SILVER
         
@@ -1176,9 +1192,10 @@ extension ProfileVC {
                                             
                                             if snapshot.childrenCount >= 5 {
                                                 // INCREMENT TO Silver
-                                                self.pointAdder(numberOfPoints: 250)
+                                                self.pointAdderTwo(numberOfPoints: 250)
                                                 self.badgeStatusPointAdder(badgeStatusNumber: 2)
-                                                
+                                                self.headerView.silverBadge.isHidden = false
+
                                                 return
                                             }
                                             
@@ -1192,7 +1209,8 @@ extension ProfileVC {
                 }
             }
         }
-        } else {
+            
+        } else if userr?.badgeStatus == 0 || userr?.badgeStatus == nil {
         //BRONZE
         
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
@@ -1201,12 +1219,15 @@ extension ProfileVC {
             if user.avatarURL != nil, user.avatarURL != "", user.bio != nil, user.bio != "" {
                 FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
                     if snapshot.childrenCount >= 3 {
-                        self.pointAdder(numberOfPoints: 100)
+                        
+                        self.pointAdderTwo(numberOfPoints: 100)
                         self.badgeStatusPointAdder(badgeStatusNumber: 1)
+                        self.headerView.bronzeBadge.isHidden = false
+
                     }
                 }
             }
-            
+            }
     }
 }
 }

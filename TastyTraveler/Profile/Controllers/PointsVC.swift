@@ -72,12 +72,12 @@ class PointsVC: UIViewController {
         fetchUserInfo {
             
             
-            let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourCooked)), color: Color.filledBar, title: "recipes cooked by you")
-            let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourFavorited)), color: Color.blackText, title: "recipes saved by you")
-            let thirdItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourReviewed)), color: Color.darkText , title: "reviews left by you")
-            let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyCooked)), color: Color.primaryOrange , title: "recipes cooked by others")
-            let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyFavorited)), color: Color.offWhite , title: "recipes favorited by others")
-            let sixthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyReviewed)), color: Color.lightGray, title: "review left by others")
+            let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourCooked)), color: Color.orange, title: "recipes cooked by you")
+            let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourFavorited)), color: Color.blue, title: "recipes saved by you")
+            let thirdItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourReviewed)), color: Color.green , title: "reviews left by you")
+            let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyCooked)), color: Color.pink , title: "recipes cooked by others")
+            let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyFavorited)), color: Color.purple , title: "recipes favorited by others")
+            let sixthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyReviewed)), color: Color.yellow, title: "review left by others")
             let chartView = RKPieChartView(items: [firstItem, secondItem, thirdItem, fourthItem, fifthItem, sixthItem], centerTitle: ("Total Points \(self.totalPoints)"))
             
             chartView.circleColor = .clear
