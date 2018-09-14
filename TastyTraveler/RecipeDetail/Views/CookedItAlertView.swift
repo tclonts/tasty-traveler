@@ -134,6 +134,13 @@ class CookedItAlertView: UIViewController {
         }) { (_) in
             self.dismiss(animated: false, completion: nil)
             
+            if let firstRecipeCooked = UserDefaults.standard.object(forKey: "firstRecipeCooked") as? Bool, firstRecipeCooked {
+                print("First recipe has already been favorited: \(firstRecipeCooked)")
+            } else {
+                UserDefaults.standard.set(true, forKey: "firstRecipeCooked")
+                
+                NotificationCenter.default.post(Notification(name: Notification.Name("firstRecipeCooked")))
+            }
 //            let recipeDetailVC = RecipeDetailVC()
 //
 //            recipeDetailVC.imagePicker.modalPresentationStyle = .overCurrentContext

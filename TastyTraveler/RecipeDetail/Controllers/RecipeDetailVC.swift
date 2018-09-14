@@ -343,7 +343,12 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         recipeHeaderView.heroID = "recipeHeaderView"
         
 //        NotificationCenter.default.addObserver(self, selector: #selector(reloadRecipe), name: Notification.Name("submittedReview"), object: nil)
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeCooked), name: Notification.Name("firstRecipeCooked"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeReviewLeft), name: Notification.Name("firstRecipeReviewLeft"), object: nil)
+
+
+
         setUpViews()
         applyHeroModifiers()
         
@@ -356,6 +361,23 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             self.recipeHeaderView.creatorNameLabel.isUserInteractionEnabled = true
             self.recipeHeaderView.creatorNameLabel.addGestureRecognizer(profileGesture)
         }
+    }
+    
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        reloadRecipe()
+        if isRecipeDetailVC {
+            imagePicker.delegate = self
+            imagePicker.sourceType = .photoLibrary
+        }
+        
+        topView.topConstraint?.constant = 0
+        UIView.animate(withDuration: 0.3) {
+            self.view.layoutIfNeeded()
+        }
+        
     }
     
     @objc func showProfileView() {
@@ -384,22 +406,6 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         self.present(popup, animated: false) {
             popup.showMapView()
         }
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        reloadRecipe()
-        if isRecipeDetailVC {
-            imagePicker.delegate = self
-            imagePicker.sourceType = .photoLibrary
-        }
-        
-        topView.topConstraint?.constant = 0
-        UIView.animate(withDuration: 0.3) {
-            self.view.layoutIfNeeded()
-        }
-        
     }
     
     @objc func reloadRecipe() {
@@ -433,6 +439,28 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                     }
                 })
             })
+        }
+    }
+    
+    @objc func firstRecipeFavorited() {
+        let firstRecipeFavoritedVC = FirstRecipeFavoritedVC()
+        firstRecipeFavoritedVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstRecipeFavoritedVC, animated: false) {
+            firstRecipeFavoritedVC.show()
+        }
+    }
+    @objc func firstRecipeCooked() {
+        let firstRecipeCookedVC = FirstRecipeCookedVC()
+        firstRecipeCookedVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstRecipeCookedVC, animated: false) {
+            firstRecipeCookedVC.show()
+        }
+    }
+    @objc func firstRecipeReviewLeft() {
+        let firstRecipeReviewLeftVC = FirstRecipeReviewLeftVC()
+        firstRecipeReviewLeftVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstRecipeReviewLeftVC, animated: false) {
+            firstRecipeReviewLeftVC.show()
         }
     }
     
@@ -670,7 +698,13 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                             self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
                             self.homeVC?.recipeDataHasChanged = true
                         }
-                        
+                        if let firstRecipeFavorited = UserDefaults.standard.object(forKey: "firstRecipeFavorited") as? Bool, firstRecipeFavorited {
+                            print("First recipe has already been favorited: \(firstRecipeFavorited)")
+                        } else {
+                            UserDefaults.standard.set(true, forKey: "firstRecipeFavorited")
+                            
+                            NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
+                        }
                         NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                     }
                 }

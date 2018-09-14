@@ -99,7 +99,7 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
             FirebaseController.shared.ref.child("reviews").child(uid).setValue(dictionary)
             FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").updateChildValues([recipeID: uid])
             FirebaseController.shared.ref.child("recipes").child(recipeID).child("reviews").updateChildValues([userID: uid])
-            
+
             NotificationCenter.default.post(name: Notification.Name("submittedReview"), object: nil)
             
             // ANALYTICS
@@ -115,7 +115,15 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
         recipeDetailVC.didSubmitReview = true
         pointAdder(numberOfPoints: 10)
         pointAdderForCurrentUserID(numberOfPoints: 10)
-        dismiss(animated: true, completion: nil)
+        dismiss(animated: true) {
+            if let firstRecipeReviewLeft = UserDefaults.standard.object(forKey: "firstRecipeReviewLeft") as? Bool, firstRecipeReviewLeft {
+                print("First recipe has already been reviewed: \(firstRecipeReviewLeft)")
+            } else {
+                UserDefaults.standard.set(true, forKey: "firstRecipeReviewLeft")
+                
+                NotificationCenter.default.post(Notification(name: Notification.Name("firstRecipeReviewLeft")))
+            }
+        }
     }
     
     func fetchExistingReview() {

@@ -101,6 +101,9 @@
 		BE7E803C214BE6F8002646AF /* BronzeAchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */; };
 		BE7E803E214C00F7002646AF /* SilverAchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */; };
 		BE7E8040214C0239002646AF /* GoldAchievementVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E803F214C0239002646AF /* GoldAchievementVC.swift */; };
+		BE7E8042214C0DDF002646AF /* FirstRecipeFavoritedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8041214C0DDF002646AF /* FirstRecipeFavoritedVC.swift */; };
+		BE7E8044214C18C0002646AF /* FirstRecipeCookedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8043214C18C0002646AF /* FirstRecipeCookedVC.swift */; };
+		BE7E8046214C18ED002646AF /* FirstRecipeReviewLeftVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8045214C18ED002646AF /* FirstRecipeReviewLeftVC.swift */; };
 		BEBA9BDA212E734300E4B145 /* ExtensionsForPointSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */; };
 		BEBA9BDC212F8B5300E4B145 /* ExtensionForHomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */; };
 /* End PBXBuildFile section */
@@ -204,6 +207,9 @@
 		BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BronzeAchievementVC.swift; sourceTree = "<group>"; };
 		BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilverAchievementVC.swift; sourceTree = "<group>"; };
 		BE7E803F214C0239002646AF /* GoldAchievementVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoldAchievementVC.swift; sourceTree = "<group>"; };
+		BE7E8041214C0DDF002646AF /* FirstRecipeFavoritedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeFavoritedVC.swift; sourceTree = "<group>"; };
+		BE7E8043214C18C0002646AF /* FirstRecipeCookedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeCookedVC.swift; sourceTree = "<group>"; };
+		BE7E8045214C18ED002646AF /* FirstRecipeReviewLeftVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeReviewLeftVC.swift; sourceTree = "<group>"; };
 		BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionsForPointSystem.swift; sourceTree = "<group>"; };
 		BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForHomeVC.swift; sourceTree = "<group>"; };
 		F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.release.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.release.xcconfig"; sourceTree = "<group>"; };
@@ -307,6 +313,9 @@
 				2A35F5A620A0DBAE009899AA /* Models */,
 				2A35F5A520A0DBA9009899AA /* Views */,
 				2A35F5A420A0DB9D009899AA /* Controllers */,
+				BE7E8045214C18ED002646AF /* FirstRecipeReviewLeftVC.swift */,
+				BE7E8043214C18C0002646AF /* FirstRecipeCookedVC.swift */,
+				BE7E8041214C0DDF002646AF /* FirstRecipeFavoritedVC.swift */,
 			);
 			path = RecipeDetail;
 			sourceTree = "<group>";
@@ -807,6 +816,7 @@
 				2A338964209B906E000238D2 /* CookedSection.swift in Sources */,
 				2ADA49BC20572DA20024C8EE /* Validator.swift in Sources */,
 				2A76AA84208A72030030BE8F /* LocationSection.swift in Sources */,
+				BE7E8044214C18C0002646AF /* FirstRecipeCookedVC.swift in Sources */,
 				2A9BA326209A00F800AC3E42 /* MessageCell.swift in Sources */,
 				2A3BE8AA2098CA0F0095CDA5 /* Message.swift in Sources */,
 				2AC67E2F2087B52E00C0E828 /* State.swift in Sources */,
@@ -839,6 +849,7 @@
 				2A2D480A20A393E100705D70 /* RecipeAnnotation.swift in Sources */,
 				2A54A9722052E474008255A9 /* SignInVC.swift in Sources */,
 				2A1A262621122466005531D6 /* FlowLayout.swift in Sources */,
+				BE7E8046214C18ED002646AF /* FirstRecipeReviewLeftVC.swift in Sources */,
 				2A665ADA206D8EF90014A464 /* DirectionsCell.swift in Sources */,
 				2A338966209B9087000238D2 /* UploadedSection.swift in Sources */,
 				2A3BE8A82098C2340095CDA5 /* TextInputTextView.swift in Sources */,
@@ -853,6 +864,7 @@
 				2A2D480C20A3986D00705D70 /* RecipeAnnotationView.swift in Sources */,
 				2A8FE11620B5C71B008BA9F4 /* ErrorLabel.swift in Sources */,
 				BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */,
+				BE7E8042214C0DDF002646AF /* FirstRecipeFavoritedVC.swift in Sources */,
 				2AC67E2B2086A2F700C0E828 /* FiltersLauncher.swift in Sources */,
 				2A35F5A820A0DC14009899AA /* InfoBox.swift in Sources */,
 				2A0B4DF7205988510056F7D5 /* Constants.swift in Sources */,

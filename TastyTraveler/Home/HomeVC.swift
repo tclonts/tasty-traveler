@@ -102,6 +102,7 @@ class HomeVC: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         pointUpToSpeed()
+
         
         self.view.backgroundColor = .white
         self.isHeroEnabled = true
@@ -123,6 +124,7 @@ class HomeVC: UITableViewController {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
         
         self.view.sv(emptyDataView)
         emptyDataView.centerInContainer()
@@ -237,6 +239,13 @@ class HomeVC: UITableViewController {
         cancelButton.removeFromSuperview()
 //        self.tableView.reloadSections([1], with: .automatic)
         self.tableView.reloadData()
+    }
+    @objc func firstRecipeFavorited() {
+        let firstRecipeFavoritedVC = FirstRecipeFavoritedVC()
+        firstRecipeFavoritedVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstRecipeFavoritedVC, animated: false) {
+            firstRecipeFavoritedVC.show()
+        }
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -702,6 +711,14 @@ extension HomeVC: RecipeCellDelegate {
                         self.searchResultRecipes[indexPath.item] = recipe
                         
                         self.tableView.reloadRows(at: [indexPath], with: .none)
+                        
+                        if let firstRecipeFavorited = UserDefaults.standard.object(forKey: "firstRecipeFavorited") as? Bool, firstRecipeFavorited {
+                            print("First recipe has already been favorited: \(firstRecipeFavorited)")
+                        } else {
+                            UserDefaults.standard.set(true, forKey: "firstRecipeFavorited")
+                            
+                            NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
+                        }
                         
                         NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
                     }

@@ -68,9 +68,9 @@ class PointsVC: UIViewController {
         theyFavorite()
         theyReview()
         youReview()
+        youUploaded()
    
         fetchUserInfo {
-            
             
             let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourCooked)), color: Color.orange, title: "recipes cooked by you")
             let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourFavorited)), color: Color.blue, title: "recipes saved by you")
@@ -78,7 +78,8 @@ class PointsVC: UIViewController {
             let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyCooked)), color: Color.pink , title: "recipes cooked by others")
             let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyFavorited)), color: Color.purple , title: "recipes favorited by others")
             let sixthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyReviewed)), color: Color.yellow, title: "review left by others")
-            let chartView = RKPieChartView(items: [firstItem, secondItem, thirdItem, fourthItem, fifthItem, sixthItem], centerTitle: ("Total Points \(self.totalPoints)"))
+            let seventhItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.youUploadedRecipe)), color: Color.darkText, title: "recipe uploaded by you")
+            let chartView = RKPieChartView(items: [seventhItem, firstItem, secondItem, thirdItem, fourthItem, fifthItem, sixthItem], centerTitle: ("Total Points \(self.totalPoints)"))
             
             chartView.circleColor = .clear
             chartView.translatesAutoresizingMaskIntoConstraints = false
@@ -131,6 +132,7 @@ class PointsVC: UIViewController {
         self.navigationController?.navigationBar.tintColor = Color.blackText
     }
     
+    var youUploadedRecipe = 0
     var theyFavorited = 0
     var theyCooked = 0
     var yourFavorited = 0
@@ -141,6 +143,14 @@ class PointsVC: UIViewController {
 }
 
 extension PointsVC {
+    
+    func youUploaded () {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
+            self.youUploadedRecipe = Int(snapshot.childrenCount) * 20
+        }
+    }
     
     func theyFavorite() {
         
