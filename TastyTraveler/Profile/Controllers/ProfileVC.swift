@@ -240,7 +240,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         profilePhotoButton.CenterY == profilePhotoImageView.Bottom
         profilePhotoButton.centerHorizontally()
                 
-        pointsLabel.CenterX == bioLabel.CenterX - contentView.frame.width/4
+        pointsLabel.Trailing == profilePhotoButton.CenterX - contentView.frame.width/4
         pointsLabel.centerVertically()
         
 //        pointsLabel.CenterX == usernameLabel.CenterX
