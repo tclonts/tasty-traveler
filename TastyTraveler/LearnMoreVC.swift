@@ -1,5 +1,5 @@
 //
-//  FirstReviewLeftByYouVC.swift
+//  LearnMoreVC.swift
 //  TastyTraveler
 //
 //  Created by Tyler Clonts on 9/14/18.
@@ -10,14 +10,14 @@ import UIKit
 import Stevia
 import SwiftySound
 
-class FirstRecipeReviewLeftVC: UIViewController {
+class LearnMoreVC: UIViewController {
     
     
     let backgroundView = UIView()
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Sweet Stuff!"
+        label.text = "Hooray!"
         label.font = ProximaNova.semibold.of(size: 20)
         label.textColor = Color.darkText
         return label
@@ -32,7 +32,7 @@ class FirstRecipeReviewLeftVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You just earned 10 points for reviewing that recipe!"
+        label.text = "Now with Tasty Traveler every time you cook, leave a review, share and interact with fellow Tasty Travelers you earn points. Those points will turn into cash prizes. Time to get cooking and start sharing. The world awaits you!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center
@@ -65,7 +65,7 @@ class FirstRecipeReviewLeftVC: UIViewController {
             self.backgroundView.transform = CGAffineTransform(translationX: 0, y: self.view.frame.height)
         }, completion: nil)
         
-        self.emitter.birthRate = 0
+//        self.emitter.birthRate = 0
         
         let when = DispatchTime.now() + 1.2
         DispatchQueue.main.asyncAfter(deadline: when, execute: {
@@ -75,34 +75,34 @@ class FirstRecipeReviewLeftVC: UIViewController {
         
     }
     
-    func generateEmitterCells() -> [CAEmitterCell] {
-        
-        let red = makeEmitterCell(color: UIColor.red)
-        let green = makeEmitterCell(color: UIColor.green)
-        let blue = makeEmitterCell(color: UIColor.blue)
-        let yellow = makeEmitterCell(color: UIColor.yellow)
-        
-        return [red, green, blue, yellow]
-    }
+//    func generateEmitterCells() -> [CAEmitterCell] {
+//
+//        let red = makeEmitterCell(color: UIColor.red)
+//        let green = makeEmitterCell(color: UIColor.green)
+//        let blue = makeEmitterCell(color: UIColor.blue)
+//        let yellow = makeEmitterCell(color: UIColor.yellow)
+//
+//        return [red, green, blue, yellow]
+//    }
     
-    func makeEmitterCell(color: UIColor) -> CAEmitterCell {
-        let cell = CAEmitterCell()
-        cell.birthRate = 15
-        cell.lifetime = 7.0
-        cell.lifetimeRange = 0
-        cell.color = color.cgColor
-        cell.velocity = 700
-        cell.velocityRange = 50
-        cell.emissionLongitude = CGFloat.pi
-        cell.emissionRange = CGFloat.pi / 4
-        cell.spin = 2
-        cell.spinRange = 3
-        cell.scaleRange = 0.5
-        cell.scaleSpeed = -0.05
-        
-        cell.contents = #imageLiteral(resourceName: "confettiParticle").cgImage
-        return cell
-    }
+//    func makeEmitterCell(color: UIColor) -> CAEmitterCell {
+//        let cell = CAEmitterCell()
+//        cell.birthRate = 15
+//        cell.lifetime = 7.0
+//        cell.lifetimeRange = 0
+//        cell.color = color.cgColor
+//        cell.velocity = 700
+//        cell.velocityRange = 50
+//        cell.emissionLongitude = CGFloat.pi
+//        cell.emissionRange = CGFloat.pi / 4
+//        cell.spin = 2
+//        cell.spinRange = 3
+//        cell.scaleRange = 0.5
+//        cell.scaleSpeed = -0.05
+//
+//        cell.contents = #imageLiteral(resourceName: "confettiParticle").cgImage
+//        return cell
+//    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -127,17 +127,17 @@ class FirstRecipeReviewLeftVC: UIViewController {
         self.view.sv(backgroundView)
         
         backgroundView.left(adaptConstant(50)).right(adaptConstant(50)).centerVertically()
-        backgroundView.sv(titleLabel, horizontalRule, hikerImage, descriptionLabel, okayButton)
+        backgroundView.sv(hikerImage, descriptionLabel, okayButton)
         
-        titleLabel.top(adaptConstant(16)).centerHorizontally()
+//        titleLabel.top(adaptConstant(16)).centerHorizontally()
         
-        horizontalRule.Top == titleLabel.Bottom + adaptConstant(16)
-        horizontalRule.left(0).right(0)
+//        horizontalRule.Top == backgroundView.Top + adaptConstant(16)
+//        horizontalRule.left(0).right(0)
         
         hikerImage.Top == descriptionLabel.Bottom + adaptConstant(30)
         hikerImage.left(adaptConstant(20)).right(adaptConstant(20)).height(adaptConstant(300))
         
-        descriptionLabel.Top == horizontalRule.Bottom + adaptConstant(16)
+        descriptionLabel.Top == backgroundView.Top + adaptConstant(16)
         descriptionLabel.centerHorizontally().right(adaptConstant(20)).left(adaptConstant(20))
         
         okayButton.Top == hikerImage.Bottom + adaptConstant(30)
@@ -154,18 +154,18 @@ class FirstRecipeReviewLeftVC: UIViewController {
         }
     }
     
-    let emitter = CAEmitterLayer()
-    
-    func show() {
-        emitter.emitterPosition = CGPoint(x: view.center.x, y: -96)
-        emitter.emitterShape = kCAEmitterLayerLine
-        emitter.emitterSize = CGSize(width: view.frame.size.width, height: 1)
-        
-        emitter.emitterCells = generateEmitterCells()
-        
-        self.view.layer.insertSublayer(emitter, at: 0)
-        
-        Sound.play(file: "tada.mp3")
-    }
+//    let emitter = CAEmitterLayer()
+//
+//    func show() {
+//        emitter.emitterPosition = CGPoint(x: view.center.x, y: -96)
+//        emitter.emitterShape = kCAEmitterLayerLine
+//        emitter.emitterSize = CGSize(width: view.frame.size.width, height: 1)
+//
+//        emitter.emitterCells = generateEmitterCells()
+//
+//        self.view.layer.insertSublayer(emitter, at: 0)
+//
+//        Sound.play(file: "tada.mp3")
+//    }
     
 }

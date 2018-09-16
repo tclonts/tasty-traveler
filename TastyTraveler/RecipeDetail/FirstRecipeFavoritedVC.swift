@@ -17,7 +17,7 @@ class FirstRecipeFavoritedVC: UIViewController {
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Hooray!"
+        label.text = "Sweet Stuff!"
         label.font = ProximaNova.semibold.of(size: 20)
         label.textColor = Color.darkText
         return label
@@ -32,7 +32,7 @@ class FirstRecipeFavoritedVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You just received 1 point. Keep favoriting recipes to get more points!"
+        label.text = "You just earned 1 point for saving that recipe!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center

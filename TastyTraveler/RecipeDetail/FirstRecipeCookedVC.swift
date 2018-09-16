@@ -17,7 +17,7 @@ class FirstRecipeCookedVC: UIViewController {
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Hooray!"
+        label.text = "Sweet Stuff!"
         label.font = ProximaNova.semibold.of(size: 20)
         label.textColor = Color.darkText
         return label
@@ -32,7 +32,7 @@ class FirstRecipeCookedVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You just received 5 point. Keep cooking recipes to get more points!"
+        label.text = "You just earned 5 points for cooking that recipe!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center

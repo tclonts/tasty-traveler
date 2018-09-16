@@ -104,6 +104,8 @@
 		BE7E8042214C0DDF002646AF /* FirstRecipeFavoritedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8041214C0DDF002646AF /* FirstRecipeFavoritedVC.swift */; };
 		BE7E8044214C18C0002646AF /* FirstRecipeCookedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8043214C18C0002646AF /* FirstRecipeCookedVC.swift */; };
 		BE7E8046214C18ED002646AF /* FirstRecipeReviewLeftVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8045214C18ED002646AF /* FirstRecipeReviewLeftVC.swift */; };
+		BE7E8048214C4772002646AF /* LearnMoreVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8047214C4772002646AF /* LearnMoreVC.swift */; };
+		BE7E804A214D9242002646AF /* FirstPointsExplainationVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7E8049214D9242002646AF /* FirstPointsExplainationVC.swift */; };
 		BEBA9BDA212E734300E4B145 /* ExtensionsForPointSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */; };
 		BEBA9BDC212F8B5300E4B145 /* ExtensionForHomeVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */; };
 /* End PBXBuildFile section */
@@ -210,6 +212,8 @@
 		BE7E8041214C0DDF002646AF /* FirstRecipeFavoritedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeFavoritedVC.swift; sourceTree = "<group>"; };
 		BE7E8043214C18C0002646AF /* FirstRecipeCookedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeCookedVC.swift; sourceTree = "<group>"; };
 		BE7E8045214C18ED002646AF /* FirstRecipeReviewLeftVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeReviewLeftVC.swift; sourceTree = "<group>"; };
+		BE7E8047214C4772002646AF /* LearnMoreVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnMoreVC.swift; sourceTree = "<group>"; };
+		BE7E8049214D9242002646AF /* FirstPointsExplainationVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstPointsExplainationVC.swift; sourceTree = "<group>"; };
 		BEBA9BD9212E734300E4B145 /* ExtensionsForPointSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionsForPointSystem.swift; sourceTree = "<group>"; };
 		BEBA9BDB212F8B5300E4B145 /* ExtensionForHomeVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForHomeVC.swift; sourceTree = "<group>"; };
 		F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.release.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.release.xcconfig"; sourceTree = "<group>"; };
@@ -466,10 +470,12 @@
 				2AEF1C682056DC8C001DBB98 /* Home */,
 				2A0B4DFA205997300056F7D5 /* Favorites */,
 				2A0B4DFC205997580056F7D5 /* CreateRecipe */,
+				BE7E8049214D9242002646AF /* FirstPointsExplainationVC.swift */,
 				2A0B4DFE2059977E0056F7D5 /* Notifications+Messages */,
 				2A0B4DFF2059978A0056F7D5 /* Profile */,
 				2A805AE32049BF45004BEEF3 /* AppDelegate.swift */,
 				2A54425020D949A500727BFA /* AchievementVC.swift */,
+				BE7E8047214C4772002646AF /* LearnMoreVC.swift */,
 				BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */,
 				BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */,
 				BE7E803F214C0239002646AF /* GoldAchievementVC.swift */,
@@ -820,6 +826,7 @@
 				2A9BA326209A00F800AC3E42 /* MessageCell.swift in Sources */,
 				2A3BE8AA2098CA0F0095CDA5 /* Message.swift in Sources */,
 				2AC67E2F2087B52E00C0E828 /* State.swift in Sources */,
+				BE7E8048214C4772002646AF /* LearnMoreVC.swift in Sources */,
 				2A805AE42049BF45004BEEF3 /* AppDelegate.swift in Sources */,
 				2AA252092062A7C300BA9775 /* CreateRecipeVC.swift in Sources */,
 				2A3BE8B42098D6110095CDA5 /* QuestionCell.swift in Sources */,
@@ -849,6 +856,7 @@
 				2A2D480A20A393E100705D70 /* RecipeAnnotation.swift in Sources */,
 				2A54A9722052E474008255A9 /* SignInVC.swift in Sources */,
 				2A1A262621122466005531D6 /* FlowLayout.swift in Sources */,
+				BE7E804A214D9242002646AF /* FirstPointsExplainationVC.swift in Sources */,
 				BE7E8046214C18ED002646AF /* FirstRecipeReviewLeftVC.swift in Sources */,
 				2A665ADA206D8EF90014A464 /* DirectionsCell.swift in Sources */,
 				2A338966209B9087000238D2 /* UploadedSection.swift in Sources */,

@@ -1,8 +1,8 @@
 //
-//  FirstReviewLeftByYouVC.swift
+//  FirstPointsExplainationVC.swift
 //  TastyTraveler
 //
-//  Created by Tyler Clonts on 9/14/18.
+//  Created by Tyler Clonts on 9/15/18.
 //  Copyright © 2018 Michael Bart. All rights reserved.
 //
 
@@ -10,14 +10,14 @@ import UIKit
 import Stevia
 import SwiftySound
 
-class FirstRecipeReviewLeftVC: UIViewController {
+class FirstPointsExplanationVC: UIViewController {
     
     
     let backgroundView = UIView()
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Sweet Stuff!"
+        label.text = "Awesome Blossom!"
         label.font = ProximaNova.semibold.of(size: 20)
         label.textColor = Color.darkText
         return label
@@ -32,7 +32,7 @@ class FirstRecipeReviewLeftVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You just earned 10 points for reviewing that recipe!"
+        label.text = "You can now earn points for cooking and sharing with others!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center
@@ -49,18 +49,18 @@ class FirstRecipeReviewLeftVC: UIViewController {
     
     lazy var okayButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Okay", for: .normal)
+        button.setTitle("Learn How", for: .normal)
         button.titleLabel?.font = ProximaNova.semibold.of(size: 16)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = adaptConstant(12)
         button.layer.masksToBounds = true
         button.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMinXMaxYCorner]
         button.backgroundColor = Color.primaryOrange
-        button.addTarget(self, action: #selector(okayButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapLearnMoreButton), for: .touchUpInside)
         return button
     }()
     
-    @objc func okayButtonTapped() {
+    @objc func didTapLearnMoreButton() {
         UIView.animate(withDuration: 0.8, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             self.backgroundView.transform = CGAffineTransform(translationX: 0, y: self.view.frame.height)
         }, completion: nil)
@@ -70,9 +70,16 @@ class FirstRecipeReviewLeftVC: UIViewController {
         let when = DispatchTime.now() + 1.2
         DispatchQueue.main.asyncAfter(deadline: when, execute: {
             self.dismiss(animated: false, completion: nil)
-            print("DISMISSED")
+                print("DISMISSED")
         })
-        
+        NotificationCenter.default.post(name: Notification.Name("toPointsVC"), object: nil)
+    }
+    
+    @objc  func toPointsVC() {
+        let pointsVC = PointsVC()
+        let navController = UINavigationController(rootViewController: pointsVC)
+        self.present(navController, animated: true, completion: nil)
+
     }
     
     func generateEmitterCells() -> [CAEmitterCell] {
@@ -107,6 +114,9 @@ class FirstRecipeReviewLeftVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(self.toPointsVC), name: Notification.Name("toPointsVC"), object: nil)
+
+        
         self.view.backgroundColor = .clear
         
         backgroundView.backgroundColor = .white
@@ -121,6 +131,7 @@ class FirstRecipeReviewLeftVC: UIViewController {
         setUpViews()
         
         self.backgroundView.transform = CGAffineTransform(scaleX: 0, y: 0)
+        
     }
     
     func setUpViews() {

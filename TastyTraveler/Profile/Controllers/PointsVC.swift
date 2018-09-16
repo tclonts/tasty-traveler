@@ -21,46 +21,27 @@ class PointsVC: UIViewController {
     
     var user: TTUser? {
         didSet {
-        if let userPoints = user?.points {
-          totalPoints = userPoints
+            if let userPoints = user?.points {
+                totalPoints = userPoints
+            }
         }
     }
-    }
     
-    
-    let pointsLabel: UILabel = {
-        let label = UILabel()
-        label.font = ProximaNova.semibold.of(size: 12)
-        label.textColor = Color.blackText
-        label.text = "Points"
-        label.textAlignment = .center
-//        label.width(350)
-        return label
+    let pointsInfoButton: UIButton = {
+        let button = UIButton(type: .system)
+        let title = NSAttributedString(string: "Learn how to earn points and get rewards?", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        button.addTarget(self, action: #selector(learnMore), for: .touchUpInside)
+        return button
     }()
     
-    let youHave: UILabel = {
-        let label = UILabel()
-        label.font = ProximaNova.semibold.of(size: 12)
-        label.textColor = Color.blackText
-        label.text = "youHave"
-        label.textAlignment = .center
-
-        return label
-    }()
-    
-    let someOneHas: UILabel = {
-        let label = UILabel()
-        label.font = ProximaNova.semibold.of(size: 12)
-        label.textColor = Color.blackText
-        label.text = "SomeONeHas"
-        label.textAlignment = .center
-
-        return label
-    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
+
         navBarConfiguration()
         youCooked()
         youFavorited()
@@ -69,19 +50,34 @@ class PointsVC: UIViewController {
         theyReview()
         youReview()
         youUploaded()
-   
+        //        addTotal()
+        
         fetchUserInfo {
+            var totalP = self.yourFavorited + self.yourReviewed + self.yourCooked
             
-            let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourCooked)), color: Color.orange, title: "recipes cooked by you")
-            let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourFavorited)), color: Color.blue, title: "recipes saved by you")
-            let thirdItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.yourReviewed)), color: Color.green , title: "reviews left by you")
-            let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyCooked)), color: Color.pink , title: "recipes cooked by others")
-            let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyFavorited)), color: Color.purple , title: "recipes favorited by others")
-            let sixthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.theyReviewed)), color: Color.yellow, title: "review left by others")
-            let seventhItem: RKPieChartItem = RKPieChartItem(ratio: (uint(self.youUploadedRecipe)), color: Color.darkText, title: "recipe uploaded by you")
-            let chartView = RKPieChartView(items: [seventhItem, firstItem, secondItem, thirdItem, fourthItem, fifthItem, sixthItem], centerTitle: ("Total Points \(self.totalPoints)"))
+            let yourCookedPoints: Double = (Double(self.yourCooked) / Double(totalP)) * 100.0
+            let yourFavoritePoints: Double = (Double(self.yourFavorited) / Double(totalP)) * 100.0
+            let yourReviewedPoints: Double = (Double(self.yourReviewed) / Double(totalP)) * 100.0
+            let theyCookedPoints: Double = (Double(self.theyCooked) / Double(totalP)) * 100.0
+            let theyFavoritePoints: Double = (Double(self.theyFavorited) / Double(totalP)) * 100.0
+            let theyReviewedPoints: Double = (Double(self.theyReviewed) / Double(totalP)) * 100.0
+            let youUploadedPoints: Double = (Double(self.youUploadedRecipe) / Double(totalP)) * 100.0
+        
             
-            chartView.circleColor = .clear
+            let firstItem: RKPieChartItem = RKPieChartItem(ratio: (uint(yourCookedPoints)), color: Color.orange, title: "recipes cooked by you = 5 points")
+            let secondItem: RKPieChartItem = RKPieChartItem(ratio: (uint(yourFavoritePoints)), color: Color.blue, title: "recipes favorited by you = 1 point")
+            let thirdItem: RKPieChartItem = RKPieChartItem(ratio: (uint(yourReviewedPoints)), color: Color.darkText , title: "reviews left by you = 10 points")
+            let fourthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(theyCookedPoints)), color: Color.pink , title: "recipes cooked by others = 5 points")
+            let fifthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(theyFavoritePoints)), color: Color.purple , title: "recipes favorited by others = 1 point")
+            let sixthItem: RKPieChartItem = RKPieChartItem(ratio: (uint(theyReviewedPoints)), color: Color.yellow, title: "review left by others = 10 points")
+            let seventhItem: RKPieChartItem = RKPieChartItem(ratio: (uint(youUploadedPoints)), color: Color.green, title: "recipe uploaded by you = 10 points")
+            let chartView = RKPieChartView(items: [seventhItem, thirdItem, firstItem, secondItem, sixthItem, fourthItem, fifthItem], centerTitle: ("Total Points \(self.totalPoints)"))
+            
+            let stackViewVertical = UIStackView(arrangedSubviews: [chartView])
+            stackViewVertical.axis = .vertical
+            stackViewVertical.distribution = .fillEqually
+            
+            chartView.circleColor = .white
             chartView.translatesAutoresizingMaskIntoConstraints = false
             chartView.arcWidth = 40
             chartView.isIntensityActivated = false
@@ -91,35 +87,34 @@ class PointsVC: UIViewController {
             
             
             
-            let stackViewVertical = UIStackView(arrangedSubviews: [chartView])
-            stackViewVertical.axis = .vertical
-            stackViewVertical.distribution = .fillEqually
             
-            
-            self.view.sv(stackViewVertical)
-            stackViewVertical.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 30).isActive = true
-           stackViewVertical.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -30).isActive = true
+            self.view.sv(self.pointsInfoButton, stackViewVertical)
+            stackViewVertical.topAnchor.constraint(equalTo: self.pointsInfoButton.bottomAnchor).isActive = true
+            stackViewVertical.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -20 ).isActive = true
             stackViewVertical.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
             stackViewVertical.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
+            self.pointsInfoButton.Top == self.view.Top + 20
+            self.pointsInfoButton.centerHorizontally()
         }
-        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
-
         
-       
         
     }
-    
-    
-   
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-  
+        
     }
-
+    
     
     @objc func closePoints() {
         self.dismiss(animated: true, completion: nil)
+    }
+    
+    @objc func learnMore() {
+        let learnMoreVC = LearnMoreVC()
+        learnMoreVC.modalPresentationStyle = .overCurrentContext
+        self.present(learnMoreVC, animated: false) {
+        }
     }
     
     func navBarConfiguration() {
@@ -140,31 +135,34 @@ class PointsVC: UIViewController {
     var yourCooked = 0
     var theyReviewed = 0
     var totalPoints = 0
+//    var isMyPoints = true
 }
 
 extension PointsVC {
     
+    
     func youUploaded () {
         guard let userID = Auth.auth().currentUser?.uid else { return }
-
+        
         FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observe(.value) { (snapshot) in
-            self.youUploadedRecipe = Int(snapshot.childrenCount) * 20
+            if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                self.youUploadedRecipe = (Int(snapshot.childrenCount) * 20)
         }
+    }
     }
     
     func theyFavorite() {
         
-    guard let userID = Auth.auth().currentUser?.uid else { return }
-    
-    FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
-    for recipe in result.children.allObjects as! [DataSnapshot] {
-    
-    let recipeUID = recipe.key
-    
-    FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
-    print(snapshot.children.allObjects)
+        guard let userID = Auth.auth().currentUser?.uid else { return }
         
-        self.theyFavorited = Int(snapshot.childrenCount) * 1
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
+                    if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                        self.theyFavorited = (Int(snapshot.childrenCount) * 1)                    }
                 }
             }
         }
@@ -173,36 +171,40 @@ extension PointsVC {
     
     func theyCookedRecipes() {
         
-    guard let userID = Auth.auth().currentUser?.uid else { return }
-    
-    FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
-    for recipe in result.children.allObjects as! [DataSnapshot] {
-    
-    let recipeUID = recipe.key
-    
-    FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
-    
-    self.theyCooked = Int(snapshot.childrenCount) * 5
-        }}}}
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+            for recipe in result.children.allObjects as! [DataSnapshot] {
+                
+                let recipeUID = recipe.key
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
+                    if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                        self.theyCooked = (Int(snapshot.childrenCount) * 5)
+                    }
+                }}}}
     
     
     func youFavorited() {
+        
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         FirebaseController.shared.ref.child("users").child(userID).child("favorites").observe(.value) { (snapshot) in
-            print(snapshot.childrenCount)
-            self.yourFavorited = Int(snapshot.childrenCount) * 1
-
+            if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                self.yourFavorited = (Int(snapshot.childrenCount) * 1)
+            }
         }
     }
     
     func youCooked() {
-       
+        
         
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").observe(.value) { (snapshot) in
-           self.yourCooked = Int(snapshot.childrenCount) * 5
+            if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                self.yourCooked = (Int(snapshot.childrenCount) * 5)
+            }
         }
     }
     
@@ -216,9 +218,9 @@ extension PointsVC {
                 let recipeUID = recipe.key
                 
                 FirebaseController.shared.ref.child("recipes").child(recipeUID).child("reviews").observeSingleEvent(of: .value) { (snapshot) in
-                    print(snapshot.children.allObjects)
-                    
-                    self.theyReviewed = Int(snapshot.childrenCount) * 10
+                    if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                        self.theyReviewed = (Int(snapshot.childrenCount) * 10)
+                    }
                 }
             }
         }
@@ -227,23 +229,24 @@ extension PointsVC {
     func youReview() {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
-        FirebaseController.shared.ref.child("users").child(userID).child("reviewRecipes").observe(.value) { (snapshot) in
-            print(snapshot.childrenCount)
-            self.yourReviewed = Int(snapshot.childrenCount) * 10
-            
+        FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").observe(.value) { (snapshot) in
+            if (snapshot.childrenCount) != 0 && (snapshot.childrenCount) != nil {
+                self.yourReviewed = (Int(snapshot.childrenCount) * 10)
+            }
         }
     }
     
-
+    
     
     @objc func fetchUserInfo(completion: @escaping() -> Void) {
         
         guard let userID = Auth.auth().currentUser?.uid else { return }
-
-            FirebaseController.shared.fetchUserWithUID(uid: userID, completion: { (user) in
-                self.user = user
-                completion()
-            })
-        }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID, completion: { (user) in
+            self.user = user
+            
+        completion()
+        })
+    }
     
 }

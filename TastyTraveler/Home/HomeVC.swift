@@ -125,6 +125,9 @@ class HomeVC: UITableViewController {
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
+        time()
         
         self.view.sv(emptyDataView)
         emptyDataView.centerInContainer()
@@ -134,6 +137,7 @@ class HomeVC: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+
         
         if recipeDataHasChanged {
             tableView.reloadRows(at: [previousIndexPath!], with: .none)
@@ -247,6 +251,15 @@ class HomeVC: UITableViewController {
             firstRecipeFavoritedVC.show()
         }
     }
+    
+    @objc func firstPointsExplanation() {
+        let firstPointsExplanationVC = FirstPointsExplanationVC()
+        firstPointsExplanationVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstPointsExplanationVC, animated: false) {
+            firstPointsExplanationVC.show()
+        }
+    }
+    
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
@@ -367,6 +380,7 @@ extension HomeVC {
         ref.observeSingleEvent(of: .value) { (snapshot) in
             self.incomingRecipes.removeAll()
             self.createRecipes(from: snapshot)
+           
         }
     }
     
@@ -769,12 +783,20 @@ extension HomeVC {
                 //recipescookedByOthers
                 //recipesfavoritedByOthers
                 //reviewsLeftByOthers
+                //ProfilePic
+                //Bio
                 self.recipesCookedByYoursTruly {
                     self.savedRecipes {
                         self.yourReviewedRecipes {
                             self.recipescookedByOthers {
                                 self.recipesFavoritedByOthers {
-                                    self.theyReviewedRecipes()
+                                    self.theyReviewedRecipes {
+                                        self.profilePhoto {
+                                            self.bio {
+                                                
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -818,7 +840,7 @@ extension HomeVC {
         
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             
-            FirebaseController.shared.ref.child("users").child(userID).child("reviewRecipes").observe(.value) { (snapshot) in
+            FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").observe(.value) { (snapshot) in
                 let totalPoints = Int(snapshot.childrenCount) * 10
                 var points = useR?.points
                 let newPoints = points != nil ? points! + totalPoints : totalPoints
@@ -828,12 +850,14 @@ extension HomeVC {
         }
     }
     
-    func theyReviewedRecipes() {
+    func theyReviewedRecipes(completion: @escaping () -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             
             FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+               
+                if result.childrenCount != 0 {
                 for recipe in result.children.allObjects as! [DataSnapshot] {
                     
                     let recipeUID = recipe.key
@@ -843,8 +867,10 @@ extension HomeVC {
                         var points = useR?.points
                         let newPoints = points != nil ? points! + totalPoints : totalPoints
                         FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                        completion()
                     }
                 }
+                };completion()
             }
         }
     }
@@ -853,6 +879,7 @@ extension HomeVC {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                if result.childrenCount != 0 {
                 for recipe in result.children.allObjects as! [DataSnapshot] {
                     
                     let recipeUID = recipe.key
@@ -865,6 +892,7 @@ extension HomeVC {
                         completion()
                     }
                 }
+                };completion()
             }
         }
     }
@@ -874,6 +902,7 @@ extension HomeVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             
             FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                if result.childrenCount != 0 {
                 for recipe in result.children.allObjects as! [DataSnapshot] {
                     
                     let recipeUID = recipe.key
@@ -886,7 +915,53 @@ extension HomeVC {
                         completion()
                     }
                 }
+                };completion()
             }
+        }
+    }
+    
+    func bio(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            if user.bio != nil, user.bio != "" {
+                
+                let totalPoints = 20
+                var points = user.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                completion()
+            }
+        }
+    }
+    
+    func profilePhoto(completion: @escaping () -> Void) {
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            if user.avatarURL != nil, user.avatarURL != "" {
+                
+                let totalPoints = 20
+                var points = user.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                completion()
+            }
+        }
+    }
+    
+    func time() {
+        if let firstPointsExplanation = UserDefaults.standard.object(forKey: "firstPointsExplanation") as? Bool, firstPointsExplanation {
+            print("First recipe has already been favorited: \(firstRecipeFavorited)")
+        } else {
+            UserDefaults.standard.set(true, forKey: "firstPointsExplanation")
+            
+            NotificationCenter.default.post(Notification(name: Notification.Name("FirstPointsExplanation")))
         }
     }
     

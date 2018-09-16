@@ -242,17 +242,12 @@ class ProfileHeaderView: GSKStretchyHeaderView {
                 
         pointsLabel.Trailing == profilePhotoButton.CenterX - contentView.frame.width/4
         pointsLabel.centerVertically()
-        
-//        pointsLabel.CenterX == usernameLabel.CenterX
-//        pointsLabel.Right == usernameLabel.CenterX + contentView.frame.width/3.2
-//        pointsLabel.centerVertically()
-        
+    
         pointsButton.Top == pointsLabel.Bottom
         pointsButton.CenterX == pointsLabel.CenterX
         
         stackView2.Top == pointsButton.Bottom
         stackView2.CenterX == pointsButton.CenterX
-//        stackView2.centerVertically()
         
         usernameLabel.Top == profilePhotoButton.Bottom + 8
         usernameLabel.centerHorizontally()
@@ -311,6 +306,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     var headerView: ProfileHeaderView!
     var recipes = [Recipe]()
     var imagePicker: UIImagePickerController?
+    
+    var isProfile = false
+    var previousCreatorID: String?
     
     var isMyProfile = true
     var userID: String?
@@ -399,7 +397,6 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     override func viewDidLoad() {
         super.viewDidLoad()
         viewLoadSetup()
-
     }
     
     @objc func fetchUserInfo() {
@@ -555,6 +552,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.settingsButton.isHidden = true
                 headerView.notificationsButton.isHidden = true
                 headerView.unreadIndicator.isHidden = true
+                headerView.pointsButton.isUserInteractionEnabled = false
                 
                 if let bio = user?.bio, bio != "" {
                     headerView.bioLabel.text = bio
@@ -1048,7 +1046,7 @@ extension ProfileVC {
         
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
 
-        FirebaseController.shared.ref.child("users").child(userID).child("reviewRecipes").observe(.value) { (snapshot) in
+        FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").observe(.value) { (snapshot) in
             let totalPoints = Int(snapshot.childrenCount) * 10
             var points = useR?.points
             let newPoints = points != nil ? points! + totalPoints : totalPoints
