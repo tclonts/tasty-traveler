@@ -363,7 +363,7 @@ class FirebaseController {
     }
     
     
-    func uploadProfilePhoto(data: Data) {
+    func uploadProfilePhoto(data: Data, completion: @escaping () -> Void) {
         guard let currentUser = Auth.auth().currentUser else { return }
         
         
@@ -415,6 +415,7 @@ class FirebaseController {
             if let error = snapshot.error {
                 print(error.localizedDescription)
             }
+            completion()
         }
     }
     

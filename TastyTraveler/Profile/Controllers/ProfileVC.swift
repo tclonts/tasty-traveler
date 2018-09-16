@@ -325,9 +325,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.bioLabel.isUserInteractionEnabled = false
             }
             
-            if let urlString = user!.avatarURL {
-                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
-            }
+//            if let urlString = user!.avatarURL {
+//                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+//            }
             
             if let userPoints = user?.points {
                 self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
@@ -397,6 +397,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     override func viewDidLoad() {
         super.viewDidLoad()
         viewLoadSetup()
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
+                if let urlString = userR?.avatarURL {
+                    self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+                }
+        }
+        
     }
     
     @objc func fetchUserInfo() {
@@ -490,6 +498,8 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         }
     }
     
+
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
@@ -507,6 +517,10 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 headerView.usernameLabel.text = username
             }
             
+//            if let urlString = user?.avatarURL {
+//                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+//            }
+//
             if let userPoints = user?.points {
                 headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
                 let title = NSAttributedString(string: "\(userPoints)", attributes: [
@@ -737,12 +751,17 @@ extension ProfileVC {
 
 extension ProfileVC: RSKImageCropViewControllerDelegate {
     func imageCropViewController(_ controller: RSKImageCropViewController, didCropImage croppedImage: UIImage, usingCropRect cropRect: CGRect, rotationAngle: CGFloat) {
-        self.headerView.profilePhotoImageView.image = croppedImage
+
         dismiss(animated: true, completion: nil)
+        DispatchQueue.main.async {
+            self.headerView.profilePhotoImageView.image = croppedImage
+        }
         
-        let imageData = resize(croppedImage)
+        guard let imageData = resize(croppedImage) else { return }
         pointAdder(numberOfPoints: 20)
-        FirebaseController.shared.uploadProfilePhoto(data: imageData!)
+
+        FirebaseController.shared.uploadProfilePhoto(data: imageData) {
+        }
     }
     
     func resize(_ image: UIImage) -> Data? {
@@ -831,11 +850,16 @@ extension ProfileVC: ProfileHeaderViewDelegate {
     func viewLoadSetup(){
         badgeIncrementor()
         fetchUserInfo()
-//        pointUpToSpeed()
         
         self.view.sv(emptyDataView, userHasNoRecipesLabel)
         emptyDataView.centerInContainer()
         userHasNoRecipesLabel.centerInContainer().left(20).right(20)
+        
+        if isMyProfile {
+            imagePicker = UIImagePickerController()
+            imagePicker!.delegate = self
+            imagePicker!.sourceType = .photoLibrary
+        }
         
         if let userPoints = user?.points {
             headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
@@ -844,19 +868,15 @@ extension ProfileVC: ProfileHeaderViewDelegate {
                 NSAttributedStringKey.foregroundColor: Color.primaryOrange])
             headerView.pointsButton.setAttributedTitle(title, for: .normal)
         }
+        
+        
 
-
-        if isMyProfile {
-            imagePicker = UIImagePickerController()
-            imagePicker!.delegate = self
-            imagePicker!.sourceType = .photoLibrary
-        }
-           self.view.sv(emptyDataView, userHasNoRecipesLabel)
+        self.view.sv(emptyDataView, userHasNoRecipesLabel)
         emptyDataView.centerInContainer()
         userHasNoRecipesLabel.centerInContainer().left(20).right(20)
 
         NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("userInfoUpdated"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
 
         self.navigationController?.navigationBar.isTranslucent = false
@@ -866,32 +886,6 @@ extension ProfileVC: ProfileHeaderViewDelegate {
         self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
         self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
     }
-    
-//    func loadSetup() {
-//
-//        fetchUserInfo()
-//
-//        if isMyProfile {
-//            imagePicker = UIImagePickerController()
-//            imagePicker!.delegate = self
-//            imagePicker!.sourceType = .photoLibrary
-//        }
-    
-//        self.view.sv(emptyDataView, userHasNoRecipesLabel)
-//        emptyDataView.centerInContainer()
-//        userHasNoRecipesLabel.centerInContainer().left(20).right(20)
-//
-//        NotificationCenter.default.addObserver(self, selector: #selector(refreshRecipes), name: Notification.Name("RecipeUploaded"), object: nil)
-//        NotificationCenter.default.addObserver(self, selector: #selector(fetchUserInfo), name: Notification.Name("UserInfoUpdated"), object: nil)
-//        NotificationCenter.default.addObserver(self, selector: #selector(toggleIndicator), name: Notification.Name("UnreadNotification"), object: nil)
-//
-//        self.navigationController?.navigationBar.isTranslucent = false
-//        self.collectionView?.backgroundColor = .white
-//        self.collectionView?.contentInsetAdjustmentBehavior = .never
-//        self.collectionView?.showsVerticalScrollIndicator = false
-//        self.collectionView?.register(FavoriteCell.self, forCellWithReuseIdentifier: "recipeCell")
-//        self.collectionView?.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: sectionHeaderID)
-//    }
 }
 
 extension ProfileVC {
