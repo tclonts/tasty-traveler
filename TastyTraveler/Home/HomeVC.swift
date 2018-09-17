@@ -102,7 +102,6 @@ class HomeVC: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         pointUpToSpeed()
-
         
         self.view.backgroundColor = .white
         self.isHeroEnabled = true
@@ -119,13 +118,13 @@ class HomeVC: UITableViewController {
         self.tableView.estimatedRowHeight = 200
         self.tableView.backgroundColor = .white
         self.tableView.separatorStyle = .none
+       
         
         // Notifications
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
-
         NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
         time()
         
@@ -371,6 +370,7 @@ class HomeVC: UITableViewController {
 }
 
 extension HomeVC {
+    
     func fetchAllRecipes() {
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         SVProgressHUD.show(withStatus: "Loading Recipes")
@@ -378,14 +378,10 @@ extension HomeVC {
         let ref = FirebaseController.shared.ref.child("recipes")
         
         ref.observeSingleEvent(of: .value) { (snapshot) in
-            self.incomingRecipes.removeAll()
             self.createRecipes(from: snapshot)
            
         }
     }
-    
-    
-    
     
     func getRecipeData(forDict recipeDictionary: [String:Any], key: String, group: DispatchGroup) {
         guard let creatorID = recipeDictionary[Recipe.creatorIDKey] as? String else { return }

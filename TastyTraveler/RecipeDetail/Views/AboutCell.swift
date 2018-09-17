@@ -320,7 +320,7 @@ class AboutCell: BaseCell, UICollectionViewDelegate, UICollectionViewDataSource,
             tagsCollectionView.heightConstraint?.constant = 0
         }
         
-        if recipeDetailVC?.recipe?.cookedImages != nil {
+        if recipeDetailVC?.recipe?.cookedImages?.count != nil {
             cookedItImageCollectionView.reloadData()
             let height = cookedItImageCollectionView.collectionViewLayout.collectionViewContentSize.height
             cookedItImageCollectionView.heightConstraint?.constant = height
@@ -355,11 +355,12 @@ extension AboutCell {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let cookedImages = recipeDetailVC?.recipe?.cookedImages != nil ? recipeDetailVC?.recipe?.cookedImages : [String:String]() else { return 0 }
-        guard let tags = recipeDetailVC?.recipe?.tags else { return 0 }
+        
         if collectionView == tagsCollectionView {
+            guard let tags = recipeDetailVC?.recipe?.tags else { return 0 }
             return tags.count
         } else if collectionView == cookedItImageCollectionView {
+            guard let cookedImages = recipeDetailVC?.recipe?.cookedImages != nil ? recipeDetailVC?.recipe?.cookedImages : [String:String]() else { return 0 }
             return cookedImages.count
         } else {
             return 0
@@ -384,6 +385,7 @@ extension AboutCell {
             
             cell.tagLabel.attributedText = attributedString
             cell.isSelected = true
+            cell.isHidden = false
             cell.setUpViews()
 
             return cell
@@ -403,6 +405,7 @@ extension AboutCell {
 
             cell.cookedImageView.loadImage(urlString: myValue, placeholder: #imageLiteral(resourceName: "avatar"))
             cell.isSelected = true
+            cell.isHidden = false
             cell.setUpViews()
             
             return cell

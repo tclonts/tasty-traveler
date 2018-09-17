@@ -61,6 +61,7 @@ class TagCell: BaseCell {
         
         sv(tagLabel)
         tagLabel.centerInContainer()
+      
     
         backgroundView = unselectedBackgroundView
         selectedBackgroundView = customSelectedBackgroundView
