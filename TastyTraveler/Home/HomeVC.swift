@@ -52,7 +52,7 @@ class HomeVC: UITableViewController {
         textField.backgroundColor = .white
         return textField
     }()
-
+    
     let activityIndicator:  UIActivityIndicatorView = {
         let activityIndicator = UIActivityIndicatorView()
         activityIndicator.activityIndicatorViewStyle = .whiteLarge
@@ -88,7 +88,22 @@ class HomeVC: UITableViewController {
         return launcher
     }()
     
-    var searchResultRecipes = [Recipe]()
+    var searchResultRecipes = [Recipe](){
+        didSet{
+            var recipeBag = Set<String>()
+            searchResultRecipes.forEach { (recipe) in
+                if recipeBag.contains(recipe.name){
+                    //ERROR
+                    print("\nDuplicate found")
+                    Thread.callStackSymbols.forEach{print($0)}
+                    print()
+                } else{
+                    recipeBag.insert(recipe.name)
+                }
+            }
+        }
+    }
+    
     var recipes = [Recipe]()
     var lastSearchText = ""
     var isSearching = false
@@ -98,7 +113,7 @@ class HomeVC: UITableViewController {
     var recipeDataHasChanged = false
     
     var previousIndexPath: IndexPath?
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         pointUpToSpeed()
@@ -118,7 +133,7 @@ class HomeVC: UITableViewController {
         self.tableView.estimatedRowHeight = 200
         self.tableView.backgroundColor = .white
         self.tableView.separatorStyle = .none
-       
+        
         
         // Notifications
         let notificationCenter = NotificationCenter.default
@@ -136,7 +151,7 @@ class HomeVC: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
+        
         
         if recipeDataHasChanged {
             tableView.reloadRows(at: [previousIndexPath!], with: .none)
@@ -240,7 +255,7 @@ class HomeVC: UITableViewController {
             self.isCancelButtonShowing = false
         }
         cancelButton.removeFromSuperview()
-//        self.tableView.reloadSections([1], with: .automatic)
+        //        self.tableView.reloadSections([1], with: .automatic)
         self.tableView.reloadData()
     }
     @objc func firstRecipeFavorited() {
@@ -366,7 +381,7 @@ class HomeVC: UITableViewController {
     }
     
     var incomingRecipes = [Recipe]()
-
+    
 }
 
 extension HomeVC {
@@ -379,7 +394,7 @@ extension HomeVC {
         
         ref.observeSingleEvent(of: .value) { (snapshot) in
             self.createRecipes(from: snapshot)
-           
+            
         }
     }
     
@@ -408,7 +423,7 @@ extension HomeVC {
                 
             } else {
                 guard let userID = Auth.auth().currentUser?.uid else { return }
-
+                
                 FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
                     if (snapshot.value as? Double) != nil {
                         recipe.hasFavorited = true
@@ -468,7 +483,7 @@ extension HomeVC {
         if self.lastSearchText != "" {
             self.searchRecipes(text: self.lastSearchText)
         } else {
-            sortData()            
+            sortData()
         }
         
         if self.filtersLauncher.filtersApplied {
@@ -562,7 +577,7 @@ extension HomeVC: UITextFieldDelegate {
                 })
                 isCancelButtonShowing = true
             }
-           
+            
         }
     }
     
@@ -608,7 +623,7 @@ extension HomeVC: UITextFieldDelegate {
             } else {
                 self.searchResultRecipes = Array(self.recipes.prefix(25))
             }
-    
+            
             self.tableView.reloadSections([1], with: .automatic)
         }
         
@@ -632,7 +647,7 @@ extension HomeVC: UITextFieldDelegate {
         
         self.searchResultRecipes = Array(filteredRecipes.prefix(25))
         
-//        self.tableView.reloadSections([1], with: .automatic)
+        //        self.tableView.reloadSections([1], with: .automatic)
         self.tableView.reloadData()
         self.lastSearchText = text
         self.searchResultRecipes.isEmpty ? showEmptyView() : hideEmptyView()
@@ -715,7 +730,7 @@ extension HomeVC: RecipeCellDelegate {
                         
                         self.pointAdder(numberOfPoints: 1, cell: cell)
                         self.pointAdderForCurrentUserID(numberOfPoints: 1)
-
+                        
                         
                         
                         self.searchResultRecipes[indexPath.item] = recipe
@@ -743,17 +758,17 @@ extension HomeVC {
     func pointAdder(numberOfPoints: Int, cell: RecipeCell) {
         guard let indexPath = tableView?.indexPath(for: cell) else { return }
         var recipe = self.searchResultRecipes[indexPath.item]
-            
+        
         let recipeUID = recipe.uid
-            
-            FirebaseController.shared.fetchRecipeWithUID(uid: recipeUID) { (recipe) in
-                guard let recipe = recipe else { return }
-                let cook = recipe.creator
-                var points = recipe.creator.points
-                let newPoints = points != nil ? points! + numberOfPoints : numberOfPoints
-                FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
-            }
+        
+        FirebaseController.shared.fetchRecipeWithUID(uid: recipeUID) { (recipe) in
+            guard let recipe = recipe else { return }
+            let cook = recipe.creator
+            var points = recipe.creator.points
+            let newPoints = points != nil ? points! + numberOfPoints : numberOfPoints
+            FirebaseController.shared.ref.child("users").child((cook.uid)).child("points").setValue(newPoints)
         }
+    }
     
     func pointAdderForCurrentUserID(numberOfPoints: Int) {
         
@@ -852,20 +867,20 @@ extension HomeVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             
             FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
-               
+                
                 if result.childrenCount != 0 {
-                for recipe in result.children.allObjects as! [DataSnapshot] {
-                    
-                    let recipeUID = recipe.key
-                    
-                    FirebaseController.shared.ref.child("recipes").child(recipeUID).child("reviews").observeSingleEvent(of: .value) { (snapshot) in
-                        let totalPoints = Int(snapshot.childrenCount) * 10
-                        var points = useR?.points
-                        let newPoints = points != nil ? points! + totalPoints : totalPoints
-                        FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
-                        completion()
+                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                        
+                        let recipeUID = recipe.key
+                        
+                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("reviews").observeSingleEvent(of: .value) { (snapshot) in
+                            let totalPoints = Int(snapshot.childrenCount) * 10
+                            var points = useR?.points
+                            let newPoints = points != nil ? points! + totalPoints : totalPoints
+                            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                            completion()
+                        }
                     }
-                }
                 };completion()
             }
         }
@@ -876,18 +891,18 @@ extension HomeVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
                 if result.childrenCount != 0 {
-                for recipe in result.children.allObjects as! [DataSnapshot] {
-                    
-                    let recipeUID = recipe.key
-                    
-                    FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
-                        let totalPoints = Int(snapshot.childrenCount) * 10
-                        var points = useR?.points
-                        let newPoints = points != nil ? points! + totalPoints : totalPoints
-                        FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
-                        completion()
+                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                        
+                        let recipeUID = recipe.key
+                        
+                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
+                            let totalPoints = Int(snapshot.childrenCount) * 10
+                            var points = useR?.points
+                            let newPoints = points != nil ? points! + totalPoints : totalPoints
+                            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                            completion()
+                        }
                     }
-                }
                 };completion()
             }
         }
@@ -899,18 +914,18 @@ extension HomeVC {
             
             FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
                 if result.childrenCount != 0 {
-                for recipe in result.children.allObjects as! [DataSnapshot] {
-                    
-                    let recipeUID = recipe.key
-                    
-                    FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
-                        let totalPoints = Int(snapshot.childrenCount) * 1
-                        var points = useR?.points
-                        let newPoints = points != nil ? points! + totalPoints : totalPoints
-                        FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
-                        completion()
+                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                        
+                        let recipeUID = recipe.key
+                        
+                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
+                            let totalPoints = Int(snapshot.childrenCount) * 1
+                            var points = useR?.points
+                            let newPoints = points != nil ? points! + totalPoints : totalPoints
+                            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                            completion()
+                        }
                     }
-                }
                 };completion()
             }
         }
@@ -918,7 +933,7 @@ extension HomeVC {
     
     func bio(completion: @escaping () -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else { return }
-
+        
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
             
@@ -961,6 +976,6 @@ extension HomeVC {
         }
     }
     
-    }
+}
 
 

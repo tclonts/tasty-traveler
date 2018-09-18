@@ -31,73 +31,73 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             self.setRecipe {
                 self.fetchReviewData()
             }
-//            DispatchQueue.main.async {
-//
-//                if let countryCode = self.recipe?.countryCode, let locality = self.recipe?.locality {
-//                    self.recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
-//                    self.recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
-//            } else {
-//                    self.recipeHeaderView.countryFlag.image = nil
-//                    self.recipeHeaderView.countryLabel.text = "Location Unavailable"
-//            }
-//
-//                if let meal = self.recipe?.meal {
-//                self.recipeHeaderView.mealLabel.text = "  \(meal)  "
-//            }
-//
-//                self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
-//                self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
-//
-//                if self.recipe!.coordinate == nil {
-//                print("NO LOCATION DATA")
-//            } else {
-//                    self.recipeHeaderView.countryLabel.isUserInteractionEnabled = true
-//                    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.showMapView))
-//                self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
-//
-//                    self.recipeHeaderView.countryLabel.textColor = Color.primaryOrange
-//
-//                let globeIcon = UIImageView()
-//                globeIcon.image = #imageLiteral(resourceName: "mapIcon")
-//                    self.recipeHeaderView.sv(globeIcon)
-//                    globeIcon.Left == self.recipeHeaderView.countryLabel.Right + 8
-//                    globeIcon.CenterY == self.recipeHeaderView.countryLabel.CenterY
-//                globeIcon.isUserInteractionEnabled = true
-//                globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
-//                    globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.showMapView)))
-//            }
-//
-//            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
-//                self.isBrowsing = true
-//            } else {
-//                guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
-//
-//                if userID == self.recipe!.creator.uid {
-//                    self.isMyRecipe = true
-//                    // my recipe
-//                    self.recipeHeaderView.favoriteButton.isHidden = true
-//                    self.favoriteButtonNavBar.isHidden = true
-//                    self.bottomView.isHidden = true
-//                } else {
-//                    self.isMyRecipe = false
-//                    // someone else's recipe
-//                    if self.recipe!.hasFavorited {
-//                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
-//                        self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
-//                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
-//                    } else {
-//                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
-//                        self.favoriteButtonNavBar.setTitle("SAVE", for: .normal)
-//                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
-//                    }
-//                }
-//            }
-//                self.formatCookButton()
-//                self.fetchReviewData{}
-//
-//                let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])
-//            AppEventsLogger.log(viewContentEvent)
-//            }
+            //            DispatchQueue.main.async {
+            //
+            //                if let countryCode = self.recipe?.countryCode, let locality = self.recipe?.locality {
+            //                    self.recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
+            //                    self.recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
+            //            } else {
+            //                    self.recipeHeaderView.countryFlag.image = nil
+            //                    self.recipeHeaderView.countryLabel.text = "Location Unavailable"
+            //            }
+            //
+            //                if let meal = self.recipe?.meal {
+            //                self.recipeHeaderView.mealLabel.text = "  \(meal)  "
+            //            }
+            //
+            //                self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
+            //                self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+            //
+            //                if self.recipe!.coordinate == nil {
+            //                print("NO LOCATION DATA")
+            //            } else {
+            //                    self.recipeHeaderView.countryLabel.isUserInteractionEnabled = true
+            //                    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.showMapView))
+            //                self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
+            //
+            //                    self.recipeHeaderView.countryLabel.textColor = Color.primaryOrange
+            //
+            //                let globeIcon = UIImageView()
+            //                globeIcon.image = #imageLiteral(resourceName: "mapIcon")
+            //                    self.recipeHeaderView.sv(globeIcon)
+            //                    globeIcon.Left == self.recipeHeaderView.countryLabel.Right + 8
+            //                    globeIcon.CenterY == self.recipeHeaderView.countryLabel.CenterY
+            //                globeIcon.isUserInteractionEnabled = true
+            //                globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
+            //                    globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.showMapView)))
+            //            }
+            //
+            //            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+            //                self.isBrowsing = true
+            //            } else {
+            //                guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
+            //
+            //                if userID == self.recipe!.creator.uid {
+            //                    self.isMyRecipe = true
+            //                    // my recipe
+            //                    self.recipeHeaderView.favoriteButton.isHidden = true
+            //                    self.favoriteButtonNavBar.isHidden = true
+            //                    self.bottomView.isHidden = true
+            //                } else {
+            //                    self.isMyRecipe = false
+            //                    // someone else's recipe
+            //                    if self.recipe!.hasFavorited {
+            //                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
+            //                        self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
+            //                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
+            //                    } else {
+            //                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
+            //                        self.favoriteButtonNavBar.setTitle("SAVE", for: .normal)
+            //                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
+            //                    }
+            //                }
+            //            }
+            //                self.formatCookButton()
+            //                self.fetchReviewData{}
+            //
+            //                let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])
+            //            AppEventsLogger.log(viewContentEvent)
+            //            }
             
         }
     }
@@ -334,7 +334,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         self.isHeroEnabled = true
         self.view.backgroundColor = .white
         navigationController?.setNavigationBarHidden(true, animated: false)
@@ -350,9 +350,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeCooked), name: Notification.Name("firstRecipeCooked"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeReviewLeft), name: Notification.Name("firstRecipeReviewLeft"), object: nil)
-
-
-
+        
+        
+        
         setUpViews()
         applyHeroModifiers()
         
@@ -383,7 +383,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         }
         
     }
-
+    
     
     @objc func showProfileView() {
         guard let uid = recipe?.creator.uid else { return }
@@ -427,7 +427,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                 } else {
                     updatedRecipe.hasFavorited = false
                 }
-
+                
                 FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
                     if (snapshot.value as? Double) != nil {
                         updatedRecipe.hasCooked = true
@@ -443,7 +443,13 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                     
                     if !self.isFromFavorites {
                         DispatchQueue.main.async {
-                            self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                            //                            self.homeVAC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                            //                            self.homeVC?.recipeDataHasChanged = true
+                            
+                            guard let index = self.homeVC!.searchResultRecipes.index(where: { (disRecipe) -> Bool in
+                                return disRecipe.uid == self.recipe!.uid
+                            }) else {return}
+                            self.homeVC!.searchResultRecipes[index] = self.recipe!
                             self.homeVC?.recipeDataHasChanged = true
                         }
                     }
@@ -556,14 +562,14 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             self.present(accountAccessVC, animated: true, completion: nil)
         } else {
             
-             guard let recipeID = recipe?.uid else { return }
+            guard let recipeID = recipe?.uid else { return }
             guard let userID = Auth.auth().currentUser?.uid else { return }
-
+            
             
             if !self.recipe!.hasCooked == true {
                 let timestamp = Date().timeIntervalSince1970
                 
-            self.present(imagePicker, animated: false, completion: nil)
+                self.present(imagePicker, animated: false, completion: nil)
             } else {
                 uncookRecipe()
             }
@@ -951,74 +957,74 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     }
     
     func setRecipe(completion: @escaping () -> Void) {
-    DispatchQueue.main.async {
-    
-    if let countryCode = self.recipe?.countryCode, let locality = self.recipe?.locality {
-    self.recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
-    self.recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
-    } else {
-    self.recipeHeaderView.countryFlag.image = nil
-    self.recipeHeaderView.countryLabel.text = "Location Unavailable"
-    }
-    
-    if let meal = self.recipe?.meal {
-    self.recipeHeaderView.mealLabel.text = "  \(meal)  "
-    }
-    
-    self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
-    self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
-    
-    if self.recipe!.coordinate == nil {
-    print("NO LOCATION DATA")
-    } else {
-    self.recipeHeaderView.countryLabel.isUserInteractionEnabled = true
-    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.showMapView))
-    self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
-    
-    self.recipeHeaderView.countryLabel.textColor = Color.primaryOrange
-    
-    let globeIcon = UIImageView()
-    globeIcon.image = #imageLiteral(resourceName: "mapIcon")
-    self.recipeHeaderView.sv(globeIcon)
-    globeIcon.Left == self.recipeHeaderView.countryLabel.Right + 8
-    globeIcon.CenterY == self.recipeHeaderView.countryLabel.CenterY
-    globeIcon.isUserInteractionEnabled = true
-    globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
-    globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.showMapView)))
-    }
-    
-    if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
-    self.isBrowsing = true
-    } else {
-    guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
-    
-    if userID == self.recipe!.creator.uid {
-    self.isMyRecipe = true
-    // my recipe
-    self.recipeHeaderView.favoriteButton.isHidden = true
-    self.favoriteButtonNavBar.isHidden = true
-    self.bottomView.isHidden = true
-    } else {
-    self.isMyRecipe = false
-    // someone else's recipe
-    if self.recipe!.hasFavorited {
-    self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
-    self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
-    self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
-    } else {
-    self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
-    self.favoriteButtonNavBar.setTitle("SAVE", for: .normal)
-    self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
-    }
-    }
-    }
-    self.formatCookButton()
-   
-    
-    let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])
-    AppEventsLogger.log(viewContentEvent)
-        completion()
-    }
+        DispatchQueue.main.async {
+            
+            if let countryCode = self.recipe?.countryCode, let locality = self.recipe?.locality {
+                self.recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
+                self.recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
+            } else {
+                self.recipeHeaderView.countryFlag.image = nil
+                self.recipeHeaderView.countryLabel.text = "Location Unavailable"
+            }
+            
+            if let meal = self.recipe?.meal {
+                self.recipeHeaderView.mealLabel.text = "  \(meal)  "
+            }
+            
+            self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
+            self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+            
+            if self.recipe!.coordinate == nil {
+                print("NO LOCATION DATA")
+            } else {
+                self.recipeHeaderView.countryLabel.isUserInteractionEnabled = true
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.showMapView))
+                self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
+                
+                self.recipeHeaderView.countryLabel.textColor = Color.primaryOrange
+                
+                let globeIcon = UIImageView()
+                globeIcon.image = #imageLiteral(resourceName: "mapIcon")
+                self.recipeHeaderView.sv(globeIcon)
+                globeIcon.Left == self.recipeHeaderView.countryLabel.Right + 8
+                globeIcon.CenterY == self.recipeHeaderView.countryLabel.CenterY
+                globeIcon.isUserInteractionEnabled = true
+                globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
+                globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.showMapView)))
+            }
+            
+            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+                self.isBrowsing = true
+            } else {
+                guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
+                
+                if userID == self.recipe!.creator.uid {
+                    self.isMyRecipe = true
+                    // my recipe
+                    self.recipeHeaderView.favoriteButton.isHidden = true
+                    self.favoriteButtonNavBar.isHidden = true
+                    self.bottomView.isHidden = true
+                } else {
+                    self.isMyRecipe = false
+                    // someone else's recipe
+                    if self.recipe!.hasFavorited {
+                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
+                        self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
+                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
+                    } else {
+                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
+                        self.favoriteButtonNavBar.setTitle("SAVE", for: .normal)
+                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
+                    }
+                }
+            }
+            self.formatCookButton()
+            
+            
+            let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])
+            AppEventsLogger.log(viewContentEvent)
+            completion()
+        }
     }
     
     var isInAboutCellScrollView = false
