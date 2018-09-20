@@ -34,7 +34,14 @@ struct Color {
     static let green         = UIColor(hexString: "60BD68")
     static let pink          = UIColor(hexString: "F17CB0")
     static let purple        = UIColor(hexString: "B276B2")
-    static let yellow         = UIColor(hexString: "DECF3F")
+    static let yellow        = UIColor(hexString: "DECF3F")
+    
+    //Badge Colors
+    static let Gold          = UIColor(hexString: "A87A00")
+
+    static let Silver        = UIColor(hexString: "9B9AA3")
+
+    static let Bronze        = UIColor(hexString: "8D694D")
 
 
 

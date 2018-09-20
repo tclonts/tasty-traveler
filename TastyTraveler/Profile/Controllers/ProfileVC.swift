@@ -97,16 +97,16 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     }()
     
     lazy var bronzeBadge: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "silver-badge-17"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
         return button
     }()
     
     lazy var silverBadge: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "silver-badge-17"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
 
@@ -114,8 +114,8 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     }()
     
     lazy var goldBadge: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(#imageLiteral(resourceName: "notifications"), for: .normal)
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "silver-badge-17"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
         return button
@@ -235,8 +235,6 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         profileCenterConstraint?.isActive = true
         profileTopConstraint?.isActive = true
         
-        //profilePhotoImageView.Top == safeAreaLayoutGuide.Top + 12
-        
         profilePhotoButton.CenterY == profilePhotoImageView.Bottom
         profilePhotoButton.centerHorizontally()
                 
@@ -324,11 +322,11 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.bioLabel.textColor = Color.darkText
                 self.headerView.bioLabel.isUserInteractionEnabled = false
             }
-            
-//            if let urlString = user!.avatarURL {
-//                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
-//            }
-            
+            if !isMyProfile{
+            if let urlString = user!.avatarURL {
+                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+            }
+            }
             if let userPoints = user?.points {
                 self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
                 let title = NSAttributedString(string: "\(userPoints)", attributes: [
@@ -342,9 +340,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.silverBadge.isHidden = true
                 self.headerView.goldBadge.isHidden = true
             } else if user?.badgeStatus == 1 {
-                self.headerView.bronzeBadge.isHidden = true
+                self.headerView.bronzeBadge.isHidden = false
                 self.headerView.silverBadge.isHidden = true
-                self.headerView.goldBadge.isHidden = false
+                self.headerView.goldBadge.isHidden = true
             } else if user?.badgeStatus == 2 {
                 self.headerView.bronzeBadge.isHidden = true
                 self.headerView.silverBadge.isHidden = false

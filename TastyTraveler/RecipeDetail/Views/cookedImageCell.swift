@@ -25,7 +25,7 @@ class CookedImageCell: BaseCell {
     
     let cookedImageView: CustomImageView = {
         let imageView = CustomImageView()
-        imageView.image = #imageLiteral(resourceName: "avatar")
+        imageView.image = #imageLiteral(resourceName: "blankWhite")
         imageView.contentMode = .scaleAspectFill
         //        imageView.layer.cornerRadius = 85 / 2
         imageView.clipsToBounds = true

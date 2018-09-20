@@ -403,7 +403,7 @@ extension AboutCell {
             
             let myValue = Array(cookedImages.values)[indexPath.item]
 
-            cell.cookedImageView.loadImage(urlString: myValue, placeholder: #imageLiteral(resourceName: "avatar"))
+            cell.cookedImageView.loadImage(urlString: myValue, placeholder: #imageLiteral(resourceName: "blankWhite"))
             cell.isSelected = true
             cell.isHidden = false
             cell.setUpViews()

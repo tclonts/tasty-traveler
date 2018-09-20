@@ -141,7 +141,9 @@ class HomeVC: UITableViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
-        time()
+        firstPointsExpl()
+        
+        
         
         self.view.sv(emptyDataView)
         emptyDataView.centerInContainer()
@@ -273,6 +275,8 @@ class HomeVC: UITableViewController {
             firstPointsExplanationVC.show()
         }
     }
+    
+    
     
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -782,6 +786,12 @@ extension HomeVC {
     }
     
     func pointUpToSpeed() {
+        if let pointsUpToSpeed = UserDefaults.standard.object(forKey: "pointsUpToSpeed") as? Bool, pointsUpToSpeed {
+            print("Backdated Points have already been rewarded: \(pointsUpToSpeed)")
+        } else {
+            UserDefaults.standard.set(true, forKey: "pointsUpToSpeed")
+            
+         
         guard let userID = Auth.auth().currentUser?.uid else {return}
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
@@ -804,7 +814,7 @@ extension HomeVC {
                                     self.theyReviewedRecipes {
                                         self.profilePhoto {
                                             self.bio {
-                                                
+                                                }
                                             }
                                         }
                                     }
@@ -966,7 +976,7 @@ extension HomeVC {
         }
     }
     
-    func time() {
+    func firstPointsExpl() {
         if let firstPointsExplanation = UserDefaults.standard.object(forKey: "firstPointsExplanation") as? Bool, firstPointsExplanation {
             print("First recipe has already been favorited: \(firstRecipeFavorited)")
         } else {

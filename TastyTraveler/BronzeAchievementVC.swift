@@ -32,7 +32,7 @@ class BronzeAchievementVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You recieved a bronze badge!"
+        label.text = "You recieved a bronze badge and 100 points!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center
@@ -42,7 +42,7 @@ class BronzeAchievementVC: UIViewController {
     
     let hikerImage: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = #imageLiteral(resourceName: "hiker")
+        imageView.image = #imageLiteral(resourceName: "bronzeBadge")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -77,10 +77,10 @@ class BronzeAchievementVC: UIViewController {
     
     func generateEmitterCells() -> [CAEmitterCell] {
         
-        let red = makeEmitterCell(color: UIColor.red)
-        let green = makeEmitterCell(color: UIColor.green)
-        let blue = makeEmitterCell(color: UIColor.blue)
-        let yellow = makeEmitterCell(color: UIColor.yellow)
+        let red = makeEmitterCell(color: Color.Bronze)
+        let green = makeEmitterCell(color: Color.Bronze)
+        let blue = makeEmitterCell(color: Color.Bronze)
+        let yellow = makeEmitterCell(color: Color.Bronze)
         
         return [red, green, blue, yellow]
     }
