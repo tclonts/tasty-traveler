@@ -1,23 +1,24 @@
 //
-//  SilverAchievementVC.swift
+//  LearnBronzeBadgeVC.swift
 //  TastyTraveler
 //
-//  Created by Tyler Clonts on 9/14/18.
+//  Created by Tyler Clonts on 9/20/18.
 //  Copyright © 2018 Michael Bart. All rights reserved.
 //
+
 
 import UIKit
 import Stevia
 import SwiftySound
 
-class SilverAchievementVC: UIViewController {
+class LearnBronzeBadgeVC: UIViewController {
     
     
     let backgroundView = UIView()
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Hooray!"
+        label.text = "Bronze Chef Requirements"
         label.font = ProximaNova.semibold.of(size: 20)
         label.textColor = Color.darkText
         return label
@@ -32,17 +33,17 @@ class SilverAchievementVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You recieved a silver badge and 250 points!"
+        label.text = "Upload a profile Pic\n\nWrite a Bio\n\nUpload 3 recipes"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center
-        label.textColor = Color.darkGrayText
+        label.textColor = Color.Bronze
         return label
     }()
     
     let hikerImage: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = #imageLiteral(resourceName: "silverBadgePopUp")
+        imageView.image = #imageLiteral(resourceName: "bronzeBadgePopUp")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -65,7 +66,7 @@ class SilverAchievementVC: UIViewController {
             self.backgroundView.transform = CGAffineTransform(translationX: 0, y: self.view.frame.height)
         }, completion: nil)
         
-        self.emitter.birthRate = 0
+        //        self.emitter.birthRate = 0
         
         let when = DispatchTime.now() + 1.2
         DispatchQueue.main.asyncAfter(deadline: when, execute: {
@@ -75,34 +76,34 @@ class SilverAchievementVC: UIViewController {
         
     }
     
-    func generateEmitterCells() -> [CAEmitterCell] {
-        
-        let silverOne = makeEmitterCell(color: Color.Silver)
-        let silverTwo = makeEmitterCell(color: Color.Silver)
-        let silverThree = makeEmitterCell(color: Color.Silver)
-        let silverFour = makeEmitterCell(color: Color.Silver)
-        
-        return [silverOne, silverTwo, silverThree, silverFour]
-    }
+        func generateEmitterCells() -> [CAEmitterCell] {
     
-    func makeEmitterCell(color: UIColor) -> CAEmitterCell {
-        let cell = CAEmitterCell()
-        cell.birthRate = 15
-        cell.lifetime = 7.0
-        cell.lifetimeRange = 0
-        cell.color = color.cgColor
-        cell.velocity = 700
-        cell.velocityRange = 50
-        cell.emissionLongitude = CGFloat.pi
-        cell.emissionRange = CGFloat.pi / 4
-        cell.spin = 2
-        cell.spinRange = 3
-        cell.scaleRange = 0.5
-        cell.scaleSpeed = -0.05
-        
-        cell.contents = #imageLiteral(resourceName: "confettiParticle").cgImage
-        return cell
-    }
+            let red = makeEmitterCell(color: UIColor.red)
+            let green = makeEmitterCell(color: UIColor.green)
+            let blue = makeEmitterCell(color: UIColor.blue)
+            let yellow = makeEmitterCell(color: UIColor.yellow)
+    
+            return [red, green, blue, yellow]
+        }
+    
+        func makeEmitterCell(color: UIColor) -> CAEmitterCell {
+            let cell = CAEmitterCell()
+            cell.birthRate = 15
+            cell.lifetime = 7.0
+            cell.lifetimeRange = 0
+            cell.color = color.cgColor
+            cell.velocity = 700
+            cell.velocityRange = 50
+            cell.emissionLongitude = CGFloat.pi
+            cell.emissionRange = CGFloat.pi / 4
+            cell.spin = 2
+            cell.spinRange = 3
+            cell.scaleRange = 0.5
+            cell.scaleSpeed = -0.05
+    
+            cell.contents = #imageLiteral(resourceName: "confettiParticle").cgImage
+            return cell
+        }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -130,9 +131,10 @@ class SilverAchievementVC: UIViewController {
         backgroundView.sv(titleLabel, horizontalRule, hikerImage, descriptionLabel, okayButton)
         
         titleLabel.top(adaptConstant(16)).centerHorizontally()
-        
+
         horizontalRule.Top == titleLabel.Bottom + adaptConstant(16)
         horizontalRule.left(0).right(0)
+
         
         hikerImage.Top == descriptionLabel.Bottom + adaptConstant(30)
         hikerImage.left(adaptConstant(20)).right(adaptConstant(20)).height(adaptConstant(300))
@@ -154,18 +156,18 @@ class SilverAchievementVC: UIViewController {
         }
     }
     
-    let emitter = CAEmitterLayer()
+        let emitter = CAEmitterLayer()
     
-    func show() {
-        emitter.emitterPosition = CGPoint(x: view.center.x, y: -96)
-        emitter.emitterShape = kCAEmitterLayerLine
-        emitter.emitterSize = CGSize(width: view.frame.size.width, height: 1)
-        
-        emitter.emitterCells = generateEmitterCells()
-        
-        self.view.layer.insertSublayer(emitter, at: 0)
-        
-        Sound.play(file: "tada.mp3")
-    }
+        func show() {
+            emitter.emitterPosition = CGPoint(x: view.center.x, y: -96)
+            emitter.emitterShape = kCAEmitterLayerLine
+            emitter.emitterSize = CGSize(width: view.frame.size.width, height: 1)
+    
+            emitter.emitterCells = generateEmitterCells()
+    
+            self.view.layer.insertSublayer(emitter, at: 0)
+    
+            Sound.play(file: "tada.mp3")
+        }
     
 }

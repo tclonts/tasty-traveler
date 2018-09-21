@@ -42,7 +42,7 @@ class BronzeAchievementVC: UIViewController {
     
     let hikerImage: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = #imageLiteral(resourceName: "bronzeBadge")
+        imageView.image = #imageLiteral(resourceName: "bronzeBadgePopUp")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()

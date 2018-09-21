@@ -26,6 +26,52 @@ class PointsVC: UIViewController {
             }
         }
     }
+    lazy var bronzeBadge: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "bronzeBadgePoints"), for: .normal)
+        button.addTarget(self, action: #selector(learnMoreBronze), for: .touchUpInside)
+        button.isUserInteractionEnabled = true
+        return button
+    }()
+    
+    lazy var silverBadge: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "silverBadgePoints"), for: .normal)
+        button.addTarget(self, action: #selector(learnMoreSilver), for: .touchUpInside)
+        button.isUserInteractionEnabled = true
+        
+        return button
+    }()
+    
+    lazy var goldBadge: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "goldBadgePoints"), for: .normal)
+        button.addTarget(self, action: #selector(learnMoreGold), for: .touchUpInside)
+        button.isUserInteractionEnabled = true
+        return button
+    }()
+    
+    let gold: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 15)
+        label.textColor = Color.Gold
+        label.text = "Gold"
+        return label
+    }()
+    let silver: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 15)
+        label.textColor = Color.Silver
+        label.text = "Silver"
+        return label
+    }()
+    let bronze: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 15)
+        label.textColor = Color.Bronze
+        label.text = "Bronze"
+        return label
+    }()
     
     let pointsInfoButton: UIButton = {
         let button = UIButton(type: .system)
@@ -73,28 +119,62 @@ class PointsVC: UIViewController {
             let seventhItem: RKPieChartItem = RKPieChartItem(ratio: (uint(youUploadedPoints)), color: Color.green, title: "recipe uploaded by you = 10 points")
             let chartView = RKPieChartView(items: [seventhItem, thirdItem, firstItem, secondItem, sixthItem, fourthItem, fifthItem], centerTitle: ("Total Points \(self.totalPoints)"))
             
-            let stackViewVertical = UIStackView(arrangedSubviews: [chartView])
+
+            
+            let bronzeStackView = UIStackView(arrangedSubviews: [self.bronze, self.bronzeBadge])
+            bronzeStackView.axis = .vertical
+            bronzeStackView.distribution = .fill
+            bronzeStackView.alignment = .center
+            
+            
+            let silverStackView = UIStackView(arrangedSubviews: [self.silver, self.silverBadge])
+            silverStackView.axis = .vertical
+            silverStackView.distribution = .fill
+            silverStackView.alignment = .center
+
+            
+            let goldStackView = UIStackView(arrangedSubviews: [self.gold, self.goldBadge])
+            goldStackView.axis = .vertical
+            goldStackView.distribution = .fill
+            goldStackView.alignment = .center
+
+            
+            let badgesStackViewHorizontal = UIStackView(arrangedSubviews: [goldStackView, silverStackView, bronzeStackView])
+            badgesStackViewHorizontal.axis = .horizontal
+            badgesStackViewHorizontal.distribution = .fillEqually
+            badgesStackViewHorizontal.alignment = .center
+            badgesStackViewHorizontal.spacing = 0
+
+            let stackViewVertical = UIStackView(arrangedSubviews: [self.pointsInfoButton, badgesStackViewHorizontal, chartView])
             stackViewVertical.axis = .vertical
-            stackViewVertical.distribution = .fillEqually
+            stackViewVertical.distribution = .fill
+            stackViewVertical.spacing = 8
             
             chartView.circleColor = .white
             chartView.translatesAutoresizingMaskIntoConstraints = false
-            chartView.arcWidth = 40
+            chartView.arcWidth = 30
             chartView.isIntensityActivated = false
             chartView.style = .butt
             chartView.isTitleViewHidden = false
             chartView.isAnimationActivated = true
-            
-            
-            
-            
-            self.view.sv(self.pointsInfoButton, stackViewVertical)
-            stackViewVertical.topAnchor.constraint(equalTo: self.pointsInfoButton.bottomAnchor).isActive = true
+
+            self.view.sv(stackViewVertical)
+            stackViewVertical.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 20 ).isActive = true
             stackViewVertical.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -20 ).isActive = true
             stackViewVertical.leadingAnchor.constraint(equalTo: self.view.leadingAnchor).isActive = true
             stackViewVertical.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
-            self.pointsInfoButton.Top == self.view.Top + 20
+//            self.pointsInfoButton.Top == self.view.Top + 15
             self.pointsInfoButton.centerHorizontally()
+            
+//            silverStackView.Top == self.pointsInfoButton.Bottom + 8
+//            silverStackView.CenterX == self.pointsInfoButton.CenterX
+//
+//            goldStackView.Top == self.pointsInfoButton.Bottom + 8
+//            goldStackView.Right == silverStackView.Left - 8
+//
+//            bronzeStackView.Top == self.pointsInfoButton.Bottom + 8
+//            bronzeStackView.Left == silverStackView.Right + 8
+
         }
         
         
@@ -112,6 +192,25 @@ class PointsVC: UIViewController {
     
     @objc func learnMore() {
         let learnMoreVC = LearnMoreVC()
+        learnMoreVC.modalPresentationStyle = .overCurrentContext
+        self.present(learnMoreVC, animated: false) {
+        }
+    }
+    @objc func learnMoreBronze() {
+        let learnMoreVC = LearnBronzeBadgeVC()
+        learnMoreVC.modalPresentationStyle = .overCurrentContext
+        self.present(learnMoreVC, animated: false) {
+        }
+    }
+    @objc func learnMoreSilver() {
+        let learnMoreVC = LearnSilverBadgeVC()
+        learnMoreVC.modalPresentationStyle = .overCurrentContext
+        self.present(learnMoreVC, animated: false) {
+        }
+    }
+    
+    @objc func learnMoreGold() {
+        let learnMoreVC = LearnGoldBadgeVC()
         learnMoreVC.modalPresentationStyle = .overCurrentContext
         self.present(learnMoreVC, animated: false) {
         }

@@ -98,7 +98,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     lazy var bronzeBadge: UIButton = {
         let button = UIButton(type: .custom)
-        button.setImage(#imageLiteral(resourceName: "silver-badge-17"), for: .normal)
+        button.setImage(#imageLiteral(resourceName: "bronzeBadgeProfile"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
         return button
@@ -106,7 +106,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     lazy var silverBadge: UIButton = {
         let button = UIButton(type: .custom)
-        button.setImage(#imageLiteral(resourceName: "silver-badge-17"), for: .normal)
+        button.setImage(#imageLiteral(resourceName: "silverBadgeProfile"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
 
@@ -115,7 +115,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     lazy var goldBadge: UIButton = {
         let button = UIButton(type: .custom)
-        button.setImage(#imageLiteral(resourceName: "silver-badge-17"), for: .normal)
+        button.setImage(#imageLiteral(resourceName: "goldBadgeProfile"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
         return button
@@ -344,9 +344,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.silverBadge.isHidden = true
                 self.headerView.goldBadge.isHidden = true
             } else if user?.badgeStatus == 2 {
-                self.headerView.bronzeBadge.isHidden = true
+                self.headerView.bronzeBadge.isHidden = false
                 self.headerView.silverBadge.isHidden = false
-                self.headerView.goldBadge.isHidden = false
+                self.headerView.goldBadge.isHidden = true
             }else if user?.badgeStatus == 3 {
                 self.headerView.bronzeBadge.isHidden = false
                 self.headerView.silverBadge.isHidden = false

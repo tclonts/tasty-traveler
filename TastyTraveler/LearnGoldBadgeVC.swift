@@ -1,23 +1,24 @@
 //
-//  SilverAchievementVC.swift
+//  LearnGoldBadgVC.swift
 //  TastyTraveler
 //
-//  Created by Tyler Clonts on 9/14/18.
+//  Created by Tyler Clonts on 9/20/18.
 //  Copyright © 2018 Michael Bart. All rights reserved.
 //
+
 
 import UIKit
 import Stevia
 import SwiftySound
 
-class SilverAchievementVC: UIViewController {
+class LearnGoldBadgeVC: UIViewController {
     
     
     let backgroundView = UIView()
     
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Hooray!"
+        label.text = "Gold Chef Requirements"
         label.font = ProximaNova.semibold.of(size: 20)
         label.textColor = Color.darkText
         return label
@@ -32,17 +33,17 @@ class SilverAchievementVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "You recieved a silver badge and 250 points!"
+        label.text = "Upload 20 recipes\n\n10 users have cooked your meal\n\n50 users have saved your meal\n\n"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center
-        label.textColor = Color.darkGrayText
+        label.textColor = Color.Gold
         return label
     }()
     
     let hikerImage: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = #imageLiteral(resourceName: "silverBadgePopUp")
+        imageView.image = #imageLiteral(resourceName: "goldBadgePopUp")
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -65,7 +66,7 @@ class SilverAchievementVC: UIViewController {
             self.backgroundView.transform = CGAffineTransform(translationX: 0, y: self.view.frame.height)
         }, completion: nil)
         
-        self.emitter.birthRate = 0
+        //        self.emitter.birthRate = 0
         
         let when = DispatchTime.now() + 1.2
         DispatchQueue.main.asyncAfter(deadline: when, execute: {
@@ -77,12 +78,12 @@ class SilverAchievementVC: UIViewController {
     
     func generateEmitterCells() -> [CAEmitterCell] {
         
-        let silverOne = makeEmitterCell(color: Color.Silver)
-        let silverTwo = makeEmitterCell(color: Color.Silver)
-        let silverThree = makeEmitterCell(color: Color.Silver)
-        let silverFour = makeEmitterCell(color: Color.Silver)
+        let red = makeEmitterCell(color: UIColor.red)
+        let green = makeEmitterCell(color: UIColor.green)
+        let blue = makeEmitterCell(color: UIColor.blue)
+        let yellow = makeEmitterCell(color: UIColor.yellow)
         
-        return [silverOne, silverTwo, silverThree, silverFour]
+        return [red, green, blue, yellow]
     }
     
     func makeEmitterCell(color: UIColor) -> CAEmitterCell {
@@ -127,12 +128,13 @@ class SilverAchievementVC: UIViewController {
         self.view.sv(backgroundView)
         
         backgroundView.left(adaptConstant(50)).right(adaptConstant(50)).centerVertically()
-        backgroundView.sv(titleLabel, horizontalRule, hikerImage, descriptionLabel, okayButton)
+        backgroundView.sv(titleLabel, horizontalRule ,hikerImage, descriptionLabel, okayButton)
         
         titleLabel.top(adaptConstant(16)).centerHorizontally()
-        
+
         horizontalRule.Top == titleLabel.Bottom + adaptConstant(16)
         horizontalRule.left(0).right(0)
+
         
         hikerImage.Top == descriptionLabel.Bottom + adaptConstant(30)
         hikerImage.left(adaptConstant(20)).right(adaptConstant(20)).height(adaptConstant(300))
