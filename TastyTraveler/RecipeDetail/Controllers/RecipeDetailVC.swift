@@ -308,7 +308,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     var reviews = [Review]() {
         didSet {
             // we need number of reviews and average rating from reviews
-            self.ratings = reviews.flatMap { $0.rating }
+            self.ratings = reviews.compactMap { $0.rating }
             guard let ratings = self.ratings else {
                 NotificationCenter.default.post(name: Notification.Name("ReviewsLoaded"), object: nil)
                 return
@@ -562,12 +562,12 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             self.present(accountAccessVC, animated: true, completion: nil)
         } else {
             
-            guard let recipeID = recipe?.uid else { return }
-            guard let userID = Auth.auth().currentUser?.uid else { return }
+            guard (recipe?.uid) != nil else { return }
+            guard (Auth.auth().currentUser?.uid) != nil else { return }
             
             
             if !self.recipe!.hasCooked == true {
-                let timestamp = Date().timeIntervalSince1970
+                _ = Date().timeIntervalSince1970
                 
                 self.present(imagePicker, animated: false, completion: nil)
             } else {

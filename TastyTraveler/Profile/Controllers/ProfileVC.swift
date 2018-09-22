@@ -323,9 +323,10 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.bioLabel.isUserInteractionEnabled = false
             }
             if !isMyProfile{
-            if let urlString = user!.avatarURL {
-                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
-            }
+                    if let urlString = user?.avatarURL {
+                        self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+                    }
+                
             }
             if let userPoints = user?.points {
                 self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
@@ -396,13 +397,14 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         super.viewDidLoad()
         viewLoadSetup()
         
+        if isMyProfile {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
                 if let urlString = userR?.avatarURL {
                     self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
                 }
-        }
-        
+            }
+        } 
     }
     
     @objc func fetchUserInfo() {
@@ -514,11 +516,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             if let username = user?.username {
                 headerView.usernameLabel.text = username
             }
-            
-//            if let urlString = user?.avatarURL {
-//                self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
-//            }
-//
+
             if let userPoints = user?.points {
                 headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
                 let title = NSAttributedString(string: "\(userPoints)", attributes: [
