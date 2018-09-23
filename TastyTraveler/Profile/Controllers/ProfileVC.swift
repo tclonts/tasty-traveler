@@ -322,11 +322,11 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.bioLabel.textColor = Color.darkText
                 self.headerView.bioLabel.isUserInteractionEnabled = false
             }
+            
             if !isMyProfile{
                     if let urlString = user?.avatarURL {
                         self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
                     }
-                
             }
             if let userPoints = user?.points {
                 self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)

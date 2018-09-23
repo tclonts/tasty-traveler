@@ -33,7 +33,7 @@ class LearnBronzeBadgeVC: UIViewController {
     
     let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "Upload a profile Pic\n\nWrite a Bio\n\nUpload 3 recipes"
+        label.text = "Upload a profile Pic\n\nWrite a Bio\n\nUpload 3 recipes\n\nOn completion receive 100 points!"
         label.font = ProximaNova.semibold.of(size: 16)
         label.numberOfLines = 0
         label.textAlignment = .center
