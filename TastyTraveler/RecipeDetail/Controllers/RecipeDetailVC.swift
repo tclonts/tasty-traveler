@@ -566,10 +566,29 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             guard (Auth.auth().currentUser?.uid) != nil else { return }
             
             
+            
+//            let alert = UIAlertController(title: "Did you bring your towel?", message: "It's recommended you bring your towel before continuing.", preferredStyle: .alert)
+//            
+//            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+//                
+//                self.present(self.imagePicker, animated: false, completion: nil)
+//            }))
+//            alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+//            
+//            self.present(alert, animated: true)
+            
+            
             if !self.recipe!.hasCooked == true {
                 _ = Date().timeIntervalSince1970
+                let alert = UIAlertController(title: "Mark this recipe as cooked?", message: "uplpad an image of your cooked recipe!", preferredStyle: .alert)
                 
-                self.present(imagePicker, animated: false, completion: nil)
+                alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
+                    
+                    self.present(self.imagePicker, animated: false, completion: nil)
+                }))
+                alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+                
+                self.present(alert, animated: true)
             } else {
                 uncookRecipe()
             }
