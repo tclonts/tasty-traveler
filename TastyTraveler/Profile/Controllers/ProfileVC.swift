@@ -100,6 +100,8 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         let button = UIButton(type: .custom)
         button.setImage(#imageLiteral(resourceName: "bronzeBadgeProfile"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
+        button.height(adaptConstant(32))
+        button.width(adaptConstant(32))
         button.isUserInteractionEnabled = false
         return button
     }()
@@ -109,7 +111,8 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.setImage(#imageLiteral(resourceName: "silverBadgeProfile"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
-
+        button.height(adaptConstant(32))
+        button.width(adaptConstant(32))
         return button
     }()
     
@@ -118,6 +121,8 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.setImage(#imageLiteral(resourceName: "goldBadgeProfile"), for: .normal)
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         button.isUserInteractionEnabled = false
+        button.height(adaptConstant(32))
+        button.width(adaptConstant(32))
         return button
     }()
     
