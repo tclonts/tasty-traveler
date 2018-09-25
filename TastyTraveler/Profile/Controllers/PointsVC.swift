@@ -29,7 +29,7 @@ class PointsVC: UIViewController {
     lazy var bronzeBadge: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(#imageLiteral(resourceName: "bronzeBadgeProfile"), for: .normal)
-        button.height(50).width(50)
+        button.height(59).width(50)
         button.addTarget(self, action: #selector(learnMoreBronze), for: .touchUpInside)
         button.isUserInteractionEnabled = true
         return button
@@ -38,7 +38,7 @@ class PointsVC: UIViewController {
     lazy var silverBadge: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(#imageLiteral(resourceName: "silverBadgeProfile"), for: .normal)
-        button.height(50).width(50)
+        button.height(59).width(50)
 
         button.addTarget(self, action: #selector(learnMoreSilver), for: .touchUpInside)
         button.isUserInteractionEnabled = true
@@ -49,7 +49,7 @@ class PointsVC: UIViewController {
     lazy var goldBadge: UIButton = {
         let button = UIButton(type: .custom)
         button.setImage(#imageLiteral(resourceName: "goldBadgeProfile"), for: .normal)
-        button.height(50).width(50)
+        button.height(59).width(50)
         button.addTarget(self, action: #selector(learnMoreGold), for: .touchUpInside)
         button.isUserInteractionEnabled = true
         return button

@@ -580,7 +580,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             
             if !self.recipe!.hasCooked == true {
                 _ = Date().timeIntervalSince1970
-                let alert = UIAlertController(title: "Mark this recipe as cooked?", message: "uplpad an image of your cooked recipe!", preferredStyle: .alert)
+                let alert = UIAlertController(title: "Mark this recipe as cooked?", message: "Upload an image of your cooked recipe!", preferredStyle: .alert)
                 
                 alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action) in
                     

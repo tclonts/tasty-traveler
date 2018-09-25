@@ -56,6 +56,8 @@ class FirstPointsExplanationVC: UIViewController {
         button.layer.masksToBounds = true
         button.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMinXMaxYCorner]
         button.backgroundColor = Color.primaryOrange
+        button.alpha = 0.5
+        button.isEnabled = false
         button.addTarget(self, action: #selector(didTapLearnMoreButton), for: .touchUpInside)
         return button
     }()
@@ -116,6 +118,12 @@ class FirstPointsExplanationVC: UIViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.toPointsVC), name: Notification.Name("toPointsVC"), object: nil)
 
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { // change 2 to desired number of seconds
+            // Your code with delay
+            self.okayButton.isEnabled = true
+            self.okayButton.alpha = 1.0
+//            self.okayButton.backgroundColor = Color.primaryOrange
+        }
         
         self.view.backgroundColor = .clear
         

@@ -142,6 +142,10 @@ class HomeVC: UITableViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
         firstPointsExpl()
+
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { // change 2 to desired number of seconds
+//            // Your code with delay
+//        }
         
         
         
@@ -153,7 +157,6 @@ class HomeVC: UITableViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         
         if recipeDataHasChanged {
             tableView.reloadRows(at: [previousIndexPath!], with: .none)

@@ -460,7 +460,7 @@ class FirebaseController {
     }
     
     func updateRecipe(dictionary: [String:Any], uid: String) {
-        guard let currentUser = Auth.auth().currentUser else { return }
+        guard Auth.auth().currentUser != nil else { return }
         
     }
     
