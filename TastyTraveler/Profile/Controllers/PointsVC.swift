@@ -87,6 +87,13 @@ class PointsVC: UIViewController {
         return button
     }()
     
+    let separatorLine: UIView = {
+        let view = UIView()
+        view.height(0.5)
+        view.backgroundColor = Color.lightGray
+        return view
+    }()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,7 +110,7 @@ class PointsVC: UIViewController {
         //        addTotal()
         
         fetchUserInfo {
-            var totalP = self.yourFavorited + self.yourReviewed + self.yourCooked
+            let totalP = self.yourFavorited + self.yourReviewed + self.yourCooked
             
             let yourCookedPoints: Double = (Double(self.yourCooked) / Double(totalP)) * 100.0
             let yourFavoritePoints: Double = (Double(self.yourFavorited) / Double(totalP)) * 100.0
@@ -149,12 +156,14 @@ class PointsVC: UIViewController {
             badgesStackViewHorizontal.alignment = .center
             badgesStackViewHorizontal.spacing = 0
 
-            let stackViewVertical = UIStackView(arrangedSubviews: [self.pointsInfoButton, badgesStackViewHorizontal, chartView])
+            let stackViewVertical = UIStackView(arrangedSubviews: [self.pointsInfoButton, badgesStackViewHorizontal, self.separatorLine, chartView])
             stackViewVertical.axis = .vertical
             stackViewVertical.distribution = .fill
             stackViewVertical.spacing = 8
             
             chartView.circleColor = .white
+//            chartView.layer.borderColor = Color.lightGray.cgColor
+//            chartView.layer.borderWidth = 1
             chartView.translatesAutoresizingMaskIntoConstraints = false
             chartView.arcWidth = 30
             chartView.isIntensityActivated = false
@@ -235,7 +244,7 @@ class PointsVC: UIViewController {
     var theyCooked = 0
     var yourFavorited = 0
     var yourReviewed = 0
-    var yourCooked = 0
+    var yourCooked = 1
     var theyReviewed = 0
     var totalPoints = 0
 //    var isMyPoints = true

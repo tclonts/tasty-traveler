@@ -764,7 +764,7 @@ extension HomeVC {
     
     func pointAdder(numberOfPoints: Int, cell: RecipeCell) {
         guard let indexPath = tableView?.indexPath(for: cell) else { return }
-        var recipe = self.searchResultRecipes[indexPath.item]
+        let recipe = self.searchResultRecipes[indexPath.item]
         
         let recipeUID = recipe.uid
         
@@ -792,13 +792,13 @@ extension HomeVC {
         if let pointsUpToSpeed = UserDefaults.standard.object(forKey: "pointsUpToSpeed") as? Bool, pointsUpToSpeed {
             print("Backdated Points have already been rewarded: \(pointsUpToSpeed)")
         } else {
+
             UserDefaults.standard.set(true, forKey: "pointsUpToSpeed")
             
          
         guard let userID = Auth.auth().currentUser?.uid else {return}
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
-            
             if user.points == 0 || user.points == nil {
                 
                 //recipesCookedByYou

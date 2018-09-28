@@ -897,7 +897,7 @@ extension ProfileVC {
             FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
                 guard let user = user else { return }
 
-                var points = user.points
+                let points = user.points
                 let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
                 if user.avatarURL == nil || user.avatarURL == "" {
                 FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
@@ -911,7 +911,7 @@ extension ProfileVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
             
-            var points = user.points
+            let points = user.points
             let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
             FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
         }
