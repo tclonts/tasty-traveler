@@ -795,11 +795,12 @@ extension HomeVC {
 
             UserDefaults.standard.set(true, forKey: "pointsUpToSpeed")
             
-         
+
         guard let userID = Auth.auth().currentUser?.uid else {return}
+        FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(0)
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
-            if user.points == 0 || user.points == nil {
+            if user.points! == 0 || user.points == nil {
                 
                 //recipesCookedByYou
                 //RecipesSavedByYou

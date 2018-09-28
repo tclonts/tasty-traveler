@@ -119,7 +119,7 @@ public func <-- <T: RawRepresentable>(left: inout [T], right: JSON?) {
 /// Parses Optional Array of enums.
 public func <-- <T: RawRepresentable>(left: inout [T]?, right: JSON?) {
     if let array = right?.data as? [T.RawValue] {
-        left = array.map { T.init(rawValue: $0) }.flatMap {$0}
+        left = array.map { T.init(rawValue: $0) }.compactMap {$0}
     }
 }
 
@@ -236,7 +236,7 @@ public func <-- <T>(left: inout [T], right: JSON?) {
 /// Parses optional arrays of plain swift types.
 public func <-- <T>(left: inout [T]?, right: JSON?) {
     if let a = right?.data as? [Any] {
-        let tmp: [T] = a.flatMap { var t: T?; parseType(&t, right: JSON($0)); return t }
+        let tmp: [T] = a.compactMap { var t: T?; parseType(&t, right: JSON($0)); return t }
         if tmp.count == a.count {
             left = tmp
         }
