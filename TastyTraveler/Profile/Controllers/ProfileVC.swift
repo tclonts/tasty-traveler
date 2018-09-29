@@ -1014,7 +1014,7 @@ extension ProfileVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").observe(.value) { (snapshot) in
                 let totalPoints = Int(snapshot.childrenCount) * 5
-                var points = useR?.points
+                let points = useR?.points
                 let newPoints = points != nil ? points! + totalPoints : totalPoints
                 FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
                 completion()
@@ -1028,7 +1028,7 @@ extension ProfileVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
             FirebaseController.shared.ref.child("users").child(userID).child("favorites").observe(.value) { (snapshot) in
                 let totalPoints = Int(snapshot.childrenCount) * 1
-                var points = useR?.points
+                let points = useR?.points
                 let newPoints = points != nil ? points! + totalPoints : totalPoints
                 FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
                 completion()
@@ -1043,7 +1043,7 @@ extension ProfileVC {
 
         FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").observe(.value) { (snapshot) in
             let totalPoints = Int(snapshot.childrenCount) * 10
-            var points = useR?.points
+            let points = useR?.points
             let newPoints = points != nil ? points! + totalPoints : totalPoints
             FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
             completion()
@@ -1063,7 +1063,7 @@ extension ProfileVC {
         
         FirebaseController.shared.ref.child("recipes").child(recipeUID).child("reviews").observeSingleEvent(of: .value) { (snapshot) in
             let totalPoints = Int(snapshot.childrenCount) * 10
-            var points = useR?.points
+            let points = useR?.points
             let newPoints = points != nil ? points! + totalPoints : totalPoints
             FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
                     }
@@ -1082,7 +1082,7 @@ extension ProfileVC {
                 
                 FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
                     let totalPoints = Int(snapshot.childrenCount) * 10
-                    var points = useR?.points
+                    let points = useR?.points
                     let newPoints = points != nil ? points! + totalPoints : totalPoints
                     FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
                     completion()
@@ -1103,7 +1103,7 @@ extension ProfileVC {
                 
                 FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
                     let totalPoints = Int(snapshot.childrenCount) * 1
-                    var points = useR?.points
+                    let points = useR?.points
                     let newPoints = points != nil ? points! + totalPoints : totalPoints
                     FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
                     completion()
