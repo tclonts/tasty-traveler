@@ -116,10 +116,10 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
         pointAdder(numberOfPoints: 10)
         pointAdderForCurrentUserID(numberOfPoints: 10)
         dismiss(animated: true) {
-            if let firstRecipeReviewLeft = UserDefaults.standard.object(forKey: "firstRecipeReviewLeft") as? Bool, firstRecipeReviewLeft {
-                print("First recipe has already been reviewed: \(firstRecipeReviewLeft)")
+            if let firstRecipeRev = UserDefaults.standard.object(forKey: "firstRecipeRev") as? Bool, firstRecipeRev {
+                print("First recipe has already been reviewed: \(firstRecipeRev)")
             } else {
-                UserDefaults.standard.set(true, forKey: "firstRecipeReviewLeft")
+                UserDefaults.standard.set(true, forKey: "firstRecipeRev")
                 
                 NotificationCenter.default.post(Notification(name: Notification.Name("firstRecipeReviewLeft")))
             }

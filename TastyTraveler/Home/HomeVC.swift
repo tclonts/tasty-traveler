@@ -744,10 +744,10 @@ extension HomeVC: RecipeCellDelegate {
                         
                         self.tableView.reloadRows(at: [indexPath], with: .none)
                         
-                        if let firstRecipeFavorited = UserDefaults.standard.object(forKey: "firstRecipeFavorited") as? Bool, firstRecipeFavorited {
-                            print("First recipe has already been favorited: \(firstRecipeFavorited)")
+                        if let firstRecipeFav = UserDefaults.standard.object(forKey: "firstRecipeFav") as? Bool, firstRecipeFav {
+                            print("First recipe has already been favorited: \(firstRecipeFav)")
                         } else {
-                            UserDefaults.standard.set(true, forKey: "firstRecipeFavorited")
+                            UserDefaults.standard.set(true, forKey: "firstRecipeFav")
                             
                             NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
                         }
@@ -789,15 +789,17 @@ extension HomeVC {
     }
     
     func pointUpToSpeed() {
-        if let pointsUpToSpeed = UserDefaults.standard.object(forKey: "pointsUpToSpeed") as? Bool, pointsUpToSpeed {
-            print("Backdated Points have already been rewarded: \(pointsUpToSpeed)")
+        if let preAwardedPoints = UserDefaults.standard.object(forKey: "preAwardedPoints") as? Bool, preAwardedPoints {
+            print("Backdated Points have already been rewarded: \(preAwardedPoints)")
         } else {
 
-            UserDefaults.standard.set(true, forKey: "pointsUpToSpeed")
+            UserDefaults.standard.set(true, forKey: "preAwardedPoints")
             
 
         guard let userID = Auth.auth().currentUser?.uid else {return}
         FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(0)
+            
+            
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
             if user.points! == 0 || user.points == nil {
@@ -981,10 +983,10 @@ extension HomeVC {
     }
     
     func firstPointsExpl() {
-        if let firstPointsExplanation = UserDefaults.standard.object(forKey: "firstPointsExplanation") as? Bool, firstPointsExplanation {
-            print("First recipe has already been favorited: \(firstRecipeFavorited)")
+        if let firstExplanation = UserDefaults.standard.object(forKey: "firstExplanation") as? Bool, firstExplanation {
+            print("First recipe has already been favorited: \(firstExplanation)")
         } else {
-            UserDefaults.standard.set(true, forKey: "firstPointsExplanation")
+            UserDefaults.standard.set(true, forKey: "firstExplanation")
             
             NotificationCenter.default.post(Notification(name: Notification.Name("FirstPointsExplanation")))
         }

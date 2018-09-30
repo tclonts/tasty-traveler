@@ -31,74 +31,6 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             self.setRecipe {
                 self.fetchReviewData()
             }
-            //            DispatchQueue.main.async {
-            //
-            //                if let countryCode = self.recipe?.countryCode, let locality = self.recipe?.locality {
-            //                    self.recipeHeaderView.countryFlag.image = UIImage(named: countryCode)
-            //                    self.recipeHeaderView.countryLabel.text = "\(locality), \(countryCode)"
-            //            } else {
-            //                    self.recipeHeaderView.countryFlag.image = nil
-            //                    self.recipeHeaderView.countryLabel.text = "Location Unavailable"
-            //            }
-            //
-            //                if let meal = self.recipe?.meal {
-            //                self.recipeHeaderView.mealLabel.text = "  \(meal)  "
-            //            }
-            //
-            //                self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
-            //                self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
-            //
-            //                if self.recipe!.coordinate == nil {
-            //                print("NO LOCATION DATA")
-            //            } else {
-            //                    self.recipeHeaderView.countryLabel.isUserInteractionEnabled = true
-            //                    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.showMapView))
-            //                self.recipeHeaderView.countryLabel.addGestureRecognizer(tapGesture)
-            //
-            //                    self.recipeHeaderView.countryLabel.textColor = Color.primaryOrange
-            //
-            //                let globeIcon = UIImageView()
-            //                globeIcon.image = #imageLiteral(resourceName: "mapIcon")
-            //                    self.recipeHeaderView.sv(globeIcon)
-            //                    globeIcon.Left == self.recipeHeaderView.countryLabel.Right + 8
-            //                    globeIcon.CenterY == self.recipeHeaderView.countryLabel.CenterY
-            //                globeIcon.isUserInteractionEnabled = true
-            //                globeIcon.height(adaptConstant(15)).width(adaptConstant(15))
-            //                    globeIcon.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.showMapView)))
-            //            }
-            //
-            //            if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
-            //                self.isBrowsing = true
-            //            } else {
-            //                guard let userID = Auth.auth().currentUser?.uid else { print("USER IS NOT LOGGED IN"); return }
-            //
-            //                if userID == self.recipe!.creator.uid {
-            //                    self.isMyRecipe = true
-            //                    // my recipe
-            //                    self.recipeHeaderView.favoriteButton.isHidden = true
-            //                    self.favoriteButtonNavBar.isHidden = true
-            //                    self.bottomView.isHidden = true
-            //                } else {
-            //                    self.isMyRecipe = false
-            //                    // someone else's recipe
-            //                    if self.recipe!.hasFavorited {
-            //                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
-            //                        self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
-            //                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNavSelected"), for: .normal)
-            //                    } else {
-            //                        self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
-            //                        self.favoriteButtonNavBar.setTitle("SAVE", for: .normal)
-            //                        self.favoriteButtonNavBar.setImage(#imageLiteral(resourceName: "favoriteNav"), for: .normal)
-            //                    }
-            //                }
-            //            }
-            //                self.formatCookButton()
-            //                self.fetchReviewData{}
-            //
-            //                let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])
-            //            AppEventsLogger.log(viewContentEvent)
-            //            }
-            
         }
     }
     
@@ -734,10 +666,10 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                             self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
                             self.homeVC?.recipeDataHasChanged = true
                         }
-                        if let firstRecipeFavorited = UserDefaults.standard.object(forKey: "firstRecipeFavorited") as? Bool, firstRecipeFavorited {
-                            print("First recipe has already been favorited: \(firstRecipeFavorited)")
+                        if let firstRecFav = UserDefaults.standard.object(forKey: "firstRecFav") as? Bool, firstRecFav {
+                            print("First recipe has already been favorited: \(firstRecFav)")
                         } else {
-                            UserDefaults.standard.set(true, forKey: "firstRecipeFavorited")
+                            UserDefaults.standard.set(true, forKey: "firstRecFav")
                             
                             NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
                         }

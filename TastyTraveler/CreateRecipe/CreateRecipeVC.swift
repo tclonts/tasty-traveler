@@ -303,10 +303,10 @@ class CreateRecipeVC: UIViewController {
         }
         
         self.dismiss(animated: true, completion: {
-            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool, firstRecipeUploaded {
-                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
+            if let firstRecipeUp = UserDefaults.standard.object(forKey: "firstRecipeUp") as? Bool, firstRecipeUp {
+                print("First recipe has already been uploaded: \(firstRecipeUp)")
             } else {
-                UserDefaults.standard.set(true, forKey: "firstRecipeUploaded")
+                UserDefaults.standard.set(true, forKey: "firstRecipeUp")
 
                 NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipe")))
             }            
