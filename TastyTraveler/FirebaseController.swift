@@ -553,5 +553,216 @@ class FirebaseController {
             }
         }
     }
-
+    
+    
+    
+    
+    
+    
+    
+    
+    func fetchPastPoints() {
+       
+            if let preAwardedPoints = UserDefaults.standard.object(forKey: "preAwardedPoints") as? Bool, preAwardedPoints {
+                print("Backdated Points have already been rewarded: \(preAwardedPoints)")
+            } else {
+                
+                UserDefaults.standard.set(true, forKey: "preAwardedPoints")
+    
+            guard let userID = Auth.auth().currentUser?.uid else {return}
+            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(0)
+        
+            FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+                guard let user = user else { return }
+                if user.points! == 0 || user.points == nil {
+    
+                    //recipesCookedByYou
+                    //RecipesSavedByYou
+                    //reviewsLeftByYou
+                    //recipescookedByOthers
+                    //recipesfavoritedByOthers
+                    //reviewsLeftByOthers
+                    //ProfilePic
+                    //Bio
+                    self.recipesCookedByYoursTruly {
+                        self.savedRecipes {
+                            self.yourReviewedRecipes {
+                                self.recipescookedByOthers {
+                                    self.recipesFavoritedByOthers {
+                                        self.theyReviewedRecipes {
+                                            self.profilePhoto {
+                                                self.bio {
+                                                    print("completed")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    func recipesCookedByYoursTruly(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else {return}
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
+            FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").observeSingleEvent(of: .value, with: { (snapshot) in
+                let totalPoints = Int(snapshot.childrenCount) * 5
+                let points = useR?.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                print("recipesCookedByYoursTruly")
+                completion()
+            })
+        }
+    }
+    
+    func savedRecipes(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else {return}
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
+            FirebaseController.shared.ref.child("users").child(userID).child("favorites").observeSingleEvent(of: .value, with: { (snapshot) in
+                let totalPoints = Int(snapshot.childrenCount) * 1
+                let points = useR?.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                print("savedRecipes")
+                completion()
+            })
+        }
+    }
+    
+    func yourReviewedRecipes(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
+            
+            FirebaseController.shared.ref.child("users").child(userID).child("reviewedRecipes").observeSingleEvent(of: .value, with: { (snapshot) in
+                let totalPoints = Int(snapshot.childrenCount) * 10
+                let points = useR?.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                print("YourReviews")
+                completion()
+            })
+        }
+    }
+    
+    func theyReviewedRecipes(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
+            
+            FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                
+                if result.childrenCount != 0 {
+                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                        
+                        let recipeUID = recipe.key
+                        
+                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("reviews").observeSingleEvent(of: .value) { (snapshot) in
+                            let totalPoints = Int(snapshot.childrenCount) * 10
+                            let points = useR?.points
+                            let newPoints = points != nil ? points! + totalPoints : totalPoints
+                            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                            print("theyReviewed")
+//                            completion()
+                        }
+                    }
+                };completion()
+            }
+        }
+    }
+    
+    func recipescookedByOthers(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
+            FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                if result.childrenCount != 0 {
+                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                        
+                        let recipeUID = recipe.key
+                        
+                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("cookedImages").observeSingleEvent(of: .value) { (snapshot) in
+                            let totalPoints = Int(snapshot.childrenCount) * 10
+                            let points = useR?.points
+                            let newPoints = points != nil ? points! + totalPoints : totalPoints
+                            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                            print("recipesCookedByOthers")
+//                            completion()
+                        }
+                    }
+                };completion()
+            }
+        }
+    }
+    
+    func recipesFavoritedByOthers(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (useR) in
+            
+            FirebaseController.shared.ref.child("users").child(userID).child("uploadedRecipes").observeSingleEvent(of: .value) { (result) in
+                if result.childrenCount != 0 {
+                    for recipe in result.children.allObjects as! [DataSnapshot] {
+                        
+                        let recipeUID = recipe.key
+                        
+                        FirebaseController.shared.ref.child("recipes").child(recipeUID).child("favoritedBy").observeSingleEvent(of: .value) { (snapshot) in
+                            let totalPoints = Int(snapshot.childrenCount) * 1
+                            let points = useR?.points
+                            let newPoints = points != nil ? points! + totalPoints : totalPoints
+                            FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                            print("favoritedbyothers")
+                            completion()
+                        }
+                    }
+                };completion()
+            }
+        }
+    }
+    
+    func bio(completion: @escaping () -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            if user.bio != nil, user.bio != "" {
+                
+                let totalPoints = 20
+                var points = user.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                print("bio")
+                completion()
+            }
+        }
+    }
+    
+    func profilePhoto(completion: @escaping () -> Void) {
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
+            guard let user = user else { return }
+            
+            if user.avatarURL != nil, user.avatarURL != "" {
+                
+                let totalPoints = 20
+                var points = user.points
+                let newPoints = points != nil ? points! + totalPoints : totalPoints
+                FirebaseController.shared.ref.child("users").child((userID)).child("points").setValue(newPoints)
+                print("profilePhoto")
+                completion()
+            }
+        }
+    }
+    
+    
+    
+    
 }
