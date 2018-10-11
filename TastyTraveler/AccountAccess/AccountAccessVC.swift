@@ -578,15 +578,15 @@ class AccountAccessVC: UIViewController {
                 email = "\(newName)@tastytravelerapp.com"
             }
             
-            Auth.auth().createUser(withEmail: email, password: password) { (user, error) in
+            Auth.auth().createUser(withEmail: email, password: password) { (result, error) in
                 if let error = error {
                     print("Error creating user: \(error.localizedDescription)")
                 }
                 
-                if let user = user {
-                    FirebaseController.shared.ref.child("users").child(user.uid).child("badgeCount").setValue(0)
-                    FirebaseController.shared.ref.child("users").child(user.uid).child("unreadMessagesCount").setValue(0)
-                    FirebaseController.shared.storeUsername(newName, uid: user.uid, completion: { (stored) in
+                if let result = result {
+                    FirebaseController.shared.ref.child("users").child(result.user.uid).child("badgeCount").setValue(0)
+                    FirebaseController.shared.ref.child("users").child(result.user.uid).child("unreadMessagesCount").setValue(0)
+                    FirebaseController.shared.storeUsername(newName, uid: result.user.uid, completion: { (stored) in
                         // create and store recipe
                         let recipeID = UUID().uuidString
 
@@ -595,7 +595,7 @@ class AccountAccessVC: UIViewController {
                         let countryCode = recipe[Recipe.countryCodeKey] as! String
                         
                         var updatedRecipe = recipe
-                        updatedRecipe[Recipe.creatorIDKey] = user.uid
+                        updatedRecipe[Recipe.creatorIDKey] = result.user.uid
                         
                         FirebaseController.shared.ref.child("localities").updateChildValues([locality: true])
                         FirebaseController.shared.ref.child("locations").child(country).updateChildValues(["countryCode": countryCode])
@@ -603,7 +603,7 @@ class AccountAccessVC: UIViewController {
 
                         FirebaseController.shared.ref.child("recipes").child(recipeID).setValue(updatedRecipe)
                         
-                        FirebaseController.shared.ref.child("users").child(user.uid).child("uploadedRecipes").child(recipeID).setValue(true)
+                        FirebaseController.shared.ref.child("users").child(result.user.uid).child("uploadedRecipes").child(recipeID).setValue(true)
                         
                         self.count += 1
                         print("recipe uploaded: \(self.count)")

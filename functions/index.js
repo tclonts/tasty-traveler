@@ -306,8 +306,8 @@ exports.observeMessages = functions.database
                   badge: String(newBadgeValue)
                 },
                 data: {
-                  recipeID: message.recipeID,
-                  withUserID: senderID
+                  // recipeID: message.recipeID,
+                  // withUserID: senderID
                 }
               };
 

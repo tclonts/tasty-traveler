@@ -29,7 +29,14 @@ open class JSON {
         guard let data = data else {
             return nil
         }
-        self.data = data
+        
+        if let jsonString = data as? String,
+            let jsonData = jsonString.data(using: .utf8),
+            let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: .mutableContainers) {
+            self.data = jsonObject
+        } else {
+            self.data = data
+        }
     }
     
     /**
@@ -62,7 +69,6 @@ open class JSON {
     
     func isKeyPath(_ key: String) -> Bool {
         return key.split {$0 == "."}.count > 1
-//        return key.characters.split {$0 == "."}.count > 1
     }
     
     func parseKeyPath(_ keyPath: String) -> JSON? {
@@ -102,19 +108,17 @@ open class JSON {
     open subscript(key: String) -> JSON? {
         get { return isKeyPath(key) ? parseKeyPath(key) : regularParsing(key) }
         set(obj) {
-            if var d = data as? [String:Any] {
+            if var d = data as? [String: Any] {
                 d[key] = obj
             }
         }
     }
     
     open subscript(index: Int) -> JSON? {
-        get {
-            guard let array = data as? [Any], array.count > index else {
-                return nil
-            }
-            return JSON(array[index])
+        guard let array = data as? [Any], array.count > index else {
+            return nil
         }
+        return JSON(array[index])
     }
 }
 

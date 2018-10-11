@@ -455,8 +455,8 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                     FirebaseController.shared.verifyUniqueUsername(usernameText, completion: { (isUnique) in
                         if isUnique {
                             
-                            Auth.auth().createUser(withEmail: email, password: password, completion: { (user, error) in
-                                guard let uid = user?.uid else { return }
+                            Auth.auth().createUser(withEmail: email, password: password, completion: { (result, error) in
+                                guard let uid = result?.user.uid else { return }
                                 if let error = error {
                                     print(error.localizedDescription)
                                 } else {

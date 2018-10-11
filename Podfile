@@ -7,6 +7,7 @@ target 'TastyTraveler' do
   
 
   # Pods for TastyTraveler
+
   # Firebase
   pod 'Firebase/Core'
   pod 'Firebase/Database'

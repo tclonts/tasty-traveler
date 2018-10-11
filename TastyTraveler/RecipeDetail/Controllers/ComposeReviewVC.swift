@@ -110,7 +110,7 @@ class ComposeReviewVC: UITableViewController, UITextViewDelegate {
             let ratedRecipeEvent = AppEvent(name: "rated-recipe", parameters: ["rating": ratingControl.rating,
                                                                                "userID": userID], valueToSum: 1)
             AppEventsLogger.log(ratedRecipeEvent)
-        }
+        } 
         
         recipeDetailVC.didSubmitReview = true
         pointAdder(numberOfPoints: 10)

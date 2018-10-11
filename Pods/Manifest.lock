@@ -1,7 +1,7 @@
 PODS:
-  - Alamofire (4.5.1)
+  - Alamofire (4.7.3)
   - AMProgressBar (0.1.0)
-  - Arrow (3.0.5)
+  - Arrow (4.2.0)
   - Bolts (1.9.0):
     - Bolts/AppLinks (= 1.9.0)
     - Bolts/Tasks (= 1.9.0)
@@ -33,62 +33,83 @@ PODS:
     - FBSDKCoreKit
   - FBSDKShareKit (4.29.0):
     - FBSDKCoreKit
-  - Firebase/Auth (4.8.0):
-    - Firebase/Core
-    - FirebaseAuth (= 4.4.1)
-  - Firebase/Core (4.8.0):
-    - FirebaseAnalytics (= 4.0.5)
-    - FirebaseCore (= 4.0.13)
-  - Firebase/Database (4.8.0):
-    - Firebase/Core
-    - FirebaseDatabase (= 4.1.3)
-  - Firebase/Messaging (4.8.0):
-    - Firebase/Core
-    - FirebaseMessaging (= 2.0.8)
-  - Firebase/Storage (4.8.0):
-    - Firebase/Core
-    - FirebaseStorage (= 2.1.1)
-  - FirebaseAnalytics (4.0.5):
-    - FirebaseCore (~> 4.0)
-    - FirebaseInstanceID (~> 2.0)
-    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
+  - Firebase/Auth (5.10.0):
+    - Firebase/CoreOnly
+    - FirebaseAuth (= 5.0.4)
+  - Firebase/Core (5.10.0):
+    - Firebase/CoreOnly
+    - FirebaseAnalytics (= 5.2.0)
+  - Firebase/CoreOnly (5.10.0):
+    - FirebaseCore (= 5.1.5)
+  - Firebase/Database (5.10.0):
+    - Firebase/CoreOnly
+    - FirebaseDatabase (= 5.0.3)
+  - Firebase/Messaging (5.10.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (= 3.2.0)
+  - Firebase/Storage (5.10.0):
+    - Firebase/CoreOnly
+    - FirebaseStorage (= 3.0.2)
+  - FirebaseAnalytics (5.2.0):
+    - FirebaseCore (~> 5.1)
+    - FirebaseInstanceID (~> 3.2)
+    - GoogleAppMeasurement (~> 5.2)
+    - GoogleUtilities/AppDelegateSwizzler (~> 5.2)
+    - GoogleUtilities/MethodSwizzler (~> 5.2)
+    - GoogleUtilities/Network (~> 5.2)
+    - "GoogleUtilities/NSData+zlib (~> 5.2)"
     - nanopb (~> 0.3)
-  - FirebaseAuth (4.4.1):
-    - FirebaseAnalytics (~> 4.0)
-    - "GoogleToolboxForMac/NSDictionary+URLArguments (~> 2.1)"
+  - FirebaseAuth (5.0.4):
+    - FirebaseAuthInterop (~> 1.0)
+    - FirebaseCore (~> 5.0)
+    - GoogleUtilities/Environment (~> 5.2)
     - GTMSessionFetcher/Core (~> 1.1)
-  - FirebaseCore (4.0.13):
-    - "GoogleToolboxForMac/NSData+zlib (~> 2.1)"
-  - FirebaseDatabase (4.1.3):
-    - FirebaseAnalytics (~> 4.0)
-    - FirebaseCore (~> 4.0)
+  - FirebaseAuthInterop (1.0.0)
+  - FirebaseCore (5.1.5):
+    - GoogleUtilities/Logger (~> 5.2)
+  - FirebaseDatabase (5.0.3):
+    - FirebaseCore (~> 5.0)
     - leveldb-library (~> 1.18)
-  - FirebaseInstanceID (2.0.8):
-    - FirebaseCore (~> 4.0)
-  - FirebaseMessaging (2.0.8):
-    - FirebaseAnalytics (~> 4.0)
-    - FirebaseCore (~> 4.0)
-    - FirebaseInstanceID (~> 2.0)
-    - GoogleToolboxForMac/Logger (~> 2.1)
+  - FirebaseInstanceID (3.2.2):
+    - FirebaseCore (~> 5.1)
+    - GoogleUtilities/Environment (~> 5.3)
+    - GoogleUtilities/UserDefaults (~> 5.3)
+  - FirebaseMessaging (3.2.0):
+    - FirebaseCore (~> 5.0)
+    - FirebaseInstanceID (~> 3.0)
+    - GoogleUtilities/Environment (~> 5.2)
+    - GoogleUtilities/Reachability (~> 5.2)
     - Protobuf (~> 3.1)
-  - FirebaseStorage (2.1.1):
-    - FirebaseAnalytics (~> 4.0)
-    - FirebaseCore (~> 4.0)
+  - FirebaseStorage (3.0.2):
+    - FirebaseAuthInterop (~> 1.0)
+    - FirebaseCore (~> 5.0)
     - GTMSessionFetcher/Core (~> 1.1)
-  - GoogleToolboxForMac/DebugUtils (2.1.3):
-    - GoogleToolboxForMac/Defines (= 2.1.3)
-  - GoogleToolboxForMac/Defines (2.1.3)
-  - GoogleToolboxForMac/Logger (2.1.3):
-    - GoogleToolboxForMac/Defines (= 2.1.3)
-  - "GoogleToolboxForMac/NSData+zlib (2.1.3)":
-    - GoogleToolboxForMac/Defines (= 2.1.3)
-  - "GoogleToolboxForMac/NSDictionary+URLArguments (2.1.3)":
-    - GoogleToolboxForMac/DebugUtils (= 2.1.3)
-    - GoogleToolboxForMac/Defines (= 2.1.3)
-    - "GoogleToolboxForMac/NSString+URLArguments (= 2.1.3)"
-  - "GoogleToolboxForMac/NSString+URLArguments (2.1.3)"
+  - GoogleAppMeasurement (5.2.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 5.2)
+    - GoogleUtilities/MethodSwizzler (~> 5.2)
+    - GoogleUtilities/Network (~> 5.2)
+    - "GoogleUtilities/NSData+zlib (~> 5.2)"
+    - nanopb (~> 0.3)
+  - GoogleUtilities/AppDelegateSwizzler (5.3.1):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+  - GoogleUtilities/Environment (5.3.1)
+  - GoogleUtilities/Logger (5.3.1):
+    - GoogleUtilities/Environment
+  - GoogleUtilities/MethodSwizzler (5.3.1):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/Network (5.3.1):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (5.3.1)"
+  - GoogleUtilities/Reachability (5.3.1):
+    - GoogleUtilities/Logger
+  - GoogleUtilities/UserDefaults (5.3.1):
+    - GoogleUtilities/Logger
   - GSKStretchyHeaderView (1.0.4)
-  - GTMSessionFetcher/Core (1.1.12)
+  - GTMSessionFetcher/Core (1.2.0)
   - Hero (1.0.1)
   - leveldb-library (1.20)
   - nanopb (0.3.8):
@@ -97,18 +118,18 @@ PODS:
   - nanopb/decode (0.3.8)
   - nanopb/encode (0.3.8)
   - Popover (1.2.0)
-  - Protobuf (3.5.0)
+  - Protobuf (3.6.1)
   - RKPieChart (0.0.1)
   - RSKImageCropper (2.0.0)
   - SteviaLayout (4.2.0)
   - SVProgressHUD (2.2.2)
   - SwiftySound (1.0.0)
   - TagCellLayout (1.0)
-  - thenPromise (4.0.0)
-  - ws (3.1.0):
-    - Alamofire (~> 4.5.1)
-    - Arrow (~> 3.0.5)
-    - thenPromise (~> 4.0.0)
+  - thenPromise (4.2.0)
+  - ws (3.2.0):
+    - Alamofire (~> 4.7.3)
+    - Arrow (~> 4.2.0)
+    - thenPromise (~> 4.2.0)
 
 DEPENDENCIES:
   - AMProgressBar
@@ -137,7 +158,7 @@ DEPENDENCIES:
   - ws (from `https://github.com/freshOS/ws`)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
     - Alamofire
     - AMProgressBar
     - Arrow
@@ -156,12 +177,14 @@ SPEC REPOS:
     - Firebase
     - FirebaseAnalytics
     - FirebaseAuth
+    - FirebaseAuthInterop
     - FirebaseCore
     - FirebaseDatabase
     - FirebaseInstanceID
     - FirebaseMessaging
     - FirebaseStorage
-    - GoogleToolboxForMac
+    - GoogleAppMeasurement
+    - GoogleUtilities
     - GSKStretchyHeaderView
     - GTMSessionFetcher
     - Hero
@@ -187,13 +210,13 @@ CHECKOUT OPTIONS:
     :commit: c8a143743b0761606fd36872808ea239c0215a60
     :git: https://github.com/riteshhgupta/TagCellLayout.git
   ws:
-    :commit: 7c56bcbd57c6f385b9b0b2b3e2d9c3631dbd90bd
+    :commit: a822db072a5b142b79183ac3202bc5de08611071
     :git: https://github.com/freshOS/ws
 
 SPEC CHECKSUMS:
-  Alamofire: 2d95912bf4c34f164fdfc335872e8c312acaea4a
+  Alamofire: c7287b6e5d7da964a70935e5db17046b7fde6568
   AMProgressBar: 3f4671c4af4cb4fc9864ddc0a688450c8c7d1561
-  Arrow: b696d6173296da330d1a995019db42f693249cd6
+  Arrow: 7a8fd8f47b3f584ddeac1b783f1f230d183d21a7
   Bolts: ac6567323eac61e203f6a9763667d0f711be34c8
   CodableFirebase: 8310f6336b2f6aba70b023389bee2a104b6a9033
   Cosmos: a6dbd3d0baa0cc8f51f8598f7508d5a09d0a9ade
@@ -206,31 +229,33 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: 6f139173dc63a1deaff4430a55f2fe5bb222d2af
   FBSDKLoginKit: 56a057ca6822535ea0faa25f57a7c41edb697fd4
   FBSDKShareKit: 18a2cd118aef11dd657fe7e8b64bae5c719088b2
-  Firebase: 710decbbc6d9d48530e9a5dba3209740c3532e05
-  FirebaseAnalytics: 5b02a63ead2c3f0259cfc7f15e053e440587ecf8
-  FirebaseAuth: dc0dd403beca5b2b016aac89c2d0b8dad1c81926
-  FirebaseCore: 3c02ec652db3d03fdc8bc6d9154af3e20d64b6f5
-  FirebaseDatabase: 7088bfc4af2cc00231bb36e1404fc2d7509eb4dc
-  FirebaseInstanceID: 81df5805a08001e69138664bdd02c6719a9ac80f
-  FirebaseMessaging: dfdcd307c2382290a1e297a81d0f18370f5b1bcd
-  FirebaseStorage: ab08d1c93a2feffa038fdd6693088b310ab1e6c6
-  GoogleToolboxForMac: 2501e2ad72a52eb3dfe7bd9aee7dad11b858bd20
+  Firebase: 6691d47562a780c26281ce8464518faafc90c610
+  FirebaseAnalytics: 831f1f127f4a75698e9875a87bf7e2668730d953
+  FirebaseAuth: 504b198ceb3472dca5c65bb95544ea44cfc9439e
+  FirebaseAuthInterop: 0ffa57668be100582bb7643d4fcb7615496c41fc
+  FirebaseCore: c6079de64c1a87000e52e9b408dddcadc901177f
+  FirebaseDatabase: e2bcbc106adc4b11a2da3ec2eb63c0c4a44f2f54
+  FirebaseInstanceID: 78ba376fcd5b94c001f9999b2cbd3d1f1e56e78d
+  FirebaseMessaging: 000b32447b461b34b6b912b23ec11be20b503b5b
+  FirebaseStorage: fd82e5e5c474897e19972b34b22ac0f589dce04e
+  GoogleAppMeasurement: 2b3a023a61239c8d002e6e4fcf4abce8eddce0e0
+  GoogleUtilities: e18bfddeb9e93419a04865d4f01722c4d5b014d9
   GSKStretchyHeaderView: 9743704c12bdc9cf7c7947bad3af8bf24f7061e3
-  GTMSessionFetcher: ebaa1f79a5366922c1735f1566901f50beba23b7
+  GTMSessionFetcher: 0c4baf0a73acd0041bf9f71ea018deedab5ea84e
   Hero: cee286821578e170d8c0c9c9cda7897357401112
   leveldb-library: 08cba283675b7ed2d99629a4bc5fd052cd2bb6a5
   nanopb: 5601e6bca2dbf1ed831b519092ec110f66982ca3
   Popover: 28c1ac8e937ab2b3965bd2da7dd18324357abc41
-  Protobuf: 8a9838fba8dae3389230e1b7f8c104aa32389c03
+  Protobuf: 1eb9700044745f00181c136ef21b8ff3ad5a0fd5
   RKPieChart: 8e643c505d24e61574f3a2fd6bd807403840b24b
   RSKImageCropper: d9a1acbc0600bf8decc8f0d21895872c99a9e4cf
   SteviaLayout: 0d2112caea45707695e8c718262c8ea3dd37ef17
   SVProgressHUD: 59b2d3dabacbd051576d21d32293ca7228dc18b0
   SwiftySound: b9c3370956fd4ed65ed79d45563070077a50a2cd
   TagCellLayout: 2a6e3f022bb85a5fe8ccc71762d2e8ab1bbfd8a3
-  thenPromise: 7093eaa2d2da9fef15240ccc48a213dc2e7befb1
-  ws: b4ba7990810def956eab2af2b97a85646b164fe2
+  thenPromise: e46ebb9a45c23cbaa681eeeee3f59929a21c639d
+  ws: 787f706d9533a7f63eab9916fa38bc05f71c4917
 
-PODFILE CHECKSUM: 3ee54f8630914ad7588805ae4e29cf2d6b2cfeb9
+PODFILE CHECKSUM: 269c4983e88ed265ca51115aa3a9cd0f892c7b17
 
-COCOAPODS: 1.5.0
+COCOAPODS: 1.5.3

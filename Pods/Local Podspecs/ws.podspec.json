@@ -1,6 +1,6 @@
 {
   "name": "ws",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "summary": "Elegant JSON WebService for Swift ☁️",
   "homepage": "https://github.com/freshOS/ws",
   "license": {
@@ -10,7 +10,7 @@
   "authors": "S4cha",
   "source": {
     "git": "https://github.com/freshOS/ws.git",
-    "tag": "3.1.0"
+    "tag": "3.2.0"
   },
   "social_media_url": "https://twitter.com/sachadso",
   "platforms": {
@@ -20,13 +20,13 @@
   "frameworks": "Foundation",
   "dependencies": {
     "Arrow": [
-      "~> 3.0.5"
+      "~> 4.2.0"
     ],
     "thenPromise": [
-      "~> 4.0.0"
+      "~> 4.2.0"
     ],
     "Alamofire": [
-      "~> 4.5.1"
+      "~> 4.7.3"
     ]
   },
   "description": "Elegant JSON WebService for Swift - Stop writing boilerplate JSON webservice code and focus on your awesome App instead"

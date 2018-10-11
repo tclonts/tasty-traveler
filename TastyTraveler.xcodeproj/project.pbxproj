@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A7BDF9C216ED08A00E09935 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0A7BDF9B216ED08A00E09935 /* GoogleService-Info.plist */; };
 		0B8E4AF661AB1469B5814402 /* Pods_TastyTraveler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */; };
 		2A0B4DF7205988510056F7D5 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0B4DF6205988510056F7D5 /* Constants.swift */; };
 		2A0B4E012059979B0056F7D5 /* FavoritesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0B4E002059979B0056F7D5 /* FavoritesVC.swift */; };
@@ -66,7 +67,6 @@
 		2A76AA86208A72390030BE8F /* TagsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A76AA85208A72390030BE8F /* TagsSection.swift */; };
 		2A76AA88208F83320030BE8F /* FilterStatusCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A76AA87208F83320030BE8F /* FilterStatusCell.swift */; };
 		2A784E522049BFFC00A47C16 /* GoogleService-Info-Dev.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A784E512049BFFC00A47C16 /* GoogleService-Info-Dev.plist */; };
-		2A784E542049C00500A47C16 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2A784E532049C00500A47C16 /* GoogleService-Info.plist */; };
 		2A805AE42049BF45004BEEF3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A805AE32049BF45004BEEF3 /* AppDelegate.swift */; };
 		2A805AE92049BF45004BEEF3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A805AE72049BF45004BEEF3 /* Main.storyboard */; };
 		2A805AEE2049BF45004BEEF3 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A805AEC2049BF45004BEEF3 /* LaunchScreen.storyboard */; };
@@ -114,6 +114,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0A7BDF9B216ED08A00E09935 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2A0B4DF6205988510056F7D5 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2A0B4E002059979B0056F7D5 /* FavoritesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesVC.swift; sourceTree = "<group>"; };
 		2A0B4E042059A6BA0056F7D5 /* HomeVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeVC.swift; sourceTree = "<group>"; };
@@ -172,7 +173,6 @@
 		2A76AA85208A72390030BE8F /* TagsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsSection.swift; sourceTree = "<group>"; };
 		2A76AA87208F83320030BE8F /* FilterStatusCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterStatusCell.swift; sourceTree = "<group>"; };
 		2A784E512049BFFC00A47C16 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
-		2A784E532049C00500A47C16 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2A805AE02049BF45004BEEF3 /* TastyTraveler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TastyTraveler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A805AE32049BF45004BEEF3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A805AE82049BF45004BEEF3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -495,7 +495,7 @@
 				2A665ACE206C16890014A464 /* Helpers */,
 				2A8133C8205067ED0009016B /* TastyTraveler.entitlements */,
 				2A805AEF2049BF45004BEEF3 /* Info.plist */,
-				2A784E532049C00500A47C16 /* GoogleService-Info.plist */,
+				0A7BDF9B216ED08A00E09935 /* GoogleService-Info.plist */,
 				2A784E512049BFFC00A47C16 /* GoogleService-Info-Dev.plist */,
 				2A54A96D2051915A008255A9 /* Images.xcassets */,
 				2A54A95E205076EF008255A9 /* Fonts */,
@@ -638,7 +638,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Michael Bart";
 				TargetAttributes = {
 					2A805ADF2049BF45004BEEF3 = {
@@ -679,8 +679,8 @@
 				2A54A96E2051915A008255A9 /* Images.xcassets in Resources */,
 				2A805AEE2049BF45004BEEF3 /* LaunchScreen.storyboard in Resources */,
 				2A784E522049BFFC00A47C16 /* GoogleService-Info-Dev.plist in Resources */,
-				2A784E542049C00500A47C16 /* GoogleService-Info.plist in Resources */,
 				2A54A967205076FB008255A9 /* proximanova-regularitalic-webfont.ttf in Resources */,
+				0A7BDF9C216ED08A00E09935 /* GoogleService-Info.plist in Resources */,
 				2AC67E2D2087B36A00C0E828 /* states.json in Resources */,
 				2A54A968205076FB008255A9 /* proximanova-semibold-webfont.ttf in Resources */,
 				2A54424F20D86F3900727BFA /* tada.mp3 in Resources */,
@@ -746,7 +746,7 @@
 				"${BUILT_PRODUCTS_DIR}/FacebookShare/FacebookShare.framework",
 				"${BUILT_PRODUCTS_DIR}/GSKStretchyHeaderView/GSKStretchyHeaderView.framework",
 				"${BUILT_PRODUCTS_DIR}/GTMSessionFetcher/GTMSessionFetcher.framework",
-				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/Hero/Hero.framework",
 				"${BUILT_PRODUCTS_DIR}/Popover/Popover.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
@@ -778,7 +778,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FacebookShare.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GSKStretchyHeaderView.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GTMSessionFetcher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Hero.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Popover.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
@@ -935,6 +935,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -942,6 +943,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -992,6 +994,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -999,6 +1002,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -1037,11 +1041,11 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 2ZW3J63YB5;
+				DEVELOPMENT_TEAM = DJ9Q6RC5SN;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KevinWoodsDevelopment.KevinWood.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;
@@ -1057,11 +1061,11 @@
 				CODE_SIGN_ENTITLEMENTS = TastyTraveler/TastyTraveler.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2ZW3J63YB5;
+				DEVELOPMENT_TEAM = DJ9Q6RC5SN;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.KevinWoodsDevelopment.KevinWood.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;

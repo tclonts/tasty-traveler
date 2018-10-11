@@ -104,6 +104,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        print("Registering")
         Messaging.messaging().apnsToken = deviceToken
         FirebaseController.shared.saveToken()
     }

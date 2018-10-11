@@ -105,7 +105,7 @@ public func <-- <T: RawRepresentable>(left: inout T, right: JSON?) {
 /// Parses optional enums.
 public func <-- <T: RawRepresentable>(left: inout T?, right: JSON?) {
     var temp: T.RawValue? = nil
-    parseType(&temp, right:right)
+    parseType(&temp, right: right)
     if let t = temp, let e = T.init(rawValue: t) {
         left = e
     }
@@ -139,7 +139,7 @@ public func <-- <T: ArrowParsable>(left: inout T?, right: JSON?) {
 
 /// Parses arrays of user defined custom types.
 public func <-- <T: ArrowParsable>(left: inout [T], right: JSON?) {
-    setLeftIfIsResultNonNil(left:&left, right:right, function: <--)
+    setLeftIfIsResultNonNil(left: &left, right: right, function: <--)
 }
 
 /// Parses optional arrays of user defined custom types.
@@ -223,14 +223,14 @@ public func <-- (left: inout URL?, right: JSON?) {
     str <-- right
     let set = CharacterSet.urlQueryAllowed
     if let escapedStr = str.addingPercentEncoding(withAllowedCharacters: set),
-        let url = URL(string:escapedStr) {
+        let url = URL(string: escapedStr) {
         left = url
     }
 }
 
 /// Parses arrays of plain swift types.
 public func <-- <T>(left: inout [T], right: JSON?) {
-    setLeftIfIsResultNonNil(left:&left, right:right, function: <--)
+    setLeftIfIsResultNonNil(left: &left, right: right, function: <--)
 }
 
 /// Parses optional arrays of plain swift types.
@@ -244,12 +244,12 @@ public func <-- <T>(left: inout [T]?, right: JSON?) {
 }
 
 /// Parses dictionaries of plain swift types.
-public func <-- <K: Hashable, V>(left: inout [K: V], right: JSON?) {
+public func <-- <K, V>(left: inout [K: V], right: JSON?) {
     setLeftIfIsResultNonNil(left: &left, right: right, function: <--)
 }
 
 /// Parses optional dictionaries of plain swift types.
-public func <-- <K: Hashable, V>(left: inout [K: V]?, right: JSON?) {
+public func <-- <K, V>(left: inout [K: V]?, right: JSON?) {
     if let d = right?.data as? [AnyHashable: Any] {
         var tmp: [K: V] = [:]
         d.forEach {
@@ -269,7 +269,13 @@ func parseType<T>(_ left: inout T?, right: JSON?) {
     if let v: T = right?.data as? T {
         left = v
     } else if let s = right?.data as? String {
-        parseString(&left, string:s)
+        parseString(&left, string: s)
+    } else if T.self == Float.self {
+        // Sepcial case for Float that
+        // no longer works out of the box in Swift 4.1
+        if let v = right?.data as? Double, let l = Float(v) as? T {
+            left = l
+        }
     }
 }
 
