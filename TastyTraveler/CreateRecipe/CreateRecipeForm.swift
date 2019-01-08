@@ -24,6 +24,7 @@ class CreateRecipeForm: UIView {
     
     let photoImageView: CustomImageView = {
         let imageView = CustomImageView()
+        imageView.image = #imageLiteral(resourceName: "KeyLimePie")
         imageView.isHidden = true
         return imageView
     }()
@@ -666,12 +667,12 @@ class CreateRecipeForm: UIView {
         
         self.recipeNameTextInputView.textView.text = self.recipeNameTextInputView.textView.text.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        if hasErrors() {
-            let ac = UIAlertController(title: nil, message: "Missing required fields.", preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: nil))
-            createRecipeVC?.present(ac, animated: true, completion: nil)
-            return
-        }
+//        if hasErrors() {
+//            let ac = UIAlertController(title: nil, message: "Missing required fields.", preferredStyle: .alert)
+//            ac.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: nil))
+//            createRecipeVC?.present(ac, animated: true, completion: nil)
+//            return
+//        }
         
         self.createRecipeVC?.submitRecipe()
     }

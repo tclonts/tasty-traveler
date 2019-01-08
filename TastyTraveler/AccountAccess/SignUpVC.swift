@@ -541,15 +541,13 @@ class SignUpVC: UIViewController, UITextFieldDelegate {
                                     "text": "Hello \(username), Thank you so much for joining tasty traveler where cooks like yourself create recipes for the whole world. \n\nWe want to be brief and promise we will never flood your emails with scam, we will always be free and you can reach out to us here in this comment section with any questions. \n\nBefore we go, Question of the day. What is your favorite dessert?",
             "unread": true]
         
-        childRef.updateChildValues(values) { (error, ref) in
+        childRef.setValue(values) { (error, ref) in
             if let error = error { print(error); return }
             
-            let userMessagesRef = FirebaseController.shared.ref.child("userMessages").child(fromID).child(toID)
             let messageID = childRef.key
-            userMessagesRef.updateChildValues([messageID: true])
+            FirebaseController.shared.ref.child("userMessages/\(fromID)/\(toID)").childByAutoId().setValue([messageID: true])
             
-            let recipientUserMessagesRef = FirebaseController.shared.ref.child("userMessages").child(toID).child(fromID)
-            recipientUserMessagesRef.updateChildValues([messageID: true])
+            FirebaseController.shared.ref.child("userMessages/\(toID)/\(fromID)").childByAutoId().setValue([messageID:true])
         }
     }
     

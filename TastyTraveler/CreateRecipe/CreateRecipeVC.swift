@@ -159,7 +159,7 @@ class CreateRecipeVC: UIViewController {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
             
-            var points = user.points
+            let points = user.points
             let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
             FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
             
@@ -361,12 +361,12 @@ class CreateRecipeVC: UIViewController {
             guard let latitude = ac.textFields![0].text else { return }
             guard let longitude = ac.textFields![1].text else { return }
             
-            guard let photo = self.formView.photoImageView.image else { return }
-            guard let name = self.formView.recipeNameTextInputView.textView.text else { return }
-            guard let servings = self.servings else { return }
-            guard let timeInMinutes = self.timeInMinutes else { return }
-            guard let difficulty = self.formView.difficultyControl.titleForSegment(at: self.formView.difficultyControl.selectedSegmentIndex) else { return }
-            guard let mealType = self.formView.mealTypeButton.titleLabel?.text else { return }
+//            guard let photo = self.formView.photoImageView.image else { return }
+//            guard let name = self.formView.recipeNameTextInputView.textView.text else { return }
+//            guard let servings = self.servings else { return }
+//            guard let timeInMinutes = self.timeInMinutes else { return }
+//            guard let difficulty = self.formView.difficultyControl.titleForSegment(at: self.formView.difficultyControl.selectedSegmentIndex) else { return }
+//            guard let mealType = self.formView.mealTypeButton.titleLabel?.text else { return }
             
             var steps = self.stepsDataSource.steps
             
@@ -400,18 +400,38 @@ class CreateRecipeVC: UIViewController {
                 return
             }
             
-            let servingsInt = Int(servings)
-            let timeInMinutesInt = Int(timeInMinutes)
+//            let servingsInt = Int(servings)
+//            let timeInMinutesInt = Int(timeInMinutes)
             
-            var recipeDictionary: [String:Any] = [Recipe.photoKey: self.resize(photo),
-                                                  Recipe.nameKey: name,
-                                                  Recipe.creatorIDKey: Auth.auth().currentUser!.uid,
-                                                  Recipe.servingsKey: servingsInt!,
-                                                  Recipe.timeInMinutesKey: timeInMinutesInt!,
-                                                  Recipe.difficultyKey: difficulty,
-                                                  Recipe.ingredientsKey: ingredients,
-                                                  Recipe.stepsKey: steps,
-                                                  Recipe.mealKey: mealType]
+//            var recipeDictionary: [String:Any] = [Recipe.photoKey: self.resize(photo),
+//                                                  Recipe.nameKey: name,
+//                                                  Recipe.creatorIDKey: Auth.auth().currentUser!.uid,
+//                                                  Recipe.servingsKey: servingsInt!,
+//                                                  Recipe.timeInMinutesKey: timeInMinutesInt!,
+//                                                  Recipe.difficultyKey: difficulty,
+//                                                  Recipe.ingredientsKey: ingredients,
+//                                                  Recipe.stepsKey: steps,
+            //                                                  Recipe.mealKey: mealType]
+            
+            let ingredientList: [String] = ["1 (9 inch) prepared graham cracker crust",
+                                         "3 cups sweetened condensed milk",
+                                         "1/2 cup sour cream",
+                                         "3/4 cup key lime juice",
+                                         "1 tablespoon grated lime zest"]
+            
+            let stepList: [String] = ["Preheat oven to 350 degrees F (175 degrees C).",
+                                      "In a medium bowl, combine condensed milk, sour cream, lime juice, and lime rind. Mix well and pour into graham cracker crust.",
+                                      "Bake in preheated oven for 5 to 8 minutes, until tiny pinhole bubbles burst on the surface of pie. DO NOT BROWN! Chill pie thoroughly before serving. Garnish with lime slices and whipped cream if desired."]
+            
+            var recipeDictionary: [String:Any] = [Recipe.photoKey: self.resize(#imageLiteral(resourceName: "KeyLimePie")),
+                                                   Recipe.nameKey: "Key Lime Pie",
+                                                   Recipe.creatorIDKey: Auth.auth().currentUser!.uid,
+                                                   Recipe.servingsKey: 8,
+                                                   Recipe.timeInMinutesKey: 55,
+                                                   Recipe.difficultyKey: "Easy",
+                                                   Recipe.ingredientsKey: ingredientList,
+                                                   Recipe.stepsKey: stepList,
+                                                   Recipe.mealKey: "Dessert"]
             
             if let descriptionText = self.formView.descriptionTextInputView.textView.text {
                 if descriptionText != "" && descriptionText != "Give your recipe a description..." {

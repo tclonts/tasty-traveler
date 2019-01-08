@@ -4,6 +4,21 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+exports.resetBadges = functions.https.onRequest(function(req, res){
+
+  return admin.database()
+  .ref('users')
+  .once('value', snapshot => {
+    const users = snapshot.val();
+
+    Object.keys(users).forEach(function(key){
+        
+        return admin.database()
+        .ref('/users/' + key + '/unreadMessagesCount/').set(0);
+    })
+  });
+});
+
 exports.observeWrittenReview = functions.database
   .ref('/reviews/{reviewID}/text')
   .onCreate((change, context) => {

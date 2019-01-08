@@ -36,11 +36,16 @@ class FirebaseController {
         
         userMessagesRef.observe(.childAdded) { (snapshot) in
             let userID = snapshot.key
-            userMessagesRef.child(userID).observe(.childAdded, with: { (snapshot) in
-                
-                let messageID = snapshot.key
-                self.fetchMessage(withID: messageID)
-            })
+            if userID != "appMessages"{
+                userMessagesRef.child(userID).observe(.childAdded, with: { (snapshot) in
+                    if let dictionary = snapshot.value as? [String:Any] {
+                        dictionary.forEach({ (key, _) in
+                            let messageID = key
+                            self.fetchMessage(withID: messageID)
+                        })
+                    }
+                })
+            }
         }
         
         userMessagesRef.observe(.childRemoved) { (snapshot) in
@@ -194,9 +199,7 @@ class FirebaseController {
             }
             
             if let result = result {
-                print("Token: \(result.token)")
                 Database.database().reference().child("users/\(uid)").updateChildValues(["notificationToken": result.token])
-//                self.ref.child("users").child(uid).updateChildValues(["notificationToken": result.token])
             }
         })
     }
@@ -490,15 +493,6 @@ class FirebaseController {
         SVProgressHUD.dismiss(withDelay: 0.5)
     }
     
-    func updateRecipe(dictionary: [String:Any], uid: String) {
-        guard Auth.auth().currentUser != nil else { return }
-        
-    }
-    
-    
-func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
-    
-}
 //    func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
 //        guard let currentUser = Auth.auth().currentUser else { return }
 //
@@ -509,85 +503,115 @@ func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
 //        let thumbnailFileRef = storageRef.child("thumbnails/\(recipeID)")
 //        let videoFileRef = storageRef.child("videos/\(recipeID)")
 //
-//        let _ = imageFileRef.putData(localData, metadata: nil) { (metadata, error) in
-//            guard let metadata = metadata else { return }
+//        let metadata = StorageMetadata()
+//        metadata.contentType = "image/png"
 //
-//            guard let photoURL = metadata.downloadURL()?.absoluteString else { print("no download url"); return }
-//
-//            let timestamp = timestamp ?? Date().timeIntervalSince1970
-//
-//            let recipeName = dictionary[Recipe.nameKey] as! String
-//
-//            var dictionaryToUpload: [String:Any] = [Recipe.nameKey: recipeName,
-//                                                    "timestamp": timestamp,
-//                                                    Recipe.photoURLKey: photoURL,
-//                                                    Recipe.creatorIDKey: currentUser.uid,
-//                                                    Recipe.servingsKey: dictionary[Recipe.servingsKey] as! Int,
-//                                                    Recipe.timeInMinutesKey: dictionary[Recipe.timeInMinutesKey] as! Int,
-//                                                    Recipe.difficultyKey: dictionary[Recipe.difficultyKey] as! String,
-//                                                    Recipe.ingredientsKey: dictionary[Recipe.ingredientsKey] as! [String],
-//                                                    Recipe.stepsKey: dictionary[Recipe.stepsKey] as! [String],
-//                                                    Recipe.mealKey: dictionary[Recipe.mealKey] as! String]
-//
-//            if let tags = dictionary[Recipe.tagsKey] as? [String] {
-//                dictionaryToUpload[Recipe.tagsKey] = tags
-//            }
-//
-//            if let description = dictionary[Recipe.descriptionKey] as? String {
-//                dictionaryToUpload[Recipe.descriptionKey] = description
-//            }
-//
-//            if let countryCode = dictionary[Recipe.countryCodeKey] as? String, let locality = dictionary[Recipe.localityKey] as? String {
-//                dictionaryToUpload[Recipe.countryCodeKey] = countryCode
-//                dictionaryToUpload[Recipe.localityKey] = locality
-//                dictionaryToUpload[Recipe.countryKey] = dictionary[Recipe.countryKey]
-//                dictionaryToUpload["longitude"] = dictionary["longitude"]
-//                dictionaryToUpload["latitude"] = dictionary["latitude"]
-//
-//                self.ref.child("localities").updateChildValues([locality: true])
-//                self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).updateChildValues(["countryCode": countryCode])
-//                self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).child("recipes").child(recipeID).setValue(true)
-//            }
-//
-//            self.ref.child("recipes").child(recipeID).updateChildValues(dictionaryToUpload)
-//
-//            self.ref.child("users").child(currentUser.uid).child("uploadedRecipes").child(recipeID).setValue(true)
-//
-//            NotificationCenter.default.post(Notification(name: Notification.Name("RecipeUploaded")))
-//
-//            if uid == nil {
-//                Analytics.logEvent("recipe_uploaded", parameters: ["username": Auth.auth().currentUser!.displayName!, "userID": Auth.auth().currentUser!.uid])
-//
-//                let uploadedRecipeEvent = AppEvent(name: "uploaded-recipe", parameters: ["userID": Auth.auth().currentUser!.uid], valueToSum: 1)
-//                AppEventsLogger.log(uploadedRecipeEvent)
-//            }
-//
-//            //            if let firstRecipeUploaded = UserDefaults.standard.object(forKey: "firstRecipeUploaded") as? Bool {
-//            //                print("First recipe has already been uploaded: \(firstRecipeUploaded)")
-//            //
-//            //                let string = uid == nil ? "Recipe uploaded" : "Recipe updated"
-//            //                SVProgressHUD.showSuccess(withStatus: string)
-//            //                SVProgressHUD.dismiss(withDelay: 0.5)
-//            //            }
-//
-//            if let videoURL = dictionary[Recipe.videoURLKey] as? URL {
-//                let _ = videoFileRef.putFile(from: videoURL, metadata: nil) { (videoMetadata, error) in
-//                    guard let videoMetadata = videoMetadata else { return }
-//                    guard let uploadedVideoURL = videoMetadata.downloadURL()?.absoluteString else { print("no video download url"); return }
-//
-//                    let thumbnailData = dictionary[Recipe.thumbnailURLKey] as! Data
-//                    let _ = thumbnailFileRef.putData(thumbnailData, metadata: nil, completion: { (thumbnailMetadata, error) in
-//                        guard let thumbnailMetadata = thumbnailMetadata else { return }
-//                        guard let thumbnailURL = thumbnailMetadata.downloadURL()?.absoluteString else { print("no thumbnail download url"); return }
-//
-//                        self.ref.child("recipes").child(recipeID).updateChildValues([Recipe.thumbnailURLKey: thumbnailURL])
-//                    })
-//
-//                    self.ref.child("recipes").child(recipeID).updateChildValues([Recipe.videoURLKey: uploadedVideoURL])
-//                }
-//            }
-//        }
+//        let
 //    }
+    
+    func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
+        guard let currentUser = Auth.auth().currentUser else { return }
+        
+        guard let localData = dictionary[Recipe.photoKey] as? Data else { return }
+        
+        let recipeID = uid ?? UUID().uuidString
+        let imageFileRef = storageRef.child("images/\(recipeID)")
+        let thumbnailFileRef = storageRef.child("thumbnails/\(recipeID)")
+        let videoFileRef = storageRef.child("videos/\(recipeID)")
+        
+        let _ = imageFileRef.putData(localData, metadata: nil) { (metadata, error) in
+            guard let metadata = metadata else { return }
+            
+            imageFileRef.downloadURL(completion: { (url, error) in
+                if let error = error {
+                    print("Error getting image URLs: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let photoURL = url {
+                    let timestamp = timestamp ?? Date().timeIntervalSince1970
+                    
+                    let recipeName = dictionary[Recipe.nameKey] as! String
+                    
+                    var dictionaryToUpload: [String:Any] = [Recipe.nameKey: recipeName,
+                                                            "timestamp": timestamp,
+                                                            Recipe.photoURLKey: photoURL.absoluteString,
+                                                            Recipe.creatorIDKey: currentUser.uid,
+                                                            Recipe.servingsKey: dictionary[Recipe.servingsKey] as! Int,
+                                                            Recipe.timeInMinutesKey: dictionary[Recipe.timeInMinutesKey] as! Int,
+                                                            Recipe.difficultyKey: dictionary[Recipe.difficultyKey] as! String,
+                                                            Recipe.ingredientsKey: dictionary[Recipe.ingredientsKey] as! [String],
+                                                            Recipe.stepsKey: dictionary[Recipe.stepsKey] as! [String],
+                                                            Recipe.mealKey: dictionary[Recipe.mealKey] as! String]
+                    
+                    if let tags = dictionary[Recipe.tagsKey] as? [String] {
+                        dictionaryToUpload[Recipe.tagsKey] = tags
+                    }
+                    
+                    if let description = dictionary[Recipe.descriptionKey] as? String {
+                        dictionaryToUpload[Recipe.descriptionKey] = description
+                    }
+                    
+                    if let countryCode = dictionary[Recipe.countryCodeKey] as? String, let locality = dictionary[Recipe.localityKey] as? String {
+                        dictionaryToUpload[Recipe.countryCodeKey] = countryCode
+                        dictionaryToUpload[Recipe.localityKey] = locality
+                        dictionaryToUpload[Recipe.countryKey] = dictionary[Recipe.countryKey]
+                        dictionaryToUpload["longitude"] = dictionary["longitude"]
+                        dictionaryToUpload["latitude"] = dictionary["latitude"]
+                        
+                        self.ref.child("localities").updateChildValues([locality: true])
+                        self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).updateChildValues(["countryCode": countryCode])
+                        self.ref.child("locations").child(dictionary[Recipe.countryKey] as! String).child("recipes").child(recipeID).setValue(true)
+                    }
+                    
+                    self.ref.child("recipes").child(recipeID).updateChildValues(dictionaryToUpload)
+                }
+                
+                
+                self.ref.child("users").child(currentUser.uid).child("uploadedRecipes").child(recipeID).setValue(true)
+                
+                NotificationCenter.default.post(Notification(name: Notification.Name("RecipeUploaded")))
+                
+                if uid == nil {
+                    Analytics.logEvent("recipe_uploaded", parameters: ["username": Auth.auth().currentUser!.displayName!, "userID": Auth.auth().currentUser!.uid])
+                    
+                    let uploadedRecipeEvent = AppEvent(name: "uploaded-recipe", parameters: ["userID": Auth.auth().currentUser!.uid], valueToSum: 1)
+                    AppEventsLogger.log(uploadedRecipeEvent)
+                }
+                
+                if let videoURL = dictionary[Recipe.videoURLKey] as? URL {
+                    let _ = videoFileRef.putFile(from: videoURL, metadata: nil) { (videoMetadata, error) in
+                        
+                        videoFileRef.downloadURL(completion: { (url, error) in
+                            if let error = error {
+                                print("Error getting video download URLs: \(error.localizedDescription)")
+                                return
+                            }
+                            
+                            if let uploadedVideoURL = url {
+                                let thumbnailData = dictionary[Recipe.thumbnailURLKey] as! Data
+                                let _ = thumbnailFileRef.putData(thumbnailData, metadata: nil, completion: { (thumbnailMetadata, error) in
+                                    
+                                    thumbnailFileRef.downloadURL(completion: { (url, error) in
+                                        if let error = error {
+                                            print("Error getting thumbnail URLs: \(error.localizedDescription)")
+                                            return
+                                        }
+                                        
+                                        if let thumbnailURL = url {
+                                            self.ref.child("recipes").child(recipeID).updateChildValues([Recipe.thumbnailURLKey: thumbnailURL.absoluteString])
+                                        }
+                                    })
+                                    self.ref.child("recipes").child(recipeID).updateChildValues([Recipe.videoURLKey: uploadedVideoURL.absoluteString])
+                                })
+                            }
+                        })
+                    }
+                }
+                
+            })
+        }
+    }
 
     func fetchPastPoints() {
        

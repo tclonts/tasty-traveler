@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0A7BDF9C216ED08A00E09935 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0A7BDF9B216ED08A00E09935 /* GoogleService-Info.plist */; };
+		0AA57CD821C1A1E100468F5A /* AppMessagingChatLogVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA57CD721C1A1E100468F5A /* AppMessagingChatLogVC.swift */; };
 		0B8E4AF661AB1469B5814402 /* Pods_TastyTraveler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */; };
 		2A0B4DF7205988510056F7D5 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0B4DF6205988510056F7D5 /* Constants.swift */; };
 		2A0B4E012059979B0056F7D5 /* FavoritesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A0B4E002059979B0056F7D5 /* FavoritesVC.swift */; };
@@ -115,6 +116,7 @@
 
 /* Begin PBXFileReference section */
 		0A7BDF9B216ED08A00E09935 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		0AA57CD721C1A1E100468F5A /* AppMessagingChatLogVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMessagingChatLogVC.swift; sourceTree = "<group>"; };
 		2A0B4DF6205988510056F7D5 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		2A0B4E002059979B0056F7D5 /* FavoritesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesVC.swift; sourceTree = "<group>"; };
 		2A0B4E042059A6BA0056F7D5 /* HomeVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeVC.swift; sourceTree = "<group>"; };
@@ -255,13 +257,6 @@
 				2AAC858520F66A5B006B2C17 /* RecipeForm.swift */,
 			);
 			path = CreateRecipe;
-			sourceTree = "<group>";
-		};
-		2A0B4DFE2059977E0056F7D5 /* Notifications+Messages */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "Notifications+Messages";
 			sourceTree = "<group>";
 		};
 		2A0B4DFF2059978A0056F7D5 /* Profile */ = {
@@ -477,7 +472,6 @@
 				2A0B4DFA205997300056F7D5 /* Favorites */,
 				2A0B4DFC205997580056F7D5 /* CreateRecipe */,
 				BE7E8049214D9242002646AF /* FirstPointsExplainationVC.swift */,
-				2A0B4DFE2059977E0056F7D5 /* Notifications+Messages */,
 				2A0B4DFF2059978A0056F7D5 /* Profile */,
 				2A805AE32049BF45004BEEF3 /* AppDelegate.swift */,
 				2A54425020D949A500727BFA /* AchievementVC.swift */,
@@ -533,6 +527,7 @@
 			children = (
 				2A9BA3232099FE7C00AC3E42 /* MessagesVC.swift */,
 				2A3BE8A32098BCB80095CDA5 /* ChatLogVC.swift */,
+				0AA57CD721C1A1E100468F5A /* AppMessagingChatLogVC.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -805,6 +800,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AA57CD821C1A1E100468F5A /* AppMessagingChatLogVC.swift in Sources */,
 				2A1E34D320A9F24000B2F992 /* CommentCell.swift in Sources */,
 				2A476AF820937EE7009C5005 /* GradientView.swift in Sources */,
 				2A665ACB2069B2F10014A464 /* FirebaseController.swift in Sources */,
@@ -1041,11 +1037,11 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = DJ9Q6RC5SN;
+				DEVELOPMENT_TEAM = 2ZW3J63YB5;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.KevinWoodsDevelopment.KevinWood.TastyTraveler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;
@@ -1061,11 +1057,11 @@
 				CODE_SIGN_ENTITLEMENTS = TastyTraveler/TastyTraveler.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = DJ9Q6RC5SN;
+				DEVELOPMENT_TEAM = 2ZW3J63YB5;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.KevinWoodsDevelopment.KevinWood.TastyTraveler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;

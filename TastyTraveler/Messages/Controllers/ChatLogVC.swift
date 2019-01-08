@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import FirebaseAuth
 
 class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
     
@@ -19,64 +20,92 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
         }
     }
     
-    var messages = [Message]()
+    var messages: [Message] = [] {
+        didSet {
+            if self.messages.count > 0 {
+                DispatchQueue.main.async {
+                    self.tableView?.reloadData()
+                    let lastRow = self.tableView.numberOfRows(inSection: 0) - 1
+                    let indexPath = IndexPath(row: lastRow, section: 0)
+                    self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
+                    
+                }
+            }
+        }
+    }
+    
     var isViewingChat = false
-        
+    
     func observeMessages() {
+        self.textInputAccessoryView.inputTextView.becomeFirstResponder()
+        
         guard let uid = Auth.auth().currentUser?.uid, let toID = chat?.withUser.uid else { return }
         
-        let userMessagesRef = FirebaseController.shared.ref.child("userMessages").child(uid).child(toID)
-        userMessagesRef.observe(.childAdded) { (snapshot) in
+        var fetchedMessages: [Message] = []
+        FirebaseController.shared.ref.child("userMessages/\(uid)/\(toID)").observe(.childAdded) { (snapshot) in
             
-            let messageID = snapshot.key
-            let messagesRef = FirebaseController.shared.ref.child("messages").child(messageID)
-            messagesRef.observeSingleEvent(of: .value, with: { (snapshot) in
-                
-                guard let dictionary = snapshot.value as? [String:Any] else { return }
-                var message = Message(uid: snapshot.key, dictionary: dictionary)
-                
-                if message.isUnread, message.toID == uid, self.isViewingChat, message.recipeID == self.chat!.recipe?.uid {
-                    message.isUnread = false
-                    
-                    FirebaseController.shared.ref.child("messages").child(messageID).child("unread").setValue(false)
-                    
-                    let unreadMessagesCountRef = FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount")
-                    unreadMessagesCountRef.runTransactionBlock({ (currentCount) -> TransactionResult in
-                        if var count = currentCount.value as? Int, count != 0 {
-                            count -= 1
+            if let dictionary = snapshot.value as? [String:Any] {
+                dictionary.forEach({ (key, value) in
+                    let messageID = key
+                    let messagesRef = FirebaseController.shared.ref.child("messages").child(messageID)
+                    messagesRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                        
+                        guard let dictionary = snapshot.value as? [String:Any] else { return }
+                        var message = Message(uid: snapshot.key, dictionary: dictionary)
+                        
+                        if message.isUnread, message.toID == uid, self.isViewingChat, message.recipeID == self.chat!.recipe?.uid {
+                            message.isUnread = false
                             
-                            currentCount.value = count
+                            FirebaseController.shared.ref.child("messages").child(messageID).child("unread").setValue(false)
                             
-                            return TransactionResult.success(withValue: currentCount)
-                        } else {
-                            return TransactionResult.success(withValue: currentCount)
+                            let unreadMessagesCountRef = FirebaseController.shared.ref.child("users").child(uid).child("unreadMessagesCount")
+                            unreadMessagesCountRef.runTransactionBlock({ (currentCount) -> TransactionResult in
+                                if var count = currentCount.value as? Int, count != 0 {
+                                    count -= 1
+                                    
+                                    currentCount.value = count
+                                    
+                                    return TransactionResult.success(withValue: currentCount)
+                                } else {
+                                    return TransactionResult.success(withValue: currentCount)
+                                }
+                            }, andCompletionBlock: { (error, committed, snapshot) in
+                                if let error = error {
+                                    print(error.localizedDescription)
+                                }
+                            })
                         }
-                    }, andCompletionBlock: { (error, committed, snapshot) in
-                        if let error = error {
-                            print(error.localizedDescription)
+                        
+                        if message.recipeID == self.chat!.recipe?.uid {
+                            
+                            fetchedMessages.append(message)
+                            
                         }
+                        
+                        self.messages = fetchedMessages.sorted(by: {$0.timestamp < $1.timestamp})
                     })
-                }
-                
-                if message.recipeID == self.chat!.recipe?.uid {
-                    
-                    self.messages.append(message)
-                    
-                    DispatchQueue.main.async {
-                        self.tableView?.reloadData()
-                        // scroll to the last index
-                        let indexPath = IndexPath(item: self.messages.count - 1, section: 0)
-                        
-                        self.tableView?.scrollToRow(at: indexPath, at: .bottom, animated: false)
-                        NotificationCenter.default.post(name: Notification.Name("UpdateTabBadge"), object: nil)
-                        
-                    }
-                }
-            })
+                })
+            }
         }
     }
     
     var isFromRecipeDetailView = false
+    
+    @objc func keyboardWillShow(notification:NSNotification ) {
+        if let newFrame = (notification.userInfo?[ UIKeyboardFrameEndUserInfoKey ] as? NSValue)?.cgRectValue {
+            print(self.view.frame.height)
+            let offset = self.view.frame.height * 0.0659
+            let insets = UIEdgeInsetsMake( 0, 0, newFrame.height - offset, 0 )
+            tableView.contentInset = insets
+            tableView.scrollIndicatorInsets = insets
+        }
+    }
+    
+    @objc func keyboardWillHide(notification:NSNotification) {
+        let insets = UIEdgeInsetsMake( 0, self.view.frame.height * 0.0219, 0, 0 )
+        tableView.contentInset = insets
+        tableView.scrollIndicatorInsets = insets
+    }
     
     func setUpNavigationTitle() {
         let usernameLabel = UILabel()
@@ -111,6 +140,9 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.textInputAccessoryView.inputTextView.becomeFirstResponder()
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: Notification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: Notification.Name.UIKeyboardWillHide, object: nil)
         
         if isFromRecipeDetailView {
             let closeButton = UIButton(type: .system)
@@ -154,7 +186,7 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .default
     }
-
+    
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -187,7 +219,7 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
         let recipeNavigationController = UINavigationController(rootViewController: recipeDetailVC)
         recipeNavigationController.navigationBar.isHidden = true
         
-//        self.navigationController?.pushViewController(recipeDetailVC, animated: true)
+        self.navigationController?.pushViewController(recipeDetailVC, animated: true)
         self.present(recipeNavigationController, animated: true, completion: nil)
     }
     
@@ -206,26 +238,45 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
         let timestamp = Date().timeIntervalSince1970
         let recipeID = chat!.recipe?.uid
         
-        let values: [String:Any] = ["toID": toID,
-                                    "fromID": fromID,
-                                    "timestamp": timestamp,
-                                    "recipeID": recipeID,
-                                    "text": message,
-                                    "unread": true]
-        
-        childRef.updateChildValues(values) { (error, ref) in
-            if let error = error { print(error); return }
+        if recipeID != nil && recipeID != "" {
+            let values: [String:Any] = ["toID": toID,
+                                        "fromID": fromID,
+                                        "timestamp": timestamp,
+                                        "recipeID": recipeID!,
+                                        "text": message,
+                                        "unread": true]
             
-            self.textInputAccessoryView.clearMessageTextField()
+            childRef.setValue(values) { (error, ref) in
+                if let error = error { print(error); return }
+                
+                self.textInputAccessoryView.clearMessageTextField()
+                
+                let messageID = childRef.key
+                
+                FirebaseController.shared.ref.child("userMessages/\(fromID)/\(toID)").childByAutoId().setValue([messageID: true])
+                FirebaseController.shared.ref.child("userMessages/\(toID)/\(fromID)").childByAutoId().setValue([messageID: true])
+                
+                (self.inputAccessoryView as! TextInputAccessoryView).sendButton.isEnabled = true
+            }
+        } else {
+            let values: [String:Any] = ["toID": toID,
+                                        "fromID": fromID,
+                                        "timestamp": timestamp,
+                                        "text": message,
+                                        "unread": true]
             
-            let userMessagesRef = FirebaseController.shared.ref.child("userMessages").child(fromID).child(toID)
-            let messageID = childRef.key
-            userMessagesRef.updateChildValues([messageID: true])
-            
-            let recipientUserMessagesRef = FirebaseController.shared.ref.child("userMessages").child(toID).child(fromID)
-            recipientUserMessagesRef.updateChildValues([messageID: true])
-            
-            (self.inputAccessoryView as! TextInputAccessoryView).sendButton.isEnabled = true
+            childRef.setValue(values) { (error, ref) in
+                if let error = error { print(error); return }
+                
+                self.textInputAccessoryView.clearMessageTextField()
+                
+                let messageID = childRef.key
+                
+                FirebaseController.shared.ref.child("userMessages/\(fromID)/\(toID)").childByAutoId().setValue([messageID: true])
+                FirebaseController.shared.ref.child("userMessages/\(toID)/\(fromID)").childByAutoId().setValue([messageID: true])
+                
+                (self.inputAccessoryView as! TextInputAccessoryView).sendButton.isEnabled = true
+            }
         }
     }
     
@@ -249,6 +300,7 @@ class ChatLogVC: UITableViewController, TextInputAccessoryViewDelegate {
         let message = messages[indexPath.row]
         cell.message = message
         cell.messageLabel.text = message.text
+        cell.selectionStyle = .none
         
         setUpCell(cell, message: message)
         

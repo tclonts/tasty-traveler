@@ -16,7 +16,7 @@ target 'TastyTraveler' do
   pod 'Firebase/Messaging'
   
   # Facebook
-  pod 'FacebookCore'
+  pod 'FacebookCore', 
   pod 'FacebookLogin'
   pod 'FacebookShare'
   

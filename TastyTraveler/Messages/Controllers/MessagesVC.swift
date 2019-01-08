@@ -17,7 +17,7 @@ class MessagesVC: UITableViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = .white
-
+        
         let emptyLabelTitle = UILabel()
         emptyLabelTitle.text = "You don't have any messages."
         emptyLabelTitle.textColor = Color.gray
@@ -40,7 +40,7 @@ class MessagesVC: UITableViewController {
         self.view.sv(emptyLabel)
         emptyLabel.centerInContainer().left(adaptConstant(20)).right(adaptConstant(20))
         emptyLabel.isHidden = FirebaseController.shared.messages.count != 0
-
+        
         self.tableView.contentInsetAdjustmentBehavior = .never
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]
         self.navigationController?.navigationBar.isTranslucent = false
@@ -99,16 +99,16 @@ class MessagesVC: UITableViewController {
         SVProgressHUD.show()
         FirebaseController.shared.fetchUserWithUID(uid: chatPartnerID) { (user) in
             guard let user = user else { return }
-            if let recipeID = message.recipeID {
-                FirebaseController.shared.fetchRecipeWithUID(uid: recipeID, completion: { (recipe) in
-                    guard let recipe = recipe else { return }
-                    let chat = Chat(recipe: recipe, withUser: user)
-                    self.showChatControllerForChat(chat)
-                })
-            } else {
+            guard let recipeID = message.recipeID, recipeID != "" else {
                 let chat = Chat(recipe: nil, withUser: user)
                 self.showChatControllerForChat(chat)
+                return
             }
+            FirebaseController.shared.fetchRecipeWithUID(uid: recipeID, completion: { (recipe) in
+                guard let recipe = recipe else { return }
+                let chat = Chat(recipe: recipe, withUser: user)
+                self.showChatControllerForChat(chat)
+            })
         }
     }
     

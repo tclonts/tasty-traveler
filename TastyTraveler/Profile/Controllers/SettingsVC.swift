@@ -19,6 +19,7 @@ class SettingsVC: FormViewController {
     
     var bioToSet = ""
     let accountVC = AccountVC()
+    let appMessagingChatLogVC = AppMessagingChatLogVC()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,55 +41,63 @@ class SettingsVC: FormViewController {
         self.navigationController?.navigationBar.tintColor = Color.blackText
         
         self.tableView.contentInsetAdjustmentBehavior = .never
-        
-        form +++
-            Section()
+//        Zzk10HjWRWOXlBnCmbK2STYBj2N2
+        if Auth.auth().currentUser?.uid == "k83iGrQWpEQLCYcJY0UWZpoy6aw1" {
+            form +++
+                Section()
                 <<< ButtonRow("Account") { row in
-                        row.title = row.tag
-                        row.presentationMode = PresentationMode.show(controllerProvider: ControllerProvider.callback(builder: { () -> AccountVC in
-                            return self.accountVC
-                        }), onDismiss: nil)
-                    }
-        +++ Section("Push Notifications")
+                    row.title = row.tag
+                    row.presentationMode = PresentationMode.show(controllerProvider: ControllerProvider.callback(builder: { () -> AccountVC in
+                        return self.accountVC
+                    }), onDismiss: nil)
+                }
+                <<< ButtonRow("App Messaging System") { row in
+                    row.title = row.tag
+                    row.presentationMode = PresentationMode.show(controllerProvider: ControllerProvider.callback(builder: { () -> AppMessagingChatLogVC in
+                        return self.appMessagingChatLogVC
+                    }), onDismiss: nil)
+                }
+                
+                +++ Section("Push Notifications")
                 <<< SwitchRow(UserNotificationType.message.rawValue) { row in
-                        row.title = "New messages"
+                    row.title = "New messages"
                     }.cellSetup { cell, row in
                         //row.value = false
                     }.onChange { row in
                         // switch has been toggled
                         guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
                         self.toggleNotifications(enabled: value, for: type)
-                    }
+                }
                 <<< SwitchRow(UserNotificationType.cooked.rawValue) { row in
-                        row.title = "Recipe was cooked"
+                    row.title = "Recipe was cooked"
                     }.cellSetup { cell, row in
                         //row.value = false
                     }.onChange { row in
                         // switch has been toggled
                         guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
                         self.toggleNotifications(enabled: value, for: type)
-            }
+                }
                 <<< SwitchRow(UserNotificationType.favorited.rawValue) { row in
-                        row.title = "Recipe was favorited"
+                    row.title = "Recipe was favorited"
                     }.cellSetup { cell, row in
                         //row.value = false
                     }.onChange { row in
                         // switch has been toggled
                         guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
                         self.toggleNotifications(enabled: value, for: type)
-            }
+                }
                 <<< SwitchRow(UserNotificationType.review.rawValue) { row in
-                        row.title = "Recipe was reviewed"
+                    row.title = "Recipe was reviewed"
                     }.cellSetup { cell, row in
                         //row.value = false
                     }.onChange { row in
                         // switch has been toggled
                         guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
                         self.toggleNotifications(enabled: value, for: type)
-            }
-        +++ Section()
+                }
+                +++ Section()
                 <<< ButtonRow("Rate Tasty Traveler") { row in
-                        row.title = row.tag
+                    row.title = row.tag
                     }.cellUpdate { cell, row in
                         cell.accessoryType = .disclosureIndicator
                         cell.textLabel?.textAlignment = .left
@@ -101,9 +110,9 @@ class SettingsVC: FormViewController {
                                 UIApplication.shared.openURL(reviewURL)
                             }
                         }
-                    }
+                }
                 <<< ButtonRow("Privacy Policy") { row in
-                        row.title = row.tag
+                    row.title = row.tag
                     }.cellUpdate { cell, row in
                         cell.accessoryType = .disclosureIndicator
                         cell.textLabel?.textColor = .black
@@ -112,30 +121,105 @@ class SettingsVC: FormViewController {
                         if let url = URL(string: "https://app.termly.io/document/privacy-policy/9eb0c00e-7126-43b8-8d62-965156197b11"), UIApplication.shared.canOpenURL(url) {
                             UIApplication.shared.open(url, options: [:], completionHandler: nil)
                         }
-                    }
-//                <<< CheckRow("Changelog") { row in
-//                        row.title = row.tag
-//
-//                    }.cellUpdate { cell, row in
-//                        cell.accessoryType = .disclosureIndicator
-//                        cell.textLabel?.textColor = .black
-//                        cell.textLabel?.textAlignment = .left
-//                        let version: String = Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String
-//                        cell.detailTextLabel?.text = version
-//                        cell.detailTextLabel?.textColor = Color.gray
-//                    }
-        +++ Section()
+                }
+                +++ Section()
                 <<< ButtonRow("Sign Out") { row in
-                        row.title = row.tag
+                    row.title = row.tag
                     }.cellUpdate { cell, row in
                         cell.textLabel?.textColor = .red
                         cell.textLabel?.textAlignment = .center
                     }.onCellSelection { cell, row in
                         self.handleSignOut()
-                    }
-        +++ Section("Version \(Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String)")
-        
+                }
+                +++ Section("Version \(Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String)")
+            
+        } else {
+            form +++
+                Section()
+                <<< ButtonRow("Account") { row in
+                    row.title = row.tag
+                    row.presentationMode = PresentationMode.show(controllerProvider: ControllerProvider.callback(builder: { () -> AccountVC in
+                        return self.accountVC
+                    }), onDismiss: nil)
+                }
+                +++ Section("Push Notifications")
+                <<< SwitchRow(UserNotificationType.message.rawValue) { row in
+                    row.title = "New messages"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+                }
+                <<< SwitchRow(UserNotificationType.cooked.rawValue) { row in
+                    row.title = "Recipe was cooked"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+                }
+                <<< SwitchRow(UserNotificationType.favorited.rawValue) { row in
+                    row.title = "Recipe was favorited"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+                }
+                <<< SwitchRow(UserNotificationType.review.rawValue) { row in
+                    row.title = "Recipe was reviewed"
+                    }.cellSetup { cell, row in
+                        //row.value = false
+                    }.onChange { row in
+                        // switch has been toggled
+                        guard let value = row.value, let tag = row.tag, let type = UserNotificationType(rawValue: tag) else { return }
+                        self.toggleNotifications(enabled: value, for: type)
+                }
+                +++ Section()
+                <<< ButtonRow("Rate Tasty Traveler") { row in
+                    row.title = row.tag
+                    }.cellUpdate { cell, row in
+                        cell.accessoryType = .disclosureIndicator
+                        cell.textLabel?.textAlignment = .left
+                        cell.textLabel?.textColor = .black
+                    }.onCellSelection { cell, row in
+                        if let reviewURL = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1345041207?mt=8"), UIApplication.shared.canOpenURL(reviewURL) {
+                            if #available(iOS 10.0, *) {
+                                UIApplication.shared.open(reviewURL, options: [:], completionHandler: nil)
+                            } else {
+                                UIApplication.shared.openURL(reviewURL)
+                            }
+                        }
+                }
+                <<< ButtonRow("Privacy Policy") { row in
+                    row.title = row.tag
+                    }.cellUpdate { cell, row in
+                        cell.accessoryType = .disclosureIndicator
+                        cell.textLabel?.textColor = .black
+                        cell.textLabel?.textAlignment = .left
+                    }.onCellSelection { cell, row in
+                        if let url = URL(string: "https://app.termly.io/document/privacy-policy/9eb0c00e-7126-43b8-8d62-965156197b11"), UIApplication.shared.canOpenURL(url) {
+                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                        }
+                }
+                +++ Section()
+                <<< ButtonRow("Sign Out") { row in
+                    row.title = row.tag
+                    }.cellUpdate { cell, row in
+                        cell.textLabel?.textColor = .red
+                        cell.textLabel?.textAlignment = .center
+                    }.onCellSelection { cell, row in
+                        self.handleSignOut()
+                }
+                +++ Section("Version \(Bundle.main.infoDictionary!["CFBundleShortVersionString"]! as! String)")
+            
+        }
     }
+    
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -644,7 +728,7 @@ class AccountVC: FormViewController, UITextFieldDelegate {
     @objc func saveAccountInfo() {
         guard let user = Auth.auth().currentUser else { return }
         
-        if let bioRow = self.form.rowBy(tag: "Bio") {
+        if let _ = self.form.rowBy(tag: "Bio") {
             
             if let newBio = self.newBio {
                 
@@ -841,7 +925,7 @@ extension AccountVC {
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (user) in
             guard let user = user else { return }
             
-            var points = user.points
+            let points = user.points
             let newPoints = user.points != nil ? points! + numberOfPoints : numberOfPoints
             if user.bio == nil || user.bio == "" {
                 FirebaseController.shared.ref.child("users").child((user.uid)).child("points").setValue(newPoints)
