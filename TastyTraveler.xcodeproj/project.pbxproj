@@ -1037,11 +1037,11 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 2ZW3J63YB5;
+				DEVELOPMENT_TEAM = XUF99SR6PQ;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.TylerClonts.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;
@@ -1057,11 +1057,11 @@
 				CODE_SIGN_ENTITLEMENTS = TastyTraveler/TastyTraveler.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 2ZW3J63YB5;
+				DEVELOPMENT_TEAM = XUF99SR6PQ;
 				INFOPLIST_FILE = TastyTraveler/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.MichaelBart.TastyTraveler;
+				PRODUCT_BUNDLE_IDENTIFIER = com.TylerClonts.TastyTraveler;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.0;

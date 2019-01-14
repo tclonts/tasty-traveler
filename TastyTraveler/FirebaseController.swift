@@ -338,7 +338,7 @@ class FirebaseController {
                     return
                 }
                 
-                if let url = url {
+                if let url = url?.absoluteString {
                     self.ref.child("recipes").child(recipe.uid).child("cookedImages").updateChildValues([userID: url])
                 }
             })
