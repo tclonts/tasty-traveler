@@ -576,8 +576,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                 
                 let chatLogVC = ChatLogVC()
                 let chat = Chat(recipe: self.recipe!, withUser: self.recipe!.creator)
-                chatLogVC.chat = chat
                 chatLogVC.isFromRecipeDetailView = true
+                chatLogVC.chat = chat
                 let chatLogNav = UINavigationController(rootViewController: chatLogVC)
                 chatLogNav.navigationBar.isTranslucent = false
                 chatLogNav.modalPresentationStyle = .overCurrentContext
