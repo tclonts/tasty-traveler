@@ -120,6 +120,31 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         return button
     }()
     
+    lazy var likeButtonNav: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(likeButtonNavTapped), for: .touchUpInside)
+        button.isUserInteractionEnabled = false
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)
+        button.alpha = 0
+        return button
+    }()
+    
+    lazy var likeButtonNavBar: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(likeButtonNavTapped), for: .touchUpInside)
+        button.titleLabel?.font = ProximaNova.regular.of(size: 13)
+        button.setTitleColor(Color.darkGrayText, for: .normal)
+        button.setImage(#imageLiteral(resourceName: "likeNav"), for: .normal)
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -4, bottom: 0, right: 4)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: -4)
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 4, bottom: 0, right: 4)
+        button.alpha = 0
+        return button
+    }()
+    
+    
     let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.backgroundColor = .white
@@ -280,6 +305,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         
         NotificationCenter.default.addObserver(self, selector: #selector(reloadRecipe), name: Notification.Name("submittedReview"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeLiked), name: Notification.Name("FirstRecipeLiked"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeCooked), name: Notification.Name("firstRecipeCooked"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeReviewLeft), name: Notification.Name("firstRecipeReviewLeft"), object: nil)
         
@@ -385,6 +411,18 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                             self.homeVC?.recipeDataHasChanged = true
                         }
                     }
+                    if !self.isFromLikes {
+                        DispatchQueue.main.async {
+                            //                            self.homeVAC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                            //                            self.homeVC?.recipeDataHasChanged = true
+                            
+                            guard let index = self.homeVC!.searchResultRecipes.index(where: { (disRecipe) -> Bool in
+                                return disRecipe.uid == self.recipe!.uid
+                            }) else {return}
+                            self.homeVC!.searchResultRecipes[index] = self.recipe!
+                            self.homeVC?.recipeDataHasChanged = true
+                        }
+                    }
                 })
             })
         }
@@ -395,6 +433,13 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         firstRecipeFavoritedVC.modalPresentationStyle = .overCurrentContext
         self.present(firstRecipeFavoritedVC, animated: false) {
             firstRecipeFavoritedVC.show()
+        }
+    }
+    @objc func firstRecipeLiked() {
+        let firstRecipeLikedVC = FirstRecipeLikedVC()
+        firstRecipeLikedVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstRecipeLikedVC, animated: false) {
+            firstRecipeLikedVC.show()
         }
     }
     @objc func firstRecipeCooked() {
@@ -485,6 +530,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     @objc func favoriteButtonNavTapped() {
         favoriteRecipe()
+    }
+    @objc func likeButtonNavTapped() {
+        likeRecipe()
     }
     
     @objc func cookButtonTapped() {
@@ -604,6 +652,22 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
         }
     }
+    func setUpLikeButtons() {
+        if recipe!.hasLiked {
+            pointAdder(numberOfPoints: -1)
+            pointAdderForCurrentUserID(numberOfPoints: -1)
+            SVProgressHUD.showSuccess(withStatus: "LIKED")
+            SVProgressHUD.dismiss(withDelay: 1)
+            recipeHeaderView.likeButton.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+
+        } else {
+            pointAdder(numberOfPoints: 1)
+            pointAdderForCurrentUserID(numberOfPoints: 1)
+            SVProgressHUD.showError(withStatus: "Removed")
+            SVProgressHUD.dismiss(withDelay: 1)
+            recipeHeaderView.likeButton.setImage(#imageLiteral(resourceName: "likeNav"), for: .normal)
+        }
+    }
     
     func favoriteRecipe() {
         if isBrowsing {
@@ -679,6 +743,80 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             }
         }
     }
+    func likeRecipe() {
+        if isBrowsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
+        } else {
+            guard let recipeID = recipe?.uid else { return }
+            
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+            
+            if self.recipe!.hasLiked {
+                
+                pointAdder(numberOfPoints: -1)
+                pointAdderForCurrentUserID(numberOfPoints: -1)
+                // remove
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("likedBy").child(userID).removeValue()
+                FirebaseController.shared.ref.child("users").child(userID).child("likes").child(recipeID).removeValue()
+                
+                SVProgressHUD.showError(withStatus: "Removed")
+                SVProgressHUD.dismiss(withDelay: 1)
+                
+                self.recipe?.hasLiked = false
+                
+                if !isFromLikes {
+                    self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                    self.homeVC?.recipeDataHasChanged = true
+                }
+                
+                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                
+            } else {
+                // add
+                
+                pointAdder(numberOfPoints: 1)
+                pointAdderForCurrentUserID(numberOfPoints: 1)
+                
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("likedBy").child(userID).setValue(true) { (error, _) in
+                    if let error = error {
+                        print("Failed to like a recipe:", error)
+                        return
+                    }
+                    
+                    let timestamp = Date().timeIntervalSince1970
+                    
+                    FirebaseController.shared.ref.child("users").child(userID).child("likes").child(recipeID).setValue(timestamp) { (error, _) in
+                        if let error = error {
+                            print("Failted to like recipe:", error)
+                            return
+                        }
+                        
+                        print("Successfully liked recipe.")
+                        
+                        SVProgressHUD.showSuccess(withStatus: "Liked")
+                        SVProgressHUD.dismiss(withDelay: 1)
+                        
+                        self.recipe?.hasLiked = true
+                        
+                        if !self.isFromLikes {
+                            self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+                            self.homeVC?.recipeDataHasChanged = true
+                        }
+                        if let firstRecLike = UserDefaults.standard.object(forKey: "firstRecLike") as? Bool, firstRecLike {
+                            print("First recipe has already been liked: \(firstRecLike)")
+                        } else {
+                            UserDefaults.standard.set(true, forKey: "firstRecLike")
+                            
+                            NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeLiked")))
+                        }
+                        NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                    }
+                }
+            }
+        }
+    }
     
     override func viewDidLayoutSubviews() {
         print("layed out")
@@ -687,6 +825,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     
     @objc func favoriteButtonTapped() {
         favoriteRecipe()
+    }
+    @objc func likeButtonTapped() {
+        likeRecipe()
     }
     
     func showTopView() {
@@ -772,7 +913,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         self.view.sv(scrollView, topView, bottomView)
         self.view.backgroundColor = .white
         
-        self.view.sv(navigationBarBackground, navigationBar.sv(backButtonNav, favoriteButtonNavBar, shareButtonNav))
+        self.view.sv(navigationBarBackground, navigationBar.sv(backButtonNav, likeButtonNavBar,favoriteButtonNavBar, shareButtonNav))
         
         navigationBarBackground.Top == self.view.Top
         navigationBarBackground.Left == self.view.Left
@@ -790,6 +931,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         favoriteButtonNavBar.Right == shareButtonNav.Left - 30
         favoriteButtonNavBar.width(adaptConstant(69))
         favoriteButtonNavBar.centerVertically()
+        
+        likeButtonNavBar.Right == favoriteButtonNav.Left - 10
         
         backButtonNav.left(adaptConstant(20))
         backButtonNav.centerVertically()
@@ -873,6 +1016,10 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         recipeHeaderView.favoriteButton.CenterY == recipeHeaderView.photoImageView.Bottom
         recipeHeaderView.favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
         
+        recipeHeaderView.likeButton.right(adaptConstant(40))
+        recipeHeaderView.likeButton.CenterY == recipeHeaderView.photoImageView.Bottom
+        recipeHeaderView.likeButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
+        
         menuBar.left(0).right(0).height(adaptConstant(40))
         menuBar.Top == recipeHeaderView.Bottom + adaptConstant(12)
         //topMenuBarConstraint.isActive = true
@@ -954,10 +1101,20 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                     // my recipe
                     self.recipeHeaderView.favoriteButton.isHidden = true
                     self.favoriteButtonNavBar.isHidden = true
+                    self.likeButtonNavBar.isHidden = true
                     self.bottomView.isHidden = true
                 } else {
                     self.isMyRecipe = false
                     // someone else's recipe
+                    if self.recipe!.hasLiked {
+                        self.recipeHeaderView.likeButton.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+                        self.likeButtonNavBar.setTitle("LIKED", for: .normal)
+                        self.likeButtonNavBar.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+                    } else {
+                        self.recipeHeaderView.likeButton.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+                        self.likeButtonNavBar.setTitle("LIKED", for: .normal)
+                        self.likeButtonNavBar.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+                    }
                     if self.recipe!.hasFavorited {
                         self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)
                         self.favoriteButtonNavBar.setTitle("SAVED", for: .normal)
@@ -981,6 +1138,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     var isInAboutCellScrollView = false
     
     var isFromFavorites = false
+    var isFromLikes = false
     
     var aboutCellScrollPosition: CGPoint?
     var ingredientsCellScrollPosition: CGPoint?

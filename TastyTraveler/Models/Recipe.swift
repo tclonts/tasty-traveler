@@ -36,6 +36,7 @@ struct Recipe {
     static let thumbnailURLKey = "thumbnailURL"
     static let tagsKey = "tags"
     static let hasFavoritedKey = "hasFavorited"
+    static let hasLikedKey = "hasLiked"
     static let hasCookedKey = "hasCooked"
     static let cookedImagesKey = "cookedImages"
     static let cookedImagesIDKey = "cookedImagesIDs"
@@ -77,6 +78,9 @@ struct Recipe {
     var favoritedDate: Date?
     var hasCooked = false
     var cookedDate: Date?
+    var hasLiked = false
+    var likedDate: Date?
+    
     
     init(uid: String, creator: TTUser, dictionary: [String:Any]) {
         self.uid = uid

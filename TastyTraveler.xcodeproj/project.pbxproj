@@ -96,6 +96,7 @@
 		2ADA49BA20572D240024C8EE /* OnboardingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49B920572D240024C8EE /* OnboardingCell.swift */; };
 		2ADA49BC20572DA20024C8EE /* Validator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49BB20572DA20024C8EE /* Validator.swift */; };
 		2AEF1C6A2056E667001DBB98 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF1C692056E667001DBB98 /* GradientButton.swift */; };
+		BE17425C21F3BA46006B928B /* FirstRecipeLikedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */; };
 		BE25D1A2213222FE00D2940D /* CookedImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A1213222FE00D2940D /* CookedImageCell.swift */; };
 		BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */; };
 		BE25D1A62136697B00D2940D /* PointsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A52136697B00D2940D /* PointsVC.swift */; };
@@ -208,6 +209,7 @@
 		2AEF1C692056E667001DBB98 /* GradientButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientButton.swift; sourceTree = "<group>"; };
 		60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.debug.xcconfig"; sourceTree = "<group>"; };
 		7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TastyTraveler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeLikedVC.swift; sourceTree = "<group>"; };
 		BE25D1A1213222FE00D2940D /* CookedImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookedImageCell.swift; sourceTree = "<group>"; };
 		BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForImagePicker.swift; sourceTree = "<group>"; };
 		BE25D1A52136697B00D2940D /* PointsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsVC.swift; sourceTree = "<group>"; };
@@ -321,6 +323,7 @@
 				BE7E8045214C18ED002646AF /* FirstRecipeReviewLeftVC.swift */,
 				BE7E8043214C18C0002646AF /* FirstRecipeCookedVC.swift */,
 				BE7E8041214C0DDF002646AF /* FirstRecipeFavoritedVC.swift */,
+				BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */,
 			);
 			path = RecipeDetail;
 			sourceTree = "<group>";
@@ -811,6 +814,7 @@
 				BE7E803C214BE6F8002646AF /* BronzeAchievementVC.swift in Sources */,
 				2ACCCB2E20ADE6F700CA8B69 /* SettingsVC.swift in Sources */,
 				2AA2520D2062BC9500BA9775 /* CreateRecipeForm.swift in Sources */,
+				BE17425C21F3BA46006B928B /* FirstRecipeLikedVC.swift in Sources */,
 				2A76AA88208F83320030BE8F /* FilterStatusCell.swift in Sources */,
 				BE7E8040214C0239002646AF /* GoldAchievementVC.swift in Sources */,
 				2A0B4E0E205AFDDC0056F7D5 /* RecipeCell.swift in Sources */,

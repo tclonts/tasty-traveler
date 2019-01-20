@@ -8,6 +8,7 @@
 
 import UIKit
 import Cosmos
+import Stevia
 
 class RecipeHeaderView: UIView {
     
@@ -82,6 +83,17 @@ class RecipeHeaderView: UIView {
         //        button.layer.masksToBounds = true
         return button
     }()
+    lazy var likeButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(#imageLiteral(resourceName: "likeNav"), for: .normal)
+        button.layer.shadowOpacity = 0.16
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.layer.shadowRadius = adaptConstant(13)
+        button.width(adaptConstant(40)).height(adaptConstant(40))
+        
+        //        button.layer.masksToBounds = true
+        return button
+    }()
     
     let starRating: CosmosView = {
         let cosmosView = CosmosView()
@@ -110,9 +122,12 @@ class RecipeHeaderView: UIView {
            countryLabel,
            recipeNameLabel,
            creatorNameLabel,
+           likeButton,
            favoriteButton,
            starRating)
         
+        likeButton.Right == favoriteButton.Left - 15
+
     }
     
     required init?(coder aDecoder: NSCoder) {
