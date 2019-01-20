@@ -932,7 +932,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         favoriteButtonNavBar.width(adaptConstant(69))
         favoriteButtonNavBar.centerVertically()
         
-        likeButtonNavBar.Right == favoriteButtonNav.Left - 10
+        likeButtonNavBar.Right == favoriteButtonNavBar.Left - 60
+//        likeButtonNavBar.width(adaptConstant(69))
+        likeButtonNavBar.centerVertically()
         
         backButtonNav.left(adaptConstant(20))
         backButtonNav.centerVertically()
