@@ -140,6 +140,7 @@ class HomeVC: UITableViewController {
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeLiked), name: Notification.Name("FirstRecipeliked"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
         firstPointsExpl()
         
@@ -262,6 +263,13 @@ class HomeVC: UITableViewController {
         firstRecipeFavoritedVC.modalPresentationStyle = .overCurrentContext
         self.present(firstRecipeFavoritedVC, animated: false) {
             firstRecipeFavoritedVC.show()
+        }
+    }
+    @objc func firstRecipeLiked() {
+        let firstRecipeLikedVC = FirstRecipeLikedVC()
+        firstRecipeLikedVC.modalPresentationStyle = .overCurrentContext
+        self.present(firstRecipeLikedVC, animated: false) {
+            firstRecipeLikedVC.show()
         }
     }
     
@@ -431,7 +439,13 @@ extension HomeVC {
                     } else {
                         recipe.hasFavorited = false
                     }
-                    
+                    FirebaseController.shared.ref.child("users").child(userID).child("likes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
+                        if (snapshot.value as? Double) != nil {
+                            recipe.hasLiked = true
+                        } else {
+                            recipe.hasLiked = false
+                        }
+                    })
                     FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(key).observeSingleEvent(of: .value, with: { (snapshot) in
                         if (snapshot.value as? Double) != nil {
                             recipe.hasCooked = true
@@ -744,6 +758,86 @@ extension HomeVC: RecipeCellDelegate {
                             UserDefaults.standard.set(true, forKey: "firstRecipeFav")
                             
                             NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
+                        }
+                        
+                        NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+                    }
+                }
+            }
+        }
+    }
+    func didTapLike(for cell: RecipeCell) {
+        if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
+        } else {
+            guard let indexPath = tableView?.indexPath(for: cell) else { return }
+            
+            var recipe = self.searchResultRecipes[indexPath.item]
+            
+            let recipeID = recipe.uid
+            
+            guard let userID = Auth.auth().currentUser?.uid else { return }
+            
+            if recipe.hasLiked {
+                // remove
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("likedBy").child(userID).removeValue()
+                FirebaseController.shared.ref.child("users").child(userID).child("likes").child(recipeID).removeValue()
+                
+                SVProgressHUD.showError(withStatus: "Removed")
+                SVProgressHUD.dismiss(withDelay: 1)
+                
+                recipe.hasLiked = false
+                
+                self.pointAdder(numberOfPoints: -1, cell: cell)
+                self.pointAdderForCurrentUserID(numberOfPoints: -1)
+                
+                self.searchResultRecipes[indexPath.item] = recipe
+                
+                self.tableView.reloadRows(at: [indexPath], with: .none)
+                
+                
+                
+                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+            } else {
+                // add
+                FirebaseController.shared.ref.child("recipes").child(recipeID).child("likedBy").child(userID).setValue(true) { (error, _) in
+                    if let error = error {
+                        print("Failed to like recipe:", error)
+                        return
+                    }
+                    
+                    let timestamp = Date().timeIntervalSince1970
+                    
+                    FirebaseController.shared.ref.child("users").child(userID).child("likes").child(recipeID).setValue(timestamp) { (error, _) in
+                        if let error = error {
+                            print("Failted to like recipe:", error)
+                            return
+                        }
+                        
+                        print("Successfully liked recipe.")
+                        
+                        SVProgressHUD.showSuccess(withStatus: "LIKED")
+                        SVProgressHUD.dismiss(withDelay: 1)
+                        
+                        recipe.hasLiked = true
+                        
+                        self.pointAdder(numberOfPoints: 1, cell: cell)
+                        self.pointAdderForCurrentUserID(numberOfPoints: 1)
+                        
+                        
+                        
+                        self.searchResultRecipes[indexPath.item] = recipe
+                        
+                        self.tableView.reloadRows(at: [indexPath], with: .none)
+                        
+                        if let firstRecipeLik = UserDefaults.standard.object(forKey: "firstRecipeLik") as? Bool, firstRecipeLik {
+                            print("First recipe has already been liked: \(firstRecipeLik)")
+                        } else {
+                            UserDefaults.standard.set(true, forKey: "firstRecipeLik")
+                            
+                            NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeLiked")))
                         }
                         
                         NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)

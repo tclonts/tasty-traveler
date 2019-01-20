@@ -84,14 +84,13 @@ class RecipeHeaderView: UIView {
         return button
     }()
     lazy var likeButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(#imageLiteral(resourceName: "likeNav"), for: .normal)
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
         button.layer.shadowOpacity = 0.16
         button.layer.shadowOffset = CGSize(width: 0, height: 2)
         button.layer.shadowRadius = adaptConstant(13)
         button.width(adaptConstant(40)).height(adaptConstant(40))
         
-        //        button.layer.masksToBounds = true
         return button
     }()
     
@@ -114,6 +113,9 @@ class RecipeHeaderView: UIView {
         super.init(frame: frame)
         
         self.backgroundColor = .white
+        let stackView = UIStackView(arrangedSubviews: [likeButton, favoriteButton])
+        stackView.axis = .horizontal
+        stackView.spacing = 8
         
         sv(placeholderImageView,
            photoImageView,
@@ -122,11 +124,11 @@ class RecipeHeaderView: UIView {
            countryLabel,
            recipeNameLabel,
            creatorNameLabel,
-           likeButton,
-           favoriteButton,
+           stackView,
            starRating)
         
-        likeButton.Right == favoriteButton.Left - 15
+        stackView.right(adaptConstant(10))
+//        likeButton.Right == favoriteButton.Left - 15
 
     }
     

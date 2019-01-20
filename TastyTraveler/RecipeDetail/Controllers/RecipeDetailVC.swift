@@ -1018,7 +1018,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         
         recipeHeaderView.likeButton.right(adaptConstant(40))
         recipeHeaderView.likeButton.CenterY == recipeHeaderView.photoImageView.Bottom
-        recipeHeaderView.likeButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
+        recipeHeaderView.likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
         
         menuBar.left(0).right(0).height(adaptConstant(40))
         menuBar.Top == recipeHeaderView.Bottom + adaptConstant(12)
@@ -1111,9 +1111,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                         self.likeButtonNavBar.setTitle("LIKED", for: .normal)
                         self.likeButtonNavBar.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
                     } else {
-                        self.recipeHeaderView.likeButton.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+                        self.recipeHeaderView.likeButton.setImage(#imageLiteral(resourceName: "likeNav"), for: .normal)
                         self.likeButtonNavBar.setTitle("LIKED", for: .normal)
-                        self.likeButtonNavBar.setImage(#imageLiteral(resourceName: "likeNavSelected"), for: .normal)
+                        self.likeButtonNavBar.setImage(#imageLiteral(resourceName: "likeNav"), for: .normal)
                     }
                     if self.recipe!.hasFavorited {
                         self.recipeHeaderView.favoriteButton.setImage(#imageLiteral(resourceName: "favoriteButtonSelected"), for: .normal)

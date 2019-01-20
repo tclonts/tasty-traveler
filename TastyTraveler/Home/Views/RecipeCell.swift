@@ -37,6 +37,7 @@ class RecipeCell: UITableViewCell {
             }
 
             recipeHeaderView.favoriteButton.setImage(recipe?.hasFavorited == true ? #imageLiteral(resourceName: "favoriteButtonSelected") : #imageLiteral(resourceName: "favoriteButton"), for: .normal)
+            recipeHeaderView.likeButton.setImage(recipe?.hasLiked == true ? #imageLiteral(resourceName: "likeNavSelected") : #imageLiteral(resourceName: "likeNav"), for: .normal)
         }
     }
     
@@ -104,10 +105,15 @@ class RecipeCell: UITableViewCell {
         recipeHeaderView.starRating.CenterY == recipeHeaderView.creatorNameLabel.CenterY
         
         recipeHeaderView.favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
+        recipeHeaderView.likeButton.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
+
     }
     
     @objc func favoriteTapped() {
         delegate?.didTapFavorite(for: self)
+    }
+    @objc func likeTapped() {
+        delegate?.didTapLike(for: self)
     }
     
     override func prepareForReuse() {
@@ -126,4 +132,5 @@ class RecipeCell: UITableViewCell {
 
 protocol RecipeCellDelegate: class {
     func didTapFavorite(for cell: RecipeCell)
+    func didTapLike(for cell: RecipeCell)
 }
