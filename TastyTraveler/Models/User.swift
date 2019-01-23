@@ -16,6 +16,7 @@ struct TTUser {
     var bio: String?
     var points: Int?
     var badgeStatus: Int?
+//    var followers: [Followers]?
     
     
     

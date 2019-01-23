@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import FirebaseAuth
 import GSKStretchyHeaderView
 import Stevia
 import RSKImageCropper
@@ -52,17 +53,19 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         return button
     }()
-    
-    let profilePhotoImageView: CustomImageView = {
-        let imageView = CustomImageView()
-        imageView.image = #imageLiteral(resourceName: "avatar")
-        imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = 85 / 2
-        imageView.clipsToBounds = true
-        imageView.layer.borderWidth = 2
-        imageView.layer.borderColor = Color.primaryOrange.cgColor
-        return imageView
+    lazy var followButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.layer.cornerRadius = 5
+        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.titleLabel?.font = ProximaNova.regular.of(size: 13)
+        let title = NSAttributedString(string: "Follow", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+            NSAttributedStringKey.foregroundColor: Color.offWhite])
+        button.backgroundColor = Color.primaryOrange
+        button.setAttributedTitle(title, for: .normal)
+        return button
     }()
+    
     
     
     lazy var profilePhotoButton: UIButton = {
@@ -72,11 +75,64 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return button
     }()
     
-    let followerLabel: UILabel = {
+//    let followerLabel: UILabel = {
+//        let label = UILabel()
+//        label.font = ProximaNova.semibold.of(size: 12)
+//        label.textColor = Color.blackText
+//        label.text = "Followers"
+//        return label
+//    }()
+    
+    lazy var recipesButtonNav: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.titleLabel?.font = ProximaNova.regular.of(size: 8)
+        let title = NSAttributedString(string: "recipes", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        return button
+    }()
+    lazy var followersButtonNav: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.titleLabel?.font = ProximaNova.regular.of(size: 8)
+        let title = NSAttributedString(string: "followers", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        return button
+    }()
+    lazy var followingButtonNav: UIButton = {
+        let button = UIButton(type: .system)
+        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.titleLabel?.font = ProximaNova.regular.of(size: 8)
+        let title = NSAttributedString(string: "following", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.setAttributedTitle(title, for: .normal)
+        return button
+    }()
+    
+    let recipePointsLabel: UILabel = {
         let label = UILabel()
-        label.font = ProximaNova.semibold.of(size: 12)
+        label.font = ProximaNova.bold.of(size: 16)
         label.textColor = Color.blackText
-        label.text = "Followers"
+        label.text = "\(26)"
+        return label
+    }()
+    let followersCountLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.bold.of(size: 16)
+        label.textColor = Color.blackText
+        label.text = "\(336)"
+        return label
+    }()
+    let followingCountLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.bold.of(size: 16)
+        label.textColor = Color.blackText
+        label.text = "\(1402)"
         return label
     }()
     
@@ -94,6 +150,17 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         label.textColor = Color.blackText
         label.text = "Username"
         return label
+    }()
+    
+    let profilePhotoImageView: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.image = #imageLiteral(resourceName: "avatar")
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 85 / 2
+        imageView.clipsToBounds = true
+        imageView.layer.borderWidth = 2
+        imageView.layer.borderColor = Color.primaryOrange.cgColor
+        return imageView
     }()
     
     lazy var bronzeBadge: UIButton = {
@@ -173,6 +240,9 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     @objc func backButtonTapped() {
         delegate?.didTapBackButton()
     }
+    @objc func followButtonTapped() {
+        followFunction()
+    }
     
     override func didChangeStretchFactor(_ stretchFactor: CGFloat) {
         super.didChangeStretchFactor(stretchFactor)
@@ -213,15 +283,37 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     func setUpViews() {
         self.contentView.backgroundColor = .white
         
-        let stackView = UIStackView(arrangedSubviews: [countryFlagImageView, countryLabel])
-        stackView.axis = .horizontal
-        stackView.spacing = 8
+        let flagStackView = UIStackView(arrangedSubviews: [countryFlagImageView, countryLabel])
+        flagStackView.axis = .horizontal
+        flagStackView.spacing = 8
         
-        let stackView2 = UIStackView(arrangedSubviews: [bronzeBadge, silverBadge, goldBadge])
-        stackView2.axis = .horizontal
-        stackView2.spacing = 8
+        let badgesStackView = UIStackView(arrangedSubviews: [bronzeBadge, silverBadge, goldBadge])
+        badgesStackView.axis = .horizontal
+        badgesStackView.spacing = 8
         
-        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, pointsLabel, pointsButton, usernameLabel, stackView, stackView2, bioLabel, separatorLine, unreadIndicator)
+        
+        let recipeStackView = UIStackView(arrangedSubviews: [recipePointsLabel, recipesButtonNav])
+        recipeStackView.axis = .vertical
+        recipeStackView.spacing = 0
+        recipeStackView.alignment = .center
+        
+        let followersStackView = UIStackView(arrangedSubviews: [followersCountLabel, followersButtonNav])
+        followersStackView.axis = .vertical
+        followersStackView.spacing = 0
+        followersStackView.alignment = .center
+        
+        let followingStackView = UIStackView(arrangedSubviews: [followingCountLabel, followingButtonNav])
+        followingStackView.axis = .vertical
+        followingStackView.spacing = 0
+        followingStackView.alignment = .center
+
+        
+        let statsStackView = UIStackView(arrangedSubviews: [recipeStackView, followersStackView, followingStackView])
+        statsStackView.axis = .horizontal
+        statsStackView.spacing = 8
+        statsStackView.distribution = .fillEqually
+        
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, profilePhotoButton, pointsLabel, pointsButton, usernameLabel, flagStackView, badgesStackView, statsStackView, bioLabel, followButton, separatorLine, unreadIndicator)
         
         backButton.left(20)
         backButton.Top == safeAreaLayoutGuide.Top + 12
@@ -233,33 +325,43 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         
         profilePhotoImageView.width(85)
         profilePhotoImageView.heightEqualsWidth()
-        profilePhotoImageView.centerHorizontally()
+        profilePhotoImageView.Top == safeAreaLayoutGuide.Top + 30
+        profilePhotoImageView.left(45)
         
-        profileTopConstraint = profilePhotoImageView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 12)
-        profileCenterConstraint = profilePhotoImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor, constant: 0)
+//        profileTopConstraint = profilePhotoImageView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 12)
+//        profileCenterConstraint = profilePhotoImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor, constant: 0)
         profileCenterConstraint?.isActive = true
         profileTopConstraint?.isActive = true
-        
+
         profilePhotoButton.CenterY == profilePhotoImageView.Bottom
-        profilePhotoButton.centerHorizontally()
-                
-        pointsLabel.Trailing == profilePhotoButton.CenterX - contentView.frame.width/4
-        pointsLabel.centerVertically()
-    
+        profilePhotoButton.CenterX == profilePhotoImageView.CenterX
+        
+        usernameLabel.Top == profilePhotoButton.Bottom + 6
+        usernameLabel.CenterX == profilePhotoImageView.CenterX
+
+        flagStackView.Top == usernameLabel.Bottom + 8
+        flagStackView.CenterX == usernameLabel.CenterX
+
+        bioLabel.Top == flagStackView.Bottom + 8
+        bioLabel.CenterX == flagStackView.CenterX
+        
+        statsStackView.Left == profilePhotoImageView.Right + 15
+        statsStackView.Top == safeAreaLayoutGuide.Top + 40
+        statsStackView.width(contentView.frame.width/1.8)
+        
+        followButton.Left == profilePhotoImageView.Right + 10
+        followButton.Top == statsStackView.Bottom + 8
+        followButton.CenterX == statsStackView.CenterX
+        
+//        pointsLabel.Top == followButton.Bottom + 8
+        pointsLabel.CenterX == followButton.CenterX
+        pointsLabel.CenterY == usernameLabel.CenterY
+
         pointsButton.Top == pointsLabel.Bottom
         pointsButton.CenterX == pointsLabel.CenterX
-        
-        stackView2.Top == pointsButton.Bottom
-        stackView2.CenterX == pointsButton.CenterX
-        
-        usernameLabel.Top == profilePhotoButton.Bottom + 8
-        usernameLabel.centerHorizontally()
-        
-        stackView.Top == usernameLabel.Bottom + 8
-        stackView.centerHorizontally()
-        
-        bioLabel.Top == stackView.Bottom + 12
-        bioLabel.left(adaptConstant(40)).right(adaptConstant(40))
+
+        badgesStackView.Top == pointsButton.Bottom
+        badgesStackView.CenterX == pointsButton.CenterX
         
         separatorLine.left(0).bottom(0).right(0)
         
@@ -288,8 +390,83 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     @objc func didTapPointsButton() {
         self.delegate?.didTapPointsButton()
     }
-    
-    
+//    @objc func didTapFollowButton() {
+//        self.delegate?.didTapFollowButton()
+//    }
+    func followFunction() {
+//        if isBrowsing {
+//            let accountAccessVC = AccountAccessVC()
+//            accountAccessVC.needAccount()
+//            self.present(accountAccessVC, animated: true, completion: nil)
+//        } else {
+//            guard let recipeID = recipe?.uid else { return }
+//            
+//            guard let userID = Auth.auth().currentUser?.uid else { return }
+//            
+//            if self.recipe!.hasFavorited {
+//                
+//                pointAdder(numberOfPoints: -1)
+//                pointAdderForCurrentUserID(numberOfPoints: -1)
+//                // remove
+//                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
+//                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
+//                
+//                SVProgressHUD.showError(withStatus: "Removed")
+//                SVProgressHUD.dismiss(withDelay: 1)
+//                
+//                self.recipe?.hasFavorited = false
+//                
+//                if !isFromFavorites {
+//                    self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+//                    self.homeVC?.recipeDataHasChanged = true
+//                }
+//                
+//                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+//                
+//            } else {
+//                // add
+//                
+//                pointAdder(numberOfPoints: 1)
+//                pointAdderForCurrentUserID(numberOfPoints: 1)
+//                
+//                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
+//                    if let error = error {
+//                        print("Failed to favorite recipe:", error)
+//                        return
+//                    }
+//                    
+//                    let timestamp = Date().timeIntervalSince1970
+//                    
+//                    FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
+//                        if let error = error {
+//                            print("Failted to favorite recipe:", error)
+//                            return
+//                        }
+//                        
+//                        print("Successfully favorited recipe.")
+//                        
+//                        SVProgressHUD.showSuccess(withStatus: "Saved")
+//                        SVProgressHUD.dismiss(withDelay: 1)
+//                        
+//                        self.recipe?.hasFavorited = true
+//                        
+//                        if !self.isFromFavorites {
+//                            self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+//                            self.homeVC?.recipeDataHasChanged = true
+//                        }
+//                        if let firstRecFav = UserDefaults.standard.object(forKey: "firstRecFav") as? Bool, firstRecFav {
+//                            print("First recipe has already been favorited: \(firstRecFav)")
+//                        } else {
+//                            UserDefaults.standard.set(true, forKey: "firstRecFav")
+//                            
+//                            NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
+//                        }
+//                        NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
+//                    }
+//                }
+//            }
+//        }
+    }
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -302,6 +479,7 @@ protocol ProfileHeaderViewDelegate: class {
     func didTapBackButton()
     func goToAccountInfo()
     func didTapPointsButton()
+//    func didTapFollowButton()
 }
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -331,6 +509,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             if !isMyProfile{
                     if let urlString = user?.avatarURL {
                         self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
+                        self.headerView.followButton.setTitle("Follow", for: .normal)
                     }
             }
             if let userPoints = user?.points {
