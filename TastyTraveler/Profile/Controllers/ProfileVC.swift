@@ -353,15 +353,15 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         followButton.Top == statsStackView.Bottom + 8
         followButton.CenterX == statsStackView.CenterX
         
-//        pointsLabel.Top == followButton.Bottom + 8
-        pointsLabel.CenterX == followButton.CenterX
-        pointsLabel.CenterY == usernameLabel.CenterY
-
-        pointsButton.Top == pointsLabel.Bottom
-        pointsButton.CenterX == pointsLabel.CenterX
-
-        badgesStackView.Top == pointsButton.Bottom
-        badgesStackView.CenterX == pointsButton.CenterX
+////        pointsLabel.Top == followButton.Bottom + 8
+//        pointsLabel.CenterX == followButton.CenterX
+//        pointsLabel.CenterY == usernameLabel.CenterY
+//
+//        pointsButton.Top == pointsLabel.Bottom
+//        pointsButton.CenterX == pointsLabel.CenterX
+//
+//        badgesStackView.Top == pointsButton.Bottom
+//        badgesStackView.CenterX == pointsButton.CenterX
         
         separatorLine.left(0).bottom(0).right(0)
         
@@ -393,80 +393,54 @@ class ProfileHeaderView: GSKStretchyHeaderView {
 //    @objc func didTapFollowButton() {
 //        self.delegate?.didTapFollowButton()
 //    }
+    var isMyProfile = true
+    
     func followFunction() {
-//        if isBrowsing {
-//            let accountAccessVC = AccountAccessVC()
-//            accountAccessVC.needAccount()
-//            self.present(accountAccessVC, animated: true, completion: nil)
-//        } else {
-//            guard let recipeID = recipe?.uid else { return }
-//            
-//            guard let userID = Auth.auth().currentUser?.uid else { return }
-//            
-//            if self.recipe!.hasFavorited {
-//                
-//                pointAdder(numberOfPoints: -1)
-//                pointAdderForCurrentUserID(numberOfPoints: -1)
-//                // remove
-//                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).removeValue()
-//                FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).removeValue()
-//                
-//                SVProgressHUD.showError(withStatus: "Removed")
-//                SVProgressHUD.dismiss(withDelay: 1)
-//                
-//                self.recipe?.hasFavorited = false
-//                
-//                if !isFromFavorites {
-//                    self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-//                    self.homeVC?.recipeDataHasChanged = true
-//                }
-//                
-//                NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
-//                
-//            } else {
-//                // add
-//                
-//                pointAdder(numberOfPoints: 1)
-//                pointAdderForCurrentUserID(numberOfPoints: 1)
-//                
-//                FirebaseController.shared.ref.child("recipes").child(recipeID).child("favoritedBy").child(userID).setValue(true) { (error, _) in
-//                    if let error = error {
-//                        print("Failed to favorite recipe:", error)
-//                        return
-//                    }
-//                    
-//                    let timestamp = Date().timeIntervalSince1970
-//                    
-//                    FirebaseController.shared.ref.child("users").child(userID).child("favorites").child(recipeID).setValue(timestamp) { (error, _) in
-//                        if let error = error {
-//                            print("Failted to favorite recipe:", error)
-//                            return
-//                        }
-//                        
-//                        print("Successfully favorited recipe.")
-//                        
-//                        SVProgressHUD.showSuccess(withStatus: "Saved")
-//                        SVProgressHUD.dismiss(withDelay: 1)
-//                        
-//                        self.recipe?.hasFavorited = true
-//                        
-//                        if !self.isFromFavorites {
-//                            self.homeVC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-//                            self.homeVC?.recipeDataHasChanged = true
-//                        }
-//                        if let firstRecFav = UserDefaults.standard.object(forKey: "firstRecFav") as? Bool, firstRecFav {
-//                            print("First recipe has already been favorited: \(firstRecFav)")
-//                        } else {
-//                            UserDefaults.standard.set(true, forKey: "firstRecFav")
-//                            
-//                            NotificationCenter.default.post(Notification(name: Notification.Name("FirstRecipeFavorited")))
-//                        }
-//                        NotificationCenter.default.post(name: Notification.Name("FavoritesChanged"), object: nil)
-//                    }
-//                }
-//            }
-//        }
+        
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+            FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
+                if (userR?.hasFollowed)! {
+                    // remove
+                    FirebaseController.shared.ref.child("users").child(otherUserID).child("followers").child(userID).removeValue()
+                    FirebaseController.shared.ref.child("users").child(userID).child("following").child(otherUserID).removeValue()
+
+                    SVProgressHUD.showSuccess(withStatus: "Tyler")
+                    SVProgressHUD.dismiss(withDelay: 1)
+
+                    let title = NSAttributedString(string: "Tyler", attributes: [
+                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                    self.followButton.setAttributedTitle(title, for: .normal)
+                } else {
+                    //ADD
+                    FirebaseController.shared.ref.child("users").child(otherUserID).child("followers").child(userID).setValue(true) { (error, _) in
+                        if let error = error {
+                            print("Failed to favorite recipe:", error)
+                            return
+                        }
+                        
+                        let timestamp = Date().timeIntervalSince1970
+
+                    FirebaseController.shared.ref.child("users").child(userID).child("following").child(otherUserID).setValue(timestamp) { (error, _) in
+                            if let error = error {
+                                print("Failted to favorite recipe:", error)
+                                return
+                            }
+                    SVProgressHUD.showSuccess(withStatus: "Brooke")
+                    SVProgressHUD.dismiss(withDelay: 1)
+
+                    let title = NSAttributedString(string: "Brooke", attributes: [
+                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                        NSAttributedStringKey.foregroundColor: Color.offWhite])
+                    self.followButton.setAttributedTitle(title, for: .normal)
+                }
+            }
+        }
+        }
+        
     }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -488,7 +462,6 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     var recipes = [Recipe]()
     var imagePicker: UIImagePickerController?
     
-    var isProfile = false
     var previousCreatorID: String?
     
     var isMyProfile = true
@@ -506,10 +479,26 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                 self.headerView.bioLabel.isUserInteractionEnabled = false
             }
             
+            
             if !isMyProfile{
+
+                guard let userID = Auth.auth().currentUser?.uid else { return }
+                
+                FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
+                    if (userR?.hasFollowed)! {
+                        let title = NSAttributedString(string: "Tyler", attributes: [
+                            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                        self.headerView.followButton.setAttributedTitle(title, for: .normal)
+                    } else {
+                        let title = NSAttributedString(string: "Brooke", attributes: [
+                            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
+                            NSAttributedStringKey.foregroundColor: Color.offWhite])
+                        self.headerView.followButton.setAttributedTitle(title, for: .normal)
+                    }
+                }
                     if let urlString = user?.avatarURL {
                         self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
-                        self.headerView.followButton.setTitle("Follow", for: .normal)
                     }
             }
             if let userPoints = user?.points {
@@ -581,8 +570,11 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         super.viewDidLoad()
         viewLoadSetup()
         
+        
         if isMyProfile {
+
         guard let userID = Auth.auth().currentUser?.uid else { return }
+            
         FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
                 if let urlString = userR?.avatarURL {
                     self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
@@ -740,6 +732,9 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             } else {
                 self.headerView.unreadIndicator.isHidden = true
             }
+            if isMyProfile {
+                headerView.followButton.isHidden = true
+            }
             
             if !isMyProfile {
                 headerView.profilePhotoButton.isHidden = true
@@ -756,8 +751,8 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     headerView.bioLabel.text = "No bio"
                     headerView.bioLabel.textColor = Color.gray
                     headerView.bioLabel.isUserInteractionEnabled = false
+
                 }
-                
                 headerView.backButton.isHidden = false
             }
         }

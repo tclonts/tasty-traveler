@@ -9,6 +9,10 @@
 import Foundation
 
 struct TTUser {
+    
+    //KEYS
+     static let hasFollowedKey = "hasFollowed"
+    
     var uid: String
     var avatarURL: String?
 //    var country: String?
@@ -16,8 +20,11 @@ struct TTUser {
     var bio: String?
     var points: Int?
     var badgeStatus: Int?
-//    var followers: [Followers]?
+    var followers: [TTUser]?
+    var following: [TTUser]?
     
+    // PERSONAL
+    var hasFollowed = false
     
     
 //    var cookedRecipes: [String]?   // recipe IDs
