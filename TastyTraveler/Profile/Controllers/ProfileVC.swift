@@ -21,7 +21,7 @@ private let sectionHeaderID = "sectionHeader"
 
 class ProfileHeaderView: GSKStretchyHeaderView {
     weak var delegate: ProfileHeaderViewDelegate?
-        
+    
     lazy var settingsButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "settings"), for: .normal)
@@ -394,51 +394,68 @@ class ProfileHeaderView: GSKStretchyHeaderView {
 //        self.delegate?.didTapFollowButton()
 //    }
     var isMyProfile = true
+    var userID: String?
     
     func followFunction() {
+        guard let currentUser = Auth.auth().currentUser?.uid else { return }
         
-        guard let userID = Auth.auth().currentUser?.uid else { return }
-        
-            FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
-                if (userR?.hasFollowed)! {
-                    // remove
-                    FirebaseController.shared.ref.child("users").child(otherUserID).child("followers").child(userID).removeValue()
-                    FirebaseController.shared.ref.child("users").child(userID).child("following").child(otherUserID).removeValue()
+        FirebaseController.shared.fetchUserWithUID(uid: currentUser) { (user) in
+            guard let user = user else {return}
+            var updatedUser = user
+            
+            FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(self.userID!).observeSingleEvent(of: .value) { (snapshot) in
+                if (snapshot.value as? Double) != nil {
+                    updatedUser.hasFollowed = true
+                } else {
+                    updatedUser.hasFollowed = false
+                }
+                
+//                DispatchQueue.main.async {
+//                    updatedUser =
+//                }
 
-                    SVProgressHUD.showSuccess(withStatus: "Tyler")
+                
+                if (updatedUser.hasFollowed) {
+                    // remove
+                    FirebaseController.shared.ref.child("users").child(self.userID!).child("followers").child(currentUser).removeValue()
+                    FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(self.userID!).removeValue()
+
+                    SVProgressHUD.showSuccess(withStatus: "Follow")
                     SVProgressHUD.dismiss(withDelay: 1)
 
-                    let title = NSAttributedString(string: "Tyler", attributes: [
+                    let title = NSAttributedString(string: "Follow", attributes: [
                         NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                        NSAttributedStringKey.foregroundColor: Color.offWhite])
                     self.followButton.setAttributedTitle(title, for: .normal)
+                    
                 } else {
                     //ADD
-                    FirebaseController.shared.ref.child("users").child(otherUserID).child("followers").child(userID).setValue(true) { (error, _) in
+                  
+                    FirebaseController.shared.ref.child("users").child(self.userID!).child("followers").child(currentUser).setValue(true) { (error, _) in
                         if let error = error {
                             print("Failed to favorite recipe:", error)
                             return
                         }
-                        
+
                         let timestamp = Date().timeIntervalSince1970
 
-                    FirebaseController.shared.ref.child("users").child(userID).child("following").child(otherUserID).setValue(timestamp) { (error, _) in
+                        FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(self.userID!).setValue(timestamp) { (error, _) in
                             if let error = error {
                                 print("Failted to favorite recipe:", error)
                                 return
                             }
-                    SVProgressHUD.showSuccess(withStatus: "Brooke")
+                    SVProgressHUD.showSuccess(withStatus: "Follow")
                     SVProgressHUD.dismiss(withDelay: 1)
 
-                    let title = NSAttributedString(string: "Brooke", attributes: [
+                    let title = NSAttributedString(string: "Following", attributes: [
                         NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
                         NSAttributedStringKey.foregroundColor: Color.offWhite])
                     self.followButton.setAttributedTitle(title, for: .normal)
                 }
             }
         }
+    }
         }
-        
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -482,16 +499,22 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             
             if !isMyProfile{
 
-                guard let userID = Auth.auth().currentUser?.uid else { return }
-                
-                FirebaseController.shared.fetchUserWithUID(uid: userID) { (userR) in
-                    if (userR?.hasFollowed)! {
-                        let title = NSAttributedString(string: "Tyler", attributes: [
+                guard let currentUser = Auth.auth().currentUser?.uid else { return }
+                var updatedUser = user
+                FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(self.userID!).observeSingleEvent(of: .value) { (snapshot) in
+                    if (snapshot.value as? Double) != nil {
+                        updatedUser?.hasFollowed = true
+                    } else {
+                        updatedUser?.hasFollowed = false
+                    }
+
+                    if ((updatedUser?.hasFollowed)!) {
+                        let title = NSAttributedString(string: "Following", attributes: [
                             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                            NSAttributedStringKey.foregroundColor: Color.offWhite])
                         self.headerView.followButton.setAttributedTitle(title, for: .normal)
                     } else {
-                        let title = NSAttributedString(string: "Brooke", attributes: [
+                        let title = NSAttributedString(string: "Follow", attributes: [
                             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
                             NSAttributedStringKey.foregroundColor: Color.offWhite])
                         self.headerView.followButton.setAttributedTitle(title, for: .normal)
@@ -501,6 +524,8 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                         self.headerView.profilePhotoImageView.loadImage(urlString: urlString, placeholder: #imageLiteral(resourceName: "avatar"))
                     }
             }
+                
+                
             if let userPoints = user?.points {
                 self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
                 let title = NSAttributedString(string: "\(userPoints)", attributes: [
@@ -590,6 +615,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         if let uid = userID {
             FirebaseController.shared.fetchUserWithUID(uid: uid, completion: { (user) in
                 self.user = user
+                self.headerView.userID = user?.uid
                 
                 
                 self.fetchRecipes()

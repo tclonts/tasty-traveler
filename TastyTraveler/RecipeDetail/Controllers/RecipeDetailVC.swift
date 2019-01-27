@@ -352,6 +352,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
             profileVC.isMyProfile = false
             profileVC.userID = uid
+            
+            
             self.present(profileVC, animated: true, completion: nil)
         }
     }
@@ -385,6 +387,13 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                 } else {
                     updatedRecipe.hasFavorited = false
                 }
+                
+                FirebaseController.shared.ref.child("users").child(userID).child("likes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
+                    if (snapshot.value as? Double) != nil {
+                        updatedRecipe.hasLiked = true
+                    } else {
+                        updatedRecipe.hasLiked = false
+                    }
                 
                 FirebaseController.shared.ref.child("users").child(userID).child("cookedRecipes").child(recipe.uid).observeSingleEvent(of: .value, with: { (snapshot) in
                     if (snapshot.value as? Double) != nil {
@@ -421,8 +430,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                             }) else {return}
                             self.homeVC!.searchResultRecipes[index] = self.recipe!
                             self.homeVC?.recipeDataHasChanged = true
+                            }
                         }
-                    }
+                    })
                 })
             })
         }

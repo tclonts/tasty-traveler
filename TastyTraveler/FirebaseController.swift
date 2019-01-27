@@ -493,21 +493,7 @@ class FirebaseController {
         SVProgressHUD.dismiss(withDelay: 0.5)
     }
     
-//    func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
-//        guard let currentUser = Auth.auth().currentUser else { return }
-//
-//        guard let localData = dictionary[Recipe.photoKey] as? Data else { return }
-//
-//        let recipeID = uid ?? UUID().uuidString
-//        let imageFileRef = storageRef.child("images/\(recipeID)")
-//        let thumbnailFileRef = storageRef.child("thumbnails/\(recipeID)")
-//        let videoFileRef = storageRef.child("videos/\(recipeID)")
-//
-//        let metadata = StorageMetadata()
-//        metadata.contentType = "image/png"
-//
-//        let
-//    }
+
     
     func uploadRecipe(dictionary: [String:Any], uid: String?, timestamp: Double?) {
         guard let currentUser = Auth.auth().currentUser else { return }
