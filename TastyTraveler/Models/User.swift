@@ -20,8 +20,8 @@ struct TTUser {
     var bio: String?
     var points: Int?
     var badgeStatus: Int?
-    var followers: [TTUser]?
-    var following: [TTUser]?
+    var followers: [String: Any]?
+    var following: [String: Any]?
     
     // PERSONAL
     var hasFollowed = false
@@ -33,11 +33,20 @@ struct TTUser {
 //    var ratedRecipes: [String]?    // recipe IDs
 //    var conversations: [String]?   // conversation IDs
     init(uid: String, points: Int = 0, badgeStatus: Int = 0, dictionary: [String:Any]) {
+
         self.uid = uid
         self.points = dictionary["points"] as? Int
         self.badgeStatus = dictionary["badgeStatus"] as? Int
         self.username = dictionary["username"] as? String ?? ""
         self.avatarURL = dictionary["avatarURL"] as? String
         self.bio = dictionary["bio"] as? String
+        
+        if let followersDictionary = dictionary["followers"] as? [String:Any]{
+            self.followers = followersDictionary
+        }
+        if let followingDictionary = dictionary["following"] as? [String:Any]{
+            self.following = followingDictionary
+        }
+
     }
 }

@@ -75,14 +75,6 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return button
     }()
     
-//    let followerLabel: UILabel = {
-//        let label = UILabel()
-//        label.font = ProximaNova.semibold.of(size: 12)
-//        label.textColor = Color.blackText
-//        label.text = "Followers"
-//        return label
-//    }()
-    
     lazy var recipesButtonNav: UIButton = {
         let button = UIButton(type: .system)
         button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
@@ -118,21 +110,21 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         let label = UILabel()
         label.font = ProximaNova.bold.of(size: 16)
         label.textColor = Color.blackText
-        label.text = "\(26)"
+        label.text = "\(0)"
         return label
     }()
     let followersCountLabel: UILabel = {
         let label = UILabel()
         label.font = ProximaNova.bold.of(size: 16)
         label.textColor = Color.blackText
-        label.text = "\(336)"
+        label.text = "\(0)"
         return label
     }()
     let followingCountLabel: UILabel = {
         let label = UILabel()
         label.font = ProximaNova.bold.of(size: 16)
         label.textColor = Color.blackText
-        label.text = "\(1402)"
+        label.text = "\(0)"
         return label
     }()
     
@@ -313,7 +305,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         statsStackView.spacing = 8
         statsStackView.distribution = .fillEqually
         
-        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, profilePhotoButton, pointsLabel, pointsButton, usernameLabel, flagStackView, badgesStackView, statsStackView, bioLabel, followButton, separatorLine, unreadIndicator)
+        self.contentView.sv(backButton, settingsButton, notificationsButton, profilePhotoImageView, profilePhotoButton, profilePhotoButton, usernameLabel, flagStackView, statsStackView, bioLabel, followButton, separatorLine, unreadIndicator)
         
         backButton.left(20)
         backButton.Top == safeAreaLayoutGuide.Top + 12
@@ -410,22 +402,21 @@ class ProfileHeaderView: GSKStretchyHeaderView {
                     updatedUser.hasFollowed = false
                 }
                 
-//                DispatchQueue.main.async {
-//                    updatedUser =
-//                }
-
                 
                 if (updatedUser.hasFollowed) {
                     // remove
                     FirebaseController.shared.ref.child("users").child(self.userID!).child("followers").child(currentUser).removeValue()
                     FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(self.userID!).removeValue()
 
-                    SVProgressHUD.showSuccess(withStatus: "Follow")
+                    SVProgressHUD.showSuccess(withStatus: "Unfollowed")
                     SVProgressHUD.dismiss(withDelay: 1)
 
                     let title = NSAttributedString(string: "Follow", attributes: [
                         NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
                         NSAttributedStringKey.foregroundColor: Color.offWhite])
+                    self.followButton.backgroundColor = Color.primaryOrange
+                    self.followButton.layer.borderColor = Color.primaryOrange.cgColor
+                    self.followButton.layer.borderWidth = 1.0
                     self.followButton.setAttributedTitle(title, for: .normal)
                     
                 } else {
@@ -444,17 +435,20 @@ class ProfileHeaderView: GSKStretchyHeaderView {
                                 print("Failted to favorite recipe:", error)
                                 return
                             }
-                    SVProgressHUD.showSuccess(withStatus: "Follow")
+                    SVProgressHUD.showSuccess(withStatus: "Followed")
                     SVProgressHUD.dismiss(withDelay: 1)
 
                     let title = NSAttributedString(string: "Following", attributes: [
                         NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                        NSAttributedStringKey.foregroundColor: Color.offWhite])
+                        NSAttributedStringKey.foregroundColor: Color.gray])
+                    self.followButton.backgroundColor = UIColor.white
+                    self.followButton.layer.borderColor = UIColor.gray.cgColor
+                    self.followButton.layer.borderWidth = 2.0
                     self.followButton.setAttributedTitle(title, for: .normal)
+                        }
+                    }
                 }
             }
-        }
-    }
         }
     }
     
@@ -511,12 +505,17 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     if ((updatedUser?.hasFollowed)!) {
                         let title = NSAttributedString(string: "Following", attributes: [
                             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
-                            NSAttributedStringKey.foregroundColor: Color.offWhite])
+                            NSAttributedStringKey.foregroundColor: Color.gray])
+                        self.headerView.followButton.backgroundColor = UIColor.white
+                        self.headerView.followButton.layer.borderColor = Color.gray.cgColor
+                        self.headerView.followButton.layer.borderWidth = 2.0
+
                         self.headerView.followButton.setAttributedTitle(title, for: .normal)
                     } else {
                         let title = NSAttributedString(string: "Follow", attributes: [
                             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(16))!,
                             NSAttributedStringKey.foregroundColor: Color.offWhite])
+                        self.headerView.followButton.backgroundColor = Color.primaryOrange
                         self.headerView.followButton.setAttributedTitle(title, for: .normal)
                     }
                 }
@@ -526,6 +525,21 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             }
                 
                 
+            if let followersCount = user?.followers {
+                self.headerView.followersCountLabel.text = "\(followersCount.count)"
+                
+            }
+            if let followingCount = user?.following {
+                self.headerView.followingCountLabel.text = "\(followingCount.count)"
+            }
+            
+            if let user = user {
+                FirebaseController.shared.ref.child("users").child(user.uid).child("uploadedRecipes").observe(.value) { (snapshot) in
+                    self.headerView.recipePointsLabel.text = "\(snapshot.childrenCount)"
+                }
+            }
+            
+            
             if let userPoints = user?.points {
                 self.headerView.pointsButton.setTitle("\(userPoints)", for: .normal)
                 let title = NSAttributedString(string: "\(userPoints)", attributes: [
@@ -533,6 +547,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     NSAttributedStringKey.foregroundColor: Color.primaryOrange])
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
+            
             
             if user?.badgeStatus == 0 || user?.badgeStatus == nil {
                 self.headerView.bronzeBadge.isHidden = true
@@ -726,7 +741,19 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
                     NSAttributedStringKey.foregroundColor: Color.primaryOrange])
                 headerView.pointsButton.setAttributedTitle(title, for: .normal)
             }
+            if let followersCount = user?.followers {
+                self.headerView.followersCountLabel.text = "\(followersCount.count)"
+                
+            }
+            if let followingCount = user?.following {
+                self.headerView.followingCountLabel.text = "\(followingCount.count)"
+            }
             
+            if let user = user {
+                FirebaseController.shared.ref.child("users").child(user.uid).child("uploadedRecipes").observe(.value) { (snapshot) in
+                    self.headerView.recipePointsLabel.text = "\(snapshot.childrenCount)"
+                }
+            }
             
             if user?.badgeStatus == 0 || user?.badgeStatus == nil {
                 self.headerView.bronzeBadge.isHidden = true
@@ -1070,8 +1097,18 @@ extension ProfileVC: ProfileHeaderViewDelegate {
             headerView.pointsButton.setAttributedTitle(title, for: .normal)
         }
         
-        
-
+        if let followersCount = user?.followers {
+            self.headerView.followersCountLabel.text = "\(followersCount.count)"
+        }
+        if let followingCount = user?.following {
+            self.headerView.followingCountLabel.text = "\(followingCount.count)"
+            
+        }
+        if let user = user {
+            FirebaseController.shared.ref.child("users").child(user.uid).child("uploadedRecipes").observe(.value) { (snapshot) in
+            self.headerView.recipePointsLabel.text = "\(snapshot.childrenCount)"
+        }
+        }
         self.view.sv(emptyDataView, userHasNoRecipesLabel)
         emptyDataView.centerInContainer()
         userHasNoRecipesLabel.centerInContainer().left(20).right(20)
