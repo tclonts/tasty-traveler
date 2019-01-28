@@ -476,15 +476,8 @@
 				2A0B4DFC205997580056F7D5 /* CreateRecipe */,
 				BE7E8049214D9242002646AF /* FirstPointsExplainationVC.swift */,
 				2A0B4DFF2059978A0056F7D5 /* Profile */,
+				BE17426021FEB093006B928B /* Badges */,
 				2A805AE32049BF45004BEEF3 /* AppDelegate.swift */,
-				2A54425020D949A500727BFA /* AchievementVC.swift */,
-				BE7E8047214C4772002646AF /* LearnMoreVC.swift */,
-				BE675011215472F90065BB20 /* LearnBronzeBadgeVC.swift */,
-				BE6750132154745D0065BB20 /* LearnSilverBadgeVC.swift */,
-				BE6750152154748B0065BB20 /* LearnGoldBadgeVC.swift */,
-				BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */,
-				BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */,
-				BE7E803F214C0239002646AF /* GoldAchievementVC.swift */,
 				2A665ACA2069B2F10014A464 /* FirebaseController.swift */,
 				2A54A969205077CE008255A9 /* MainTabBarController.swift */,
 				2AD34F0B2049C902004F2EF3 /* Models */,
@@ -596,6 +589,21 @@
 				F30569806C251D325498F90C /* Pods-TastyTraveler.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		BE17426021FEB093006B928B /* Badges */ = {
+			isa = PBXGroup;
+			children = (
+				2A54425020D949A500727BFA /* AchievementVC.swift */,
+				BE7E8047214C4772002646AF /* LearnMoreVC.swift */,
+				BE675011215472F90065BB20 /* LearnBronzeBadgeVC.swift */,
+				BE6750132154745D0065BB20 /* LearnSilverBadgeVC.swift */,
+				BE6750152154748B0065BB20 /* LearnGoldBadgeVC.swift */,
+				BE7E803B214BE6F8002646AF /* BronzeAchievementVC.swift */,
+				BE7E803D214C00F7002646AF /* SilverAchievementVC.swift */,
+				BE7E803F214C0239002646AF /* GoldAchievementVC.swift */,
+			);
+			path = Badges;
 			sourceTree = "<group>";
 		};
 		DF5C646230B0DCD57A853355 /* Frameworks */ = {

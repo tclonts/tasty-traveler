@@ -53,6 +53,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.addTarget(self, action: #selector(didTapPointsButton), for: .touchUpInside)
         return button
     }()
+    
     lazy var followButton: UIButton = {
         let button = UIButton(type: .system)
         button.layer.cornerRadius = 5
@@ -66,8 +67,6 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         return button
     }()
     
-    
-    
     lazy var profilePhotoButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "profilePhotoButton"), for: .normal)
@@ -77,7 +76,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     lazy var recipesButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(goToFollowersInfo), for: .touchUpInside)
         button.titleLabel?.font = ProximaNova.regular.of(size: 8)
         let title = NSAttributedString(string: "recipes", attributes: [
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
@@ -85,9 +84,10 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.setAttributedTitle(title, for: .normal)
         return button
     }()
+    
     lazy var followersButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(goToFollowersInfo), for: .touchUpInside)
         button.titleLabel?.font = ProximaNova.regular.of(size: 8)
         let title = NSAttributedString(string: "followers", attributes: [
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
@@ -95,9 +95,10 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         button.setAttributedTitle(title, for: .normal)
         return button
     }()
+    
     lazy var followingButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        button.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(goToFollowersInfo), for: .touchUpInside)
         button.titleLabel?.font = ProximaNova.regular.of(size: 8)
         let title = NSAttributedString(string: "following", attributes: [
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
@@ -231,6 +232,9 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     
     @objc func backButtonTapped() {
         delegate?.didTapBackButton()
+    }
+    @objc func goToFollowersInfo() {
+        delegate?.didTapFollowerInfoButton()
     }
     @objc func followButtonTapped() {
         followFunction()
@@ -464,7 +468,7 @@ protocol ProfileHeaderViewDelegate: class {
     func didTapBackButton()
     func goToAccountInfo()
     func didTapPointsButton()
-//    func didTapFollowButton()
+    func didTapFollowerInfoButton()
 }
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -1034,6 +1038,10 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
 }
 
 extension ProfileVC: ProfileHeaderViewDelegate {
+    func didTapFollowerInfoButton() {
+        print("Take me to the Followers Info Page")
+    }
+    
     func didTapProfilePhotoButton() {
         
         print("profile photo")
