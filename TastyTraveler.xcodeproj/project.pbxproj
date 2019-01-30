@@ -97,6 +97,9 @@
 		2ADA49BC20572DA20024C8EE /* Validator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49BB20572DA20024C8EE /* Validator.swift */; };
 		2AEF1C6A2056E667001DBB98 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF1C692056E667001DBB98 /* GradientButton.swift */; };
 		BE17425C21F3BA46006B928B /* FirstRecipeLikedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */; };
+		BE17426321FEB14F006B928B /* UserFollowerInfoVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17426221FEB14F006B928B /* UserFollowerInfoVC.swift */; };
+		BE17426621FECE36006B928B /* FollowersCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17426521FECE36006B928B /* FollowersCell.swift */; };
+		BE17426821FECE43006B928B /* FollowingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17426721FECE43006B928B /* FollowingCell.swift */; };
 		BE25D1A2213222FE00D2940D /* CookedImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A1213222FE00D2940D /* CookedImageCell.swift */; };
 		BE25D1A4213223EE00D2940D /* ExtensionForImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */; };
 		BE25D1A62136697B00D2940D /* PointsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE25D1A52136697B00D2940D /* PointsVC.swift */; };
@@ -210,6 +213,9 @@
 		60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.debug.xcconfig"; sourceTree = "<group>"; };
 		7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TastyTraveler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeLikedVC.swift; sourceTree = "<group>"; };
+		BE17426221FEB14F006B928B /* UserFollowerInfoVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFollowerInfoVC.swift; sourceTree = "<group>"; };
+		BE17426521FECE36006B928B /* FollowersCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersCell.swift; sourceTree = "<group>"; };
+		BE17426721FECE43006B928B /* FollowingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingCell.swift; sourceTree = "<group>"; };
 		BE25D1A1213222FE00D2940D /* CookedImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookedImageCell.swift; sourceTree = "<group>"; };
 		BE25D1A3213223EE00D2940D /* ExtensionForImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionForImagePicker.swift; sourceTree = "<group>"; };
 		BE25D1A52136697B00D2940D /* PointsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointsVC.swift; sourceTree = "<group>"; };
@@ -476,6 +482,7 @@
 				2A0B4DFC205997580056F7D5 /* CreateRecipe */,
 				BE7E8049214D9242002646AF /* FirstPointsExplainationVC.swift */,
 				2A0B4DFF2059978A0056F7D5 /* Profile */,
+				BE17426121FEB11B006B928B /* FollowInfo */,
 				BE17426021FEB093006B928B /* Badges */,
 				2A805AE32049BF45004BEEF3 /* AppDelegate.swift */,
 				2A665ACA2069B2F10014A464 /* FirebaseController.swift */,
@@ -604,6 +611,24 @@
 				BE7E803F214C0239002646AF /* GoldAchievementVC.swift */,
 			);
 			path = Badges;
+			sourceTree = "<group>";
+		};
+		BE17426121FEB11B006B928B /* FollowInfo */ = {
+			isa = PBXGroup;
+			children = (
+				BE17426421FECE15006B928B /* Views */,
+				BE17426221FEB14F006B928B /* UserFollowerInfoVC.swift */,
+			);
+			path = FollowInfo;
+			sourceTree = "<group>";
+		};
+		BE17426421FECE15006B928B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BE17426521FECE36006B928B /* FollowersCell.swift */,
+				BE17426721FECE43006B928B /* FollowingCell.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		DF5C646230B0DCD57A853355 /* Frameworks */ = {
@@ -819,6 +844,7 @@
 				2AD34F10204F0AE7004F2EF3 /* AccountAccessVC.swift in Sources */,
 				2A0B4E052059A6BA0056F7D5 /* HomeVC.swift in Sources */,
 				2A665AD6206D8ECD0014A464 /* AboutCell.swift in Sources */,
+				BE17426321FEB14F006B928B /* UserFollowerInfoVC.swift in Sources */,
 				BE7E803C214BE6F8002646AF /* BronzeAchievementVC.swift in Sources */,
 				2ACCCB2E20ADE6F700CA8B69 /* SettingsVC.swift in Sources */,
 				2AA2520D2062BC9500BA9775 /* CreateRecipeForm.swift in Sources */,
@@ -841,6 +867,7 @@
 				2ADA49BC20572DA20024C8EE /* Validator.swift in Sources */,
 				2A76AA84208A72030030BE8F /* LocationSection.swift in Sources */,
 				BE7E8044214C18C0002646AF /* FirstRecipeCookedVC.swift in Sources */,
+				BE17426621FECE36006B928B /* FollowersCell.swift in Sources */,
 				2A9BA326209A00F800AC3E42 /* MessageCell.swift in Sources */,
 				2A3BE8AA2098CA0F0095CDA5 /* Message.swift in Sources */,
 				2AC67E2F2087B52E00C0E828 /* State.swift in Sources */,
@@ -872,6 +899,7 @@
 				BE6750162154748B0065BB20 /* LearnGoldBadgeVC.swift in Sources */,
 				2A35F5B020A0E56A009899AA /* RatingBar.swift in Sources */,
 				BE675012215472F90065BB20 /* LearnBronzeBadgeVC.swift in Sources */,
+				BE17426821FECE43006B928B /* FollowingCell.swift in Sources */,
 				2A0B4E0C205ACF210056F7D5 /* BaseCell.swift in Sources */,
 				2A2D480A20A393E100705D70 /* RecipeAnnotation.swift in Sources */,
 				2A54A9722052E474008255A9 /* SignInVC.swift in Sources */,

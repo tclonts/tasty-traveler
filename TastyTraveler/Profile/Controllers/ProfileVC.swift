@@ -19,8 +19,10 @@ private let cookedSection = "cookedSectionCell"
 private let uploadedSection = "uploadedSectionCell"
 private let sectionHeaderID = "sectionHeader"
 
-class ProfileHeaderView: GSKStretchyHeaderView {
+class ProfileHeaderView: GSKStretchyHeaderView{
+   
     weak var delegate: ProfileHeaderViewDelegate?
+    
     
     lazy var settingsButton: UIButton = {
         let button = UIButton(type: .system)
@@ -234,6 +236,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
         delegate?.didTapBackButton()
     }
     @objc func goToFollowersInfo() {
+        
         delegate?.didTapFollowerInfoButton()
     }
     @objc func followButtonTapped() {
@@ -386,9 +389,7 @@ class ProfileHeaderView: GSKStretchyHeaderView {
     @objc func didTapPointsButton() {
         self.delegate?.didTapPointsButton()
     }
-//    @objc func didTapFollowButton() {
-//        self.delegate?.didTapFollowButton()
-//    }
+
     var isMyProfile = true
     var userID: String?
     
@@ -635,6 +636,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
             FirebaseController.shared.fetchUserWithUID(uid: uid, completion: { (user) in
                 self.user = user
                 self.headerView.userID = user?.uid
+                
                 
                 
                 self.fetchRecipes()
@@ -1039,6 +1041,11 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
 
 extension ProfileVC: ProfileHeaderViewDelegate {
     func didTapFollowerInfoButton() {
+        let userFollowerInfoVC = UserFollowerInfoVC()
+        userFollowerInfoVC.user = self.user
+        let navController = UINavigationController(rootViewController: userFollowerInfoVC)
+        self.present(navController, animated: true, completion: nil)
+
         print("Take me to the Followers Info Page")
     }
     
