@@ -484,6 +484,7 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
     var headerView: ProfileHeaderView!
     var recipes = [Recipe]()
     var imagePicker: UIImagePickerController?
+    static let shared = ProfileVC()
     
     var previousCreatorID: String?
     
@@ -1048,18 +1049,21 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
 
 extension ProfileVC: ProfileHeaderViewDelegate {
     func didTapFollowerInfoButton() {
-        let FollowersInfoTableView = FollowersInfoTableVC()
-        FollowersInfoTableView.user = self.user
-        let navController = UINavigationController(rootViewController: FollowersInfoTableView)
+        let TestUIViewControllerr = TestUIViewController()
+        TestUIViewControllerr.user = self.user
+        TestUIViewControllerr.fromFollowersButtonNav = true
+        let navController = UINavigationController(rootViewController: TestUIViewControllerr)
         self.present(navController, animated: true, completion: nil)
+        
 
         print("Take me to the Followers Info Page")
     }
     
     func didTapFollowingInfoButton() {
-        let FollowingInfoTableView = FollowingInfoTableVC()
-        FollowingInfoTableView.user = self.user
-        let navController = UINavigationController(rootViewController: FollowingInfoTableView)
+        let TestUIViewControllerr = TestUIViewController()
+        TestUIViewControllerr.user = self.user
+        TestUIViewControllerr.fromFollowingButtonNav = true
+        let navController = UINavigationController(rootViewController: TestUIViewControllerr)
         self.present(navController, animated: true, completion: nil)
         
         print("Take me to the following info page")

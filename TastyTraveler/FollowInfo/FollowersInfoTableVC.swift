@@ -28,7 +28,11 @@ import RSKImageCropper
 class FollowersInfoTableVC: UITableViewController {
 
    
-    var user: TTUser?
+    var user: TTUser? {
+        didSet{
+            self.user = ProfileVC.shared.user
+        }
+    }
 
     let navigationBarBackground: GradientView = {
         let gradientView = GradientView()
@@ -53,19 +57,16 @@ class FollowersInfoTableVC: UITableViewController {
         return button
     }()
     
-    let emptyLabel = UIStackView()
-    
         override func viewDidLoad() {
             super.viewDidLoad()
             self.tableView.reloadData()
             self.view.backgroundColor = .white
-            
+            self.user = ProfileVC.shared.user
             FirebaseController.shared.fetchUserWithUID(uid: (user?.uid)!) { (user) in
                 guard let user = user else {return}
                 self.user = user
                 let username = user.username
                 self.navigationItem.title = username
-                self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: self.backButton)
             }
  
             
@@ -75,10 +76,7 @@ class FollowersInfoTableVC: UITableViewController {
             self.navigationController?.navigationBar.backgroundColor = .white
             
             self.tableView.register(FollowersCell.self, forCellReuseIdentifier: "followersCell")
-//            let footerView = UIView()
-//            footerView.backgroundColor = .white
-//            footerView.height(1)
-//            self.tableView.tableFooterView = footerView
+
         }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {

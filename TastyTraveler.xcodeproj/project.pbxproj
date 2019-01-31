@@ -97,6 +97,7 @@
 		2ADA49BC20572DA20024C8EE /* Validator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ADA49BB20572DA20024C8EE /* Validator.swift */; };
 		2AEF1C6A2056E667001DBB98 /* GradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEF1C692056E667001DBB98 /* GradientButton.swift */; };
 		BE086FF42202A04A00B6BEDF /* FollowingInfoTableVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE086FF32202A04A00B6BEDF /* FollowingInfoTableVC.swift */; };
+		BE086FF82202BAC900B6BEDF /* TestUIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE086FF72202BAC900B6BEDF /* TestUIViewController.swift */; };
 		BE17425C21F3BA46006B928B /* FirstRecipeLikedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */; };
 		BE17426321FEB14F006B928B /* FollowersInfoTableVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17426221FEB14F006B928B /* FollowersInfoTableVC.swift */; };
 		BE17426621FECE36006B928B /* FollowersCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE17426521FECE36006B928B /* FollowersCell.swift */; };
@@ -214,6 +215,7 @@
 		60189EA893CAABDFABC71933 /* Pods-TastyTraveler.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TastyTraveler.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TastyTraveler/Pods-TastyTraveler.debug.xcconfig"; sourceTree = "<group>"; };
 		7DFE2A8B0B8A5D546F40C336 /* Pods_TastyTraveler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TastyTraveler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE086FF32202A04A00B6BEDF /* FollowingInfoTableVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowingInfoTableVC.swift; sourceTree = "<group>"; };
+		BE086FF72202BAC900B6BEDF /* TestUIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestUIViewController.swift; sourceTree = "<group>"; };
 		BE17425B21F3BA46006B928B /* FirstRecipeLikedVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstRecipeLikedVC.swift; sourceTree = "<group>"; };
 		BE17426221FEB14F006B928B /* FollowersInfoTableVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersInfoTableVC.swift; sourceTree = "<group>"; };
 		BE17426521FECE36006B928B /* FollowersCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersCell.swift; sourceTree = "<group>"; };
@@ -621,6 +623,7 @@
 				BE17426421FECE15006B928B /* Views */,
 				BE17426221FEB14F006B928B /* FollowersInfoTableVC.swift */,
 				BE086FF32202A04A00B6BEDF /* FollowingInfoTableVC.swift */,
+				BE086FF72202BAC900B6BEDF /* TestUIViewController.swift */,
 			);
 			path = FollowInfo;
 			sourceTree = "<group>";
@@ -935,6 +938,7 @@
 				2A665AD4206D8BBB0014A464 /* MenuBar.swift in Sources */,
 				2ABEE58520B31C1F0000519A /* UserNotificationsVC.swift in Sources */,
 				2A665AD0206C17D70014A464 /* RecipeDetailVC.swift in Sources */,
+				BE086FF82202BAC900B6BEDF /* TestUIViewController.swift in Sources */,
 				BE25D1A62136697B00D2940D /* PointsVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
