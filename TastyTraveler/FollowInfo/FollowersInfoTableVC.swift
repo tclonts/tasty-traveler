@@ -25,12 +25,34 @@ import FacebookCore
 import RSKImageCropper
 
 
-class UserFollowerInfoVC: UITableViewController {
+class FollowersInfoTableVC: UITableViewController {
 
    
     var user: TTUser?
 
-
+    let navigationBarBackground: GradientView = {
+        let gradientView = GradientView()
+        gradientView.startPointX = 0.5
+        gradientView.startPointY = 0
+        gradientView.endPointX = 0.5
+        gradientView.endPointY = 1
+        gradientView.topColor = UIColor.black.withAlphaComponent(0.64)
+        gradientView.bottomColor = UIColor.black.withAlphaComponent(0)
+        return gradientView
+    }()
+    
+    let navigationBar: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }()
+    lazy var backButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(#imageLiteral(resourceName: "closeButton"), for: .normal)
+        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
     let emptyLabel = UIStackView()
     
         override func viewDidLoad() {
@@ -43,6 +65,7 @@ class UserFollowerInfoVC: UITableViewController {
                 self.user = user
                 let username = user.username
                 self.navigationItem.title = username
+                self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: self.backButton)
             }
  
             
@@ -52,14 +75,20 @@ class UserFollowerInfoVC: UITableViewController {
             self.navigationController?.navigationBar.backgroundColor = .white
             
             self.tableView.register(FollowersCell.self, forCellReuseIdentifier: "followersCell")
-            let footerView = UIView()
-            footerView.backgroundColor = .white
-            footerView.height(1)
-            self.tableView.tableFooterView = footerView
-            
-            
-//            NotificationCenter.default.addObserver(self, selector: #selector(reloadMessages), name: Notification.Name("ReloadMessages"), object: nil)
+//            let footerView = UIView()
+//            footerView.backgroundColor = .white
+//            footerView.height(1)
+//            self.tableView.tableFooterView = footerView
         }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
+    
+    @objc func backButtonTapped() {
+        self.dismiss(animated: true, completion: nil)
+    }
     
         
         override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -86,6 +115,7 @@ class UserFollowerInfoVC: UITableViewController {
         }
     
         override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+            
             let cell = tableView.dequeueReusableCell(withIdentifier: "followersCell", for: indexPath) as! FollowersCell
             guard let currentUserID = Auth.auth().currentUser?.uid else { return UITableViewCell() }
             let userDictionary = self.user?.followers?.compactMap { $0.key }
@@ -127,7 +157,7 @@ class UserFollowerInfoVC: UITableViewController {
 //        }
     
    
-extension UserFollowerInfoVC {
+extension FollowersInfoTableVC {
     
     func EmptyMessage(message:String) {
         let rect = CGRect(origin: CGPoint(x: 0,y :0), size: CGSize(width: self.view.bounds.size.width, height: self.view.bounds.size.height))

@@ -100,7 +100,7 @@ class ProfileHeaderView: GSKStretchyHeaderView{
     
     lazy var followingButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        button.addTarget(self, action: #selector(goToFollowersInfo), for: .touchUpInside)
+        button.addTarget(self, action: #selector(goToFollowingInfo), for: .touchUpInside)
         button.titleLabel?.font = ProximaNova.regular.of(size: 8)
         let title = NSAttributedString(string: "following", attributes: [
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
@@ -238,6 +238,11 @@ class ProfileHeaderView: GSKStretchyHeaderView{
     @objc func goToFollowersInfo() {
         
         delegate?.didTapFollowerInfoButton()
+    }
+    
+    @objc func goToFollowingInfo() {
+        
+        delegate?.didTapFollowingInfoButton()
     }
     @objc func followButtonTapped() {
         followFunction()
@@ -470,6 +475,8 @@ protocol ProfileHeaderViewDelegate: class {
     func goToAccountInfo()
     func didTapPointsButton()
     func didTapFollowerInfoButton()
+    func didTapFollowingInfoButton()
+
 }
 
 class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -1041,12 +1048,21 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
 
 extension ProfileVC: ProfileHeaderViewDelegate {
     func didTapFollowerInfoButton() {
-        let userFollowerInfoVC = UserFollowerInfoVC()
-        userFollowerInfoVC.user = self.user
-        let navController = UINavigationController(rootViewController: userFollowerInfoVC)
+        let FollowersInfoTableView = FollowersInfoTableVC()
+        FollowersInfoTableView.user = self.user
+        let navController = UINavigationController(rootViewController: FollowersInfoTableView)
         self.present(navController, animated: true, completion: nil)
 
         print("Take me to the Followers Info Page")
+    }
+    
+    func didTapFollowingInfoButton() {
+        let FollowingInfoTableView = FollowingInfoTableVC()
+        FollowingInfoTableView.user = self.user
+        let navController = UINavigationController(rootViewController: FollowingInfoTableView)
+        self.present(navController, animated: true, completion: nil)
+        
+        print("Take me to the following info page")
     }
     
     func didTapProfilePhotoButton() {
