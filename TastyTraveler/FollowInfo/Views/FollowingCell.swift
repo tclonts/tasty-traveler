@@ -42,26 +42,8 @@ class FollowingCell: UITableViewCell {
             if let url = user?.avatarURL {
                 self.profilePhotoImageView.loadImage(urlString: url, placeholder: #imageLiteral(resourceName: "avatar"))
             }
-            
         }
     }
-    
-    //    let navigationBarBackground: UIView = {
-    //        let view = UIView()
-    //        view.backgroundColor = .white
-    //        return view
-    //    }()
-    
-    //    let navigationBar: UIView = {
-    //        let view = UIView()
-    //        view.backgroundColor = .white
-    //        let separator = UIView()
-    //        separator.backgroundColor = Color.lightGray
-    //
-    //        view.sv(separator)
-    //        separator.bottom(0).left(0).right(0).height(0.5)
-    //        return view
-    //    }()
     
     let countryFlagImageView: UIImageView = {
         let imageView = UIImageView()
@@ -109,21 +91,6 @@ class FollowingCell: UITableViewCell {
         return label
     }()
     
-    func setUpNameAndProfileImage() {
-        
-        let ref = FirebaseController.shared.ref.child("users").child(userID!)
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
-            
-            if let dictionary = snapshot.value as? [String:Any] {
-                self.usernameLabel.text = dictionary["username"] as? String
-                
-                if let profileImageURL = dictionary["avatarURL"] as? String {
-                    self.profilePhotoImageView.loadImage(urlString: profileImageURL, placeholder: #imageLiteral(resourceName: "avatar"))
-                }
-            }
-        })
-        
-    }
     override func layoutSubviews() {
         super.layoutSubviews()
         
@@ -143,7 +110,8 @@ class FollowingCell: UITableViewCell {
         usernameLabel.CenterY == profilePhotoImageView.CenterY - 12
         usernameLabel.Left == profilePhotoImageView.Right + 12
         
-        flagStackView.Top == usernameLabel.Bottom - 12
+        flagStackView.Top == usernameLabel.Bottom + 8
+        flagStackView.CenterX == usernameLabel.CenterX
         
         followButton.right(adaptConstant(27)).height(adaptConstant(30)).width(adaptConstant(85))
         followButton.CenterY == profilePhotoImageView.CenterY

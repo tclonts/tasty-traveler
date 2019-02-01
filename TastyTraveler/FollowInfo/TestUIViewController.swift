@@ -26,6 +26,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
     var user: TTUser?
     var fromFollowingButtonNav = false
     var fromFollowersButtonNav = false
+    
 
     
     
@@ -57,22 +58,23 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let button = UIButton(type: .system)
         button.layer.cornerRadius = 5
         button.addTarget(self, action: #selector(followersButtonTapped), for: .touchUpInside)
-        button.titleLabel?.font = ProximaNova.regular.of(size: adaptConstant(8))
-        let title = NSAttributedString(string: "followers", attributes: [
-            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
-            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-        button.setAttributedTitle(title, for: .normal)
+        button.titleLabel?.font = ProximaNova.regular.of(size: adaptConstant(10))
+        
+        button.setTitle("followers", for: .normal)
+        button.setTitleColor(Color.primaryOrange, for: .normal)
+        button.titleLabel?.font = UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!
+        
         return button
     }()
     lazy var followingButton: UIButton = {
         let button = UIButton(type: .system)
         button.layer.cornerRadius = 5
         button.addTarget(self, action: #selector(followingButtonTapped), for: .touchUpInside)
-        button.titleLabel?.font = ProximaNova.regular.of(size: adaptConstant(8))
-        let title = NSAttributedString(string: "following", attributes: [
-            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
-            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
-        button.setAttributedTitle(title, for: .normal)
+
+        button.setTitleColor(Color.primaryOrange, for: .normal)
+        button.setTitle("following", for: .normal)
+        button.titleLabel?.font = ProximaNova.regular.of(size: adaptConstant(10))
+
         return button
     }()
     let followersCountLabel: UILabel = {
@@ -116,6 +118,34 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return tableView
     }()
     
+    lazy var line1: UIView = {
+       let separator = UIView()
+        separator.layer.backgroundColor = Color.primaryOrange.cgColor
+        separator.height(1)
+        
+        return separator
+    }()
+    lazy var line2: UIView = {
+        let separator = UIView()
+        separator.layer.backgroundColor = Color.primaryOrange.cgColor
+        separator.height(1)
+        
+        return separator
+    }()
+    
+    let countryFlagImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.height(15).width(22)
+        return imageView
+    }()
+    
+    let countryLabel: UILabel = {
+        let label = UILabel()
+        label.font = ProximaNova.semibold.of(size: 12)
+        label.textColor = Color.darkGrayText
+        return label
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.followersTableView.reloadData()
@@ -129,15 +159,32 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: self.backButton)
             
         }
-        let followersStackView = UIStackView(arrangedSubviews: [followersCountLabel, followersButton])
+        
+        
+        if let followersCount = user?.followers {
+            self.followersCountLabel.text = "\(followersCount.count)"
+            
+        }
+        if let followingCount = user?.following {
+            self.followingCountLabel.text = "\(followingCount.count)"
+        }
+        
+        let followersStackView = UIStackView(arrangedSubviews: [followersCountLabel, followersButton, line1])
         followersStackView.axis = .vertical
         followersStackView.spacing = 0
         followersStackView.alignment = .center
+        line1.Width == followersStackView.Width/2.0
+
         
-        let followingStackView = UIStackView(arrangedSubviews: [followingCountLabel, followingButton])
+        let followingStackView = UIStackView(arrangedSubviews: [followingCountLabel, followingButton, line2])
         followingStackView.axis = .vertical
         followingStackView.spacing = 0
         followingStackView.alignment = .center
+        line2.Width == followingStackView.Width/2
+
+        let flagStackView = UIStackView(arrangedSubviews: [countryFlagImageView, countryLabel])
+        flagStackView.axis = .horizontal
+        flagStackView.spacing = 8
         
 //        self.tableView.contentInsetAdjustmentBehavior = .never
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]
@@ -146,20 +193,39 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
 
         
-        if fromFollowersButtonNav == true {
-            followingTableView.isScrollEnabled = true
+        if fromFollowersButtonNav == true{
+            line2.isHidden = true
+            
+            self.followersButton.titleLabel?.textColor = Color.primaryOrange
+            self.followersCountLabel.textColor = UIColor.black
+            //            followingButton.titleLabel?.textColor = Color.gray
+            self.followingButton.setTitleColor(Color.gray, for: .normal)
+            self.followingCountLabel.textColor = Color.gray
+            
+            followersTableView.isScrollEnabled = true
+            
             self.view.sv(followersTableView, followersStackView, followingStackView)
-           
+            
         } else if fromFollowingButtonNav == true {
-            self.view.sv(followingTableView, followingStackView, followersStackView)
+            line1.isHidden = true
+            
+            followingButton.titleLabel?.textColor = Color.primaryOrange
+            followingCountLabel.textColor = UIColor.black
+            //            followersButton.titleLabel?.textColor = Color.gray
+            followersButton.setTitleColor(Color.gray, for: .normal)
+            followersCountLabel.textColor = Color.gray
+            
             followingTableView.isScrollEnabled = true
             
-            
+            self.view.sv(followingTableView, followersStackView, followingStackView)
         }
+        
+        
         let width = UIScreen.main.bounds.width / 2
         followersStackView.width(width)
         followersStackView.height(40)
         followersStackView.left(0).top(0)
+
         
         followingStackView.width(width)
         followingStackView.height(40)
@@ -174,14 +240,37 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     @objc func followersButtonTapped() {
-        print("test")
+        line2.isHidden = true
+        line1.isHidden = false
+        followersCountLabel.textColor = UIColor.black
+        followersButton.setTitleColor(Color.primaryOrange, for: .normal)
+        followingCountLabel.textColor = Color.gray
+        followingButton.titleLabel?.textColor = Color.gray
+        
+        followersTableView.isHidden = false
+        followingTableView.isHidden = true
+        
+        followersTableView.isScrollEnabled = true
+        
+
     }
     @objc func followingButtonTapped() {
-        print("test")
+        line2.isHidden = false
+        line1.isHidden = true
+        followersCountLabel.textColor = Color.gray
+        followersButton.titleLabel?.textColor = Color.gray
+        followingCountLabel.textColor =  UIColor.black
+        followingButton.setTitleColor(Color.primaryOrange, for: .normal)
+        
+        followersTableView.isHidden = true
+        followingTableView.isHidden = false
+    
+  
+        followingTableView.isScrollEnabled = true
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
+        return .default
     }
     
     @objc func backButtonTapped() {
@@ -229,6 +318,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             return 0
         }
     }
+    
      func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 72
     }
@@ -274,27 +364,6 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
 }
 
-//        override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//            let message = FirebaseController.shared.messages[indexPath.row]
-//
-//
-//            guard let chatPartnerID = message.chatPartnerID() else { return }
-//            SVProgressHUD.show()
-//            FirebaseController.shared.fetchUserWithUID(uid: chatPartnerID) { (user) in
-//                guard let user = user else { return }
-//                guard let recipeID = message.recipeID, recipeID != "" else {
-//                    let chat = Chat(recipe: nil, withUser: user)
-//                    self.showChatControllerForChat(chat)
-//                    return
-//                }
-//                FirebaseController.shared.fetchRecipeWithUID(uid: recipeID, completion: { (recipe) in
-//                    guard let recipe = recipe else { return }
-//                    let chat = Chat(recipe: recipe, withUser: user)
-//                    self.showChatControllerForChat(chat)
-//                })
-//            }
-//        }
-
 
 extension TestUIViewController {
     
@@ -305,7 +374,7 @@ extension TestUIViewController {
         messageLabel.textColor = UIColor.black
         messageLabel.numberOfLines = 0;
         messageLabel.textAlignment = .center;
-        messageLabel.font = UIFont(name: "TrebuchetMS", size: 15)
+        messageLabel.font = UIFont(name: "ProximaNova-Regular", size: 15)
         messageLabel.sizeToFit()
         
         followersTableView.backgroundView = messageLabel;
@@ -316,3 +385,32 @@ extension TestUIViewController {
     }
 }
 
+extension UIView {
+    func addTopBorderWithColor(color: UIColor, width: CGFloat) {
+        let border = CALayer()
+        border.backgroundColor = color.cgColor
+        border.frame = CGRect(x: 0, y: 0, width: self.frame.size.width, height: width)
+        self.layer.addSublayer(border)
+    }
+    
+    func addRightBorderWithColor(color: UIColor, width: CGFloat) {
+        let border = CALayer()
+        border.backgroundColor = color.cgColor
+        border.frame = CGRect(x: self.frame.size.width - width, y: 0, width: width, height: self.frame.size.height)
+        self.layer.addSublayer(border)
+    }
+    
+    func addBottomBorderWithColor(color: UIColor, width: CGFloat) {
+        let border = CALayer()
+        border.backgroundColor = color.cgColor
+        border.frame = CGRect(x: 0, y: self.frame.size.height - width, width: self.frame.size.width, height: width)
+        self.layer.addSublayer(border)
+    }
+    
+    func addLeftBorderWithColor(color: UIColor, width: CGFloat) {
+        let border = CALayer()
+        border.backgroundColor = color.cgColor
+        border.frame = CGRect(x: 0, y: 0, width: width, height: self.frame.size.height)
+        self.layer.addSublayer(border)
+    }
+}

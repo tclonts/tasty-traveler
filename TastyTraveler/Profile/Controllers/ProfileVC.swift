@@ -78,7 +78,7 @@ class ProfileHeaderView: GSKStretchyHeaderView{
     
     lazy var recipesButtonNav: UIButton = {
         let button = UIButton(type: .system)
-        button.addTarget(self, action: #selector(goToFollowersInfo), for: .touchUpInside)
+        button.isUserInteractionEnabled = false
         button.titleLabel?.font = ProximaNova.regular.of(size: 8)
         let title = NSAttributedString(string: "recipes", attributes: [
             NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
