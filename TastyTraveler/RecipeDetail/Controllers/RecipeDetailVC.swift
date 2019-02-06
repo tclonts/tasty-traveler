@@ -304,10 +304,10 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         recipeHeaderView.heroID = "recipeHeaderView"
         
         NotificationCenter.default.addObserver(self, selector: #selector(reloadRecipe), name: Notification.Name("submittedReview"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeLiked), name: Notification.Name("FirstRecipeLiked"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeCooked), name: Notification.Name("firstRecipeCooked"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeReviewLeft), name: Notification.Name("firstRecipeReviewLeft"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeLiked), name: Notification.Name("FirstRecipeLiked"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeCooked), name: Notification.Name("firstRecipeCooked"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeReviewLeft), name: Notification.Name("firstRecipeReviewLeft"), object: nil)
         
         
         
@@ -420,18 +420,18 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                             self.homeVC?.recipeDataHasChanged = true
                         }
                     }
-                    if !self.isFromLikes {
-                        DispatchQueue.main.async {
-                            //                            self.homeVAC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
-                            //                            self.homeVC?.recipeDataHasChanged = true
-                            
-                            guard let index = self.homeVC!.searchResultRecipes.index(where: { (disRecipe) -> Bool in
-                                return disRecipe.uid == self.recipe!.uid
-                            }) else {return}
-                            self.homeVC!.searchResultRecipes[index] = self.recipe!
-                            self.homeVC?.recipeDataHasChanged = true
-                            }
-                        }
+//                    if !self.isFromLikes {
+//                        DispatchQueue.main.async {
+//                            //                            self.homeVAC!.searchResultRecipes[self.homeVC!.previousIndexPath!.item] = self.recipe!
+//                            //                            self.homeVC?.recipeDataHasChanged = true
+//                            
+//                            guard let index = self.homeVC!.searchResultRecipes.index(where: { (disRecipe) -> Bool in
+//                                return disRecipe.uid == self.recipe!.uid
+//                            }) else {return}
+//                            self.homeVC!.searchResultRecipes[index] = self.recipe!
+//                            self.homeVC?.recipeDataHasChanged = true
+//                            }
+//                        }
                     })
                 })
             })
@@ -585,7 +585,46 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         }
     }
     
-    
+    func setFollowButton() {
+        guard let currentUser = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: currentUser) { (user) in
+            guard let user = user else {return}
+            var updatedUser = user
+            FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(((self.recipe?.creator.uid)!)).observeSingleEvent(of: .value) { (snapshot) in
+                if (snapshot.value as? Double) != nil {
+                    updatedUser.hasFollowed = true
+                } else {
+                    updatedUser.hasFollowed = false
+                }
+                
+                
+                if ((updatedUser.hasFollowed)) {
+                    let title = NSAttributedString(string: "Following", attributes: [
+                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+                        NSAttributedStringKey.foregroundColor: Color.gray])
+                    self.recipeHeaderView.followButton.backgroundColor = UIColor.white
+                    self.recipeHeaderView.followButton.layer.borderColor = Color.gray.cgColor
+                    self.recipeHeaderView.followButton.layer.borderWidth = 1.0
+                    self.recipeHeaderView.followButton.setAttributedTitle(title, for: .normal)
+                    self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+                    self.recipeHeaderView.creatorNameLabel.textColor = Color.primaryOrange
+                    
+                    
+                } else {
+                    let title = NSAttributedString(string: "Follow", attributes: [
+                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                    self.recipeHeaderView.followButton.backgroundColor = UIColor.white
+                    self.recipeHeaderView.followButton.layer.borderColor = Color.primaryOrange.cgColor
+                    self.recipeHeaderView.followButton.layer.borderWidth = 1.0
+                    self.recipeHeaderView.followButton.setAttributedTitle(title, for: .normal)
+                    self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+                    self.recipeHeaderView.creatorNameLabel.textColor = Color.darkGrayText
+                }
+            }
+        }
+    }
     
     func formatCookButton() {
         
@@ -753,6 +792,77 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             }
         }
     }
+    func followUser() {
+        if isBrowsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
+        } else {
+            guard let recipeID = recipe?.uid else { return }
+
+            guard let currentUser = Auth.auth().currentUser?.uid else { return }
+            
+            FirebaseController.shared.fetchUserWithUID(uid: currentUser) { (user) in
+                guard let user = user else {return}
+                var updatedUser = user
+                
+                FirebaseController.shared.ref.child("users").child(currentUser).child("following").child((self.recipe?.creator.uid)!).observeSingleEvent(of: .value) { (snapshot) in
+                    if (snapshot.value as? Double) != nil {
+                        updatedUser.hasFollowed = true
+                    } else {
+                        updatedUser.hasFollowed = false
+                    }
+                    
+                    
+                    if (updatedUser.hasFollowed) {
+                        // remove
+                        FirebaseController.shared.ref.child("users").child((self.recipe?.creator.uid)!).child("followers").child(currentUser).removeValue()
+                        FirebaseController.shared.ref.child("users").child(currentUser).child("following").child((self.recipe?.creator.uid)!).removeValue()
+                        
+                        SVProgressHUD.showSuccess(withStatus: "Unfollowed")
+                        SVProgressHUD.dismiss(withDelay: 1)
+                        
+                        let title = NSAttributedString(string: "Follow", attributes: [
+                            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+                            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                        self.recipeHeaderView.followButton.backgroundColor = UIColor.white
+                        self.recipeHeaderView.followButton.layer.borderColor = Color.primaryOrange.cgColor
+                        self.recipeHeaderView.followButton.layer.borderWidth = 1.0
+                        self.recipeHeaderView.followButton.setAttributedTitle(title, for: .normal)
+                        
+                    } else {
+                        //ADD
+                        
+                        FirebaseController.shared.ref.child("users").child((self.recipe?.creator.uid)!).child("followers").child(currentUser).setValue(true) { (error, _) in
+                            if let error = error {
+                                print("Failed to add current user to tableview cell user:", error)
+                                return
+                            }
+                            
+                            let timestamp = Date().timeIntervalSince1970
+                            
+                            FirebaseController.shared.ref.child("users").child(currentUser).child("following").child((self.recipe?.creator.uid)!).setValue(timestamp) { (error, _) in
+                                if let error = error {
+                                    print("Failed to add tableview cell user:", error)
+                                    return
+                                }
+                                SVProgressHUD.showSuccess(withStatus: "Followed")
+                                SVProgressHUD.dismiss(withDelay: 1)
+                                
+                                let title = NSAttributedString(string: "Following", attributes: [
+                                    NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+                                    NSAttributedStringKey.foregroundColor: Color.gray])
+                                 self.recipeHeaderView.followButton.backgroundColor = UIColor.white
+                                 self.recipeHeaderView.followButton.layer.borderColor = UIColor.gray.cgColor
+                                 self.recipeHeaderView.followButton.layer.borderWidth = 1.0
+                                 self.recipeHeaderView.followButton.setAttributedTitle(title, for: .normal)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     func likeRecipe() {
         if isBrowsing {
             let accountAccessVC = AccountAccessVC()
@@ -838,6 +948,9 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
     }
     @objc func likeButtonTapped() {
         likeRecipe()
+    }
+    @objc func followButtonTapped() {
+        followUser()
     }
     
     func showTopView() {
@@ -1016,13 +1129,14 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
         recipeHeaderView.recipeNameLabel.left(margin).right(margin)
         recipeHeaderView.recipeNameLabel.Top == recipeHeaderView.countryFlag.Bottom + adaptConstant(12)
         
-        recipeHeaderView.creatorNameLabel.left(margin)
-        recipeHeaderView.creatorNameLabel.Top == recipeHeaderView.recipeNameLabel.Bottom + adaptConstant(12)
+        recipeHeaderView.stackView2.left(margin)
+        recipeHeaderView.stackView2.Top == recipeHeaderView.recipeNameLabel.Bottom + adaptConstant(12)
         
         recipeHeaderView.starRating.right(margin)
-        recipeHeaderView.starRating.CenterY == recipeHeaderView.creatorNameLabel.CenterY
+        recipeHeaderView.starRating.CenterY == recipeHeaderView.stackView2.CenterY
         
-        recipeHeaderView.creatorNameLabel.bottom(adaptConstant(16))
+        recipeHeaderView.stackView2.bottom(adaptConstant(16))
+        recipeHeaderView.followButton.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
         
         recipeHeaderView.favoriteButton.right(adaptConstant(20))
         recipeHeaderView.favoriteButton.CenterY == recipeHeaderView.photoImageView.Bottom
@@ -1082,7 +1196,8 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
             }
             
             self.recipeHeaderView.recipeNameLabel.text = self.recipe?.name
-            self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+//            self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+//            setFollowButton()
             
             if self.recipe!.coordinate == nil {
                 print("NO LOCATION DATA")
@@ -1139,6 +1254,7 @@ class RecipeDetailVC: UIViewController,  UIImagePickerControllerDelegate, UINavi
                 }
             }
             self.formatCookButton()
+            self.setFollowButton()
             
             
             let viewContentEvent = AppEvent.viewedContent(contentType: "recipe-detail", contentId: nil, currency: nil, valueToSum: 1.0, extraParameters: ["recipeID": self.recipe!.uid])

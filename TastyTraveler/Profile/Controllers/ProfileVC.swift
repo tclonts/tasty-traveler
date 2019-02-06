@@ -205,7 +205,7 @@ class ProfileHeaderView: GSKStretchyHeaderView{
         let label = UILabel()
         label.font = ProximaNova.semibold.of(size: 14)
         label.textColor = Color.primaryOrange
-        label.numberOfLines = 2
+        label.numberOfLines = 0
         label.textAlignment = .center
         label.text = "Edit Bio"
         label.isUserInteractionEnabled = true
@@ -345,10 +345,11 @@ class ProfileHeaderView: GSKStretchyHeaderView{
 
         flagStackView.Top == usernameLabel.Bottom + 8
         flagStackView.CenterX == usernameLabel.CenterX
-
+      
         bioLabel.Top == flagStackView.Bottom + 8
         bioLabel.CenterX == flagStackView.CenterX
-        
+        bioLabel.Left == safeAreaLayoutGuide.Left + 8
+    
         statsStackView.Left == profilePhotoImageView.Right + 15
         statsStackView.Top == safeAreaLayoutGuide.Top + 40
         statsStackView.width(contentView.frame.width/1.8)
@@ -366,8 +367,9 @@ class ProfileHeaderView: GSKStretchyHeaderView{
 //
 //        badgesStackView.Top == pointsButton.Bottom
 //        badgesStackView.CenterX == pointsButton.CenterX
-        
-        separatorLine.left(0).bottom(0).right(0)
+        separatorLine.Top == bioLabel.Bottom
+//        separatorLine.CenterX == safeAreaLayoutGuide.CenterX
+//        separatorLine.left(0).bottom(0).right(0)
         
         unreadIndicator.layer.cornerRadius = 3
         unreadIndicator.clipsToBounds = true
@@ -1366,6 +1368,7 @@ extension ProfileVC {
 }
 }
 }
+
 
 
 

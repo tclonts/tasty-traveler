@@ -21,9 +21,18 @@ import CoreLocation
 
 
 class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+//    func presentProfileViewController() {
+//        let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
+//        profileVC.isMyProfile = false
+//        profileVC.userID = user?.uid
+//        self.present(profileVC, animated: true, completion: nil)
+//    }
+    
   
     
     var user: TTUser?
+    var newUser: String?
     var fromFollowingButtonNav = false
     var fromFollowersButtonNav = false
     
@@ -148,9 +157,17 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.followersTableView.reloadData()
         self.view.backgroundColor = .white
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadTV), name: Notification.Name("switchedTVs"), object: nil)
         
+        self.followersTableView.reloadData()
+        self.followingTableView.reloadData()
+        followersTableView.delegate = self
+        followingTableView.delegate = self
+        followersTableView.dataSource = self
+        followingTableView.dataSource = self
+
+
         FirebaseController.shared.fetchUserWithUID(uid: (user?.uid)!) { (user) in
             guard let user = user else {return}
             self.user = user
@@ -194,6 +211,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
         
         if fromFollowersButtonNav == true{
+            self.view.sv(followersTableView, followersStackView, followingStackView)
             line2.isHidden = true
             
             self.followersButton.titleLabel?.textColor = Color.primaryOrange
@@ -204,9 +222,9 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             followersTableView.isScrollEnabled = true
             
-            self.view.sv(followersTableView, followersStackView, followingStackView)
             
         } else if fromFollowingButtonNav == true {
+            self.view.sv(followingTableView, followersStackView, followingStackView)
             line1.isHidden = true
             
             followingButton.titleLabel?.textColor = Color.primaryOrange
@@ -217,7 +235,6 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             followingTableView.isScrollEnabled = true
             
-            self.view.sv(followingTableView, followersStackView, followingStackView)
         }
         
         
@@ -239,7 +256,25 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+     
+            self.followersTableView.reloadData()
+            self.followingTableView.reloadData()
+              NotificationCenter.default.addObserver(self, selector: #selector(reloadTV), name: Notification.Name("switchedTVs"), object: nil)
+
+    }
+    
+    @objc func reloadTV() {
+        DispatchQueue.main.async {
+            self.followingTableView.reloadData()
+            self.followersTableView.reloadData()
+        }
+    }
+    
     @objc func followersButtonTapped() {
+        followersTableView.isHidden = false
+        followingTableView.isHidden = true
         line2.isHidden = true
         line1.isHidden = false
         followersCountLabel.textColor = UIColor.black
@@ -247,25 +282,26 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         followingCountLabel.textColor = Color.gray
         followingButton.titleLabel?.textColor = Color.gray
         
-        followersTableView.isHidden = false
-        followingTableView.isHidden = true
-        
-        followersTableView.isScrollEnabled = true
-        
+        NotificationCenter.default.post(name: Notification.Name("switchedTVs"), object: nil)
 
+
+        followersTableView.isScrollEnabled = true
     }
-    @objc func followingButtonTapped() {
-        line2.isHidden = false
-        line1.isHidden = true
-        followersCountLabel.textColor = Color.gray
-        followersButton.titleLabel?.textColor = Color.gray
-        followingCountLabel.textColor =  UIColor.black
-        followingButton.setTitleColor(Color.primaryOrange, for: .normal)
-        
-        followersTableView.isHidden = true
-        followingTableView.isHidden = false
     
+    @objc func followingButtonTapped() {
   
+            self.followersTableView.isHidden = true
+            self.followingTableView.isHidden = false
+            self.line2.isHidden = false
+            self.line1.isHidden = true
+            self.followersCountLabel.textColor = Color.gray
+            self.followersButton.titleLabel?.textColor = Color.gray
+            self.followingCountLabel.textColor =  UIColor.black
+            self.followingButton.setTitleColor(Color.primaryOrange, for: .normal)
+
+        NotificationCenter.default.post(name: Notification.Name("switchedTVs"), object: nil)
+
+       
         followingTableView.isScrollEnabled = true
     }
     
@@ -348,6 +384,15 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             let userDictionary = self.user?.following?.compactMap { $0.key }
             let userID = userDictionary?[indexPath.row]
             cell.oldUser = self.user
+        
+            cell.completionHandler = {
+                let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
+                profileVC.isMyProfile = false
+                profileVC.userID = userID
+                
+                self.present(profileVC, animated: true, completion: nil)
+
+            }
             
             FirebaseController.shared.fetchUserWithUID(uid: userID!) { (user) in
                 guard let user = user else {return}

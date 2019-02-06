@@ -72,6 +72,20 @@ class RecipeHeaderView: UIView {
         return label
     }()
     
+    lazy var followButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.layer.cornerRadius = 7
+        button.titleLabel?.font = ProximaNova.regular.of(size: 10)
+        let title = NSAttributedString(string: "Follow", attributes: [
+            NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+            NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+        button.backgroundColor = Color.offWhite
+        button.layer.borderColor = Color.primaryOrange.cgColor
+        button.layer.borderWidth = 1.0
+        button.setAttributedTitle(title, for: .normal)
+        return button
+    }()
+    
     lazy var favoriteButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(#imageLiteral(resourceName: "favoriteButton"), for: .normal)
@@ -108,14 +122,21 @@ class RecipeHeaderView: UIView {
         cosmosView.settings.textFont = ProximaNova.regular.of(size: 11)
         return cosmosView
     }()
-
+    
+    let stackView2 = UIStackView()
+    
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
         self.backgroundColor = .white
+        
         let stackView = UIStackView(arrangedSubviews: [likeButton, favoriteButton])
         stackView.axis = .horizontal
         stackView.spacing = 8
+//        let stackView2 = UIStackView(arrangedSubviews: [creatorNameLabel, followButton])
+//        stackView.axis = .horizontal
+//        stackView.spacing = 8
         
         sv(placeholderImageView,
            photoImageView,
@@ -123,11 +144,16 @@ class RecipeHeaderView: UIView {
            countryFlag,
            countryLabel,
            recipeNameLabel,
-           creatorNameLabel,
+           stackView2,
            stackView,
            starRating)
         
         stackView.right(adaptConstant(10))
+        
+        stackView2.addArrangedSubview(creatorNameLabel)
+        stackView2.addArrangedSubview(followButton)
+        stackView2.axis = .horizontal
+        stackView2.spacing = 4
 //        likeButton.Right == favoriteButton.Left - 15
 
     }

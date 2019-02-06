@@ -24,9 +24,11 @@ import FacebookShare
 import FacebookCore
 import RSKImageCropper
 
+
 class FollowingCell: UITableViewCell {
     
-    
+    open var completionHandler: (()->Void)? = nil
+
     var userID: String?
     var oldUser: TTUser?
     
@@ -66,6 +68,7 @@ class FollowingCell: UITableViewCell {
         imageView.layer.cornerRadius = adaptConstant(20)
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 2
+        imageView.isUserInteractionEnabled = true
         imageView.layer.borderColor = Color.primaryOrange.cgColor
         return imageView
     }()
@@ -107,6 +110,10 @@ class FollowingCell: UITableViewCell {
         
         profilePhotoImageView.left(adaptConstant(27)).height(adaptConstant(40)).width(adaptConstant(40)).centerVertically()
         
+        let profileGesture = UITapGestureRecognizer(target: self, action: #selector(showProfileView))
+        profilePhotoImageView.addGestureRecognizer(profileGesture)
+
+        
         usernameLabel.CenterY == profilePhotoImageView.CenterY - 12
         usernameLabel.Left == profilePhotoImageView.Right + 12
         
@@ -124,6 +131,12 @@ class FollowingCell: UITableViewCell {
     
     @objc func followButtonTapped() {
         followFunction()
+    }
+    
+    @objc func showProfileView() {
+        if let onProfileImagedTapped = self.completionHandler {
+            onProfileImagedTapped()
+        }
     }
     
     func setFollowButton() {

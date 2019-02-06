@@ -8,6 +8,7 @@
 
 import UIKit
 import Stevia
+import Firebase
 
 class RecipeCell: UITableViewCell {
     
@@ -29,7 +30,8 @@ class RecipeCell: UITableViewCell {
             }
             
             recipeHeaderView.recipeNameLabel.text = recipe?.name
-            recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
+            
+//            recipeHeaderView.creatorNameLabel.text = "by \(recipe!.creator.username)"
 
             recipe!.averageRating { (rating) in
                 self.recipeHeaderView.starRating.rating = rating
@@ -38,6 +40,10 @@ class RecipeCell: UITableViewCell {
 
             recipeHeaderView.favoriteButton.setImage(recipe?.hasFavorited == true ? #imageLiteral(resourceName: "favoriteButtonSelected") : #imageLiteral(resourceName: "favoriteButton"), for: .normal)
             recipeHeaderView.likeButton.setImage(recipe?.hasLiked == true ? #imageLiteral(resourceName: "likeNavSelected") : #imageLiteral(resourceName: "likeNav"), for: .normal)
+
+   
+//            self.setFollowButton()
+
         }
     }
     
@@ -59,7 +65,9 @@ class RecipeCell: UITableViewCell {
         self.selectionStyle = .none
         self.backgroundColor = .clear
         
+//        setFollowButton()
         setUpViews()
+
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -94,18 +102,26 @@ class RecipeCell: UITableViewCell {
         recipeHeaderView.recipeNameLabel.left(adaptConstant(10)).right(adaptConstant(10))
         recipeHeaderView.recipeNameLabel.Top == recipeHeaderView.countryFlag.Bottom + adaptConstant(8)
         
-        recipeHeaderView.creatorNameLabel.left(adaptConstant(10))
-        recipeHeaderView.creatorNameLabel.Top == recipeHeaderView.recipeNameLabel.Bottom + adaptConstant(8)
-        recipeHeaderView.creatorNameLabel.bottom(adaptConstant(12))
+        recipeHeaderView.stackView2.left(adaptConstant(10))
+        recipeHeaderView.stackView2.Top == recipeHeaderView.recipeNameLabel.Bottom + adaptConstant(8)
+        recipeHeaderView.stackView2.bottom(adaptConstant(12))
+//        recipeHeaderView.stackView2.Height == recipeHeaderView.starRating.Height
         
         recipeHeaderView.favoriteButton.right(adaptConstant(14))
         recipeHeaderView.favoriteButton.CenterY == recipeHeaderView.photoImageView.Bottom
         
         recipeHeaderView.starRating.right(adaptConstant(10))
-        recipeHeaderView.starRating.CenterY == recipeHeaderView.creatorNameLabel.CenterY
+        recipeHeaderView.starRating.CenterY == recipeHeaderView.stackView2.CenterY
+        
+//        recipeHeaderView.followButton.Left == recipeHeaderView.creatorNameLabel.Right + 8
+//        recipeHeaderView.followButton.Width == recipeHeaderView.starRating.Width - 8
+//        recipeHeaderView.followButton.Height == recipeHeaderView.creatorNameLabel.Height
+//        recipeHeaderView.followButton.CenterY == recipeHeaderView.creatorNameLabel.CenterY
+
         
         recipeHeaderView.favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
         recipeHeaderView.likeButton.addTarget(self, action: #selector(likeTapped), for: .touchUpInside)
+        recipeHeaderView.followButton.addTarget(self, action: #selector(followButtonTapped), for: .touchUpInside)
 
     }
     
@@ -115,17 +131,60 @@ class RecipeCell: UITableViewCell {
     @objc func likeTapped() {
         delegate?.didTapLike(for: self)
     }
-    
+    @objc func followButtonTapped() {
+        delegate?.didTapFollowButton(for: self)
+    }
     override func prepareForReuse() {
         recipeHeaderView.heroID = ""
         recipeHeaderView.starRating.rating = 0
     }
+    func setFollowButton() {
+        guard let currentUser = Auth.auth().currentUser?.uid else { return }
+        
+        FirebaseController.shared.fetchUserWithUID(uid: currentUser) { (user) in
+            guard let user = user else {return}
+            var updatedUser = user
+            FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(((self.recipe?.creator.uid)!)).observeSingleEvent(of: .value) { (snapshot) in
+                if (snapshot.value as? Double) != nil {
+                    updatedUser.hasFollowed = true
+                } else {
+                    updatedUser.hasFollowed = false
+                }
+                
+                
+                if ((updatedUser.hasFollowed)) {
+                    let title = NSAttributedString(string: "Following", attributes: [
+                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+                        NSAttributedStringKey.foregroundColor: Color.gray])
+                    self.recipeHeaderView.followButton.backgroundColor = UIColor.white
+                    self.recipeHeaderView.followButton.layer.borderColor = Color.gray.cgColor
+                    self.recipeHeaderView.followButton.layer.borderWidth = 1.0
+//                    self.recipeHeaderView.followButton.Height == self.recipeHeaderView.creatorNameLabel.Height
+                    self.recipeHeaderView.followButton.setAttributedTitle(title, for: .normal)
+                    self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+                    self.recipeHeaderView.creatorNameLabel.textColor = Color.primaryOrange
+
+
+                } else {
+                    let title = NSAttributedString(string: "Follow", attributes: [
+                        NSAttributedStringKey.font: UIFont(name: "ProximaNova-Regular", size: adaptConstant(10))!,
+                        NSAttributedStringKey.foregroundColor: Color.primaryOrange])
+                    self.recipeHeaderView.followButton.backgroundColor = Color.offWhite
+                    self.recipeHeaderView.followButton.layer.borderColor = Color.primaryOrange.cgColor
+                    self.recipeHeaderView.followButton.layer.borderWidth = 1.0
+//                    self.recipeHeaderView.followButton.Height == self.recipeHeaderView.creatorNameLabel.Height
+                    self.recipeHeaderView.followButton.setAttributedTitle(title, for: .normal)
+                    self.recipeHeaderView.creatorNameLabel.text = "by \(self.recipe!.creator.username)"
+                    self.recipeHeaderView.creatorNameLabel.textColor = Color.darkGrayText
+                }
+            }
+        }
+    }
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+        setFollowButton()
         shadowView.layer.shadowPath = UIBezierPath(rect: self.bounds).cgPath
-        
         self.layoutIfNeeded()
     }
 }
@@ -133,4 +192,5 @@ class RecipeCell: UITableViewCell {
 protocol RecipeCellDelegate: class {
     func didTapFavorite(for cell: RecipeCell)
     func didTapLike(for cell: RecipeCell)
+    func didTapFollowButton(for cell: RecipeCell)
 }

@@ -139,10 +139,10 @@ class HomeVC: UITableViewController {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name.UIApplicationDidBecomeActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleRefresh), name: Notification.Name("RecipeUploaded"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeLiked), name: Notification.Name("FirstRecipeliked"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
-        firstPointsExpl()
+//        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeFavorited), name: Notification.Name("FirstRecipeFavorited"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(firstRecipeLiked), name: Notification.Name("FirstRecipeliked"), object: nil)
+//        NotificationCenter.default.addObserver(self, selector: #selector(self.firstPointsExplanation), name: Notification.Name("FirstPointsExplanation"), object: nil)
+//        firstPointsExpl()
         
         self.view.sv(emptyDataView)
         emptyDataView.centerInContainer()
@@ -686,6 +686,7 @@ extension HomeVC: UITextFieldDelegate {
 }
 
 extension HomeVC: RecipeCellDelegate {
+    
     func didTapFavorite(for cell: RecipeCell) {
         if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
             let accountAccessVC = AccountAccessVC()
@@ -845,6 +846,76 @@ extension HomeVC: RecipeCellDelegate {
                 }
             }
         }
+    }
+    
+    func didTapFollowButton(for cell: RecipeCell) {
+        if let browsing = UserDefaults.standard.value(forKey: "isBrowsing") as? Bool, browsing {
+            let accountAccessVC = AccountAccessVC()
+            accountAccessVC.needAccount()
+            self.present(accountAccessVC, animated: true, completion: nil)
+        } else {
+        
+        guard let indexPath = tableView?.indexPath(for: cell) else { return }
+        
+        var recipe = self.searchResultRecipes[indexPath.item]
+        
+        let recipeID = recipe.uid
+        
+        guard let currentUser = Auth.auth().currentUser?.uid else { return }
+
+            FirebaseController.shared.fetchUserWithUID(uid: currentUser) { (user) in
+            guard let user = user else {return}
+            var updatedUser = user
+
+            FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(recipe.creator.uid
+                ).observeSingleEvent(of: .value) { (snapshot) in
+                if (snapshot.value as? Double) != nil {
+                    updatedUser.hasFollowed = true
+                } else {
+                    updatedUser.hasFollowed = false
+                }
+
+
+                if (updatedUser.hasFollowed) {
+                    // remove
+                    FirebaseController.shared.ref.child("users").child(recipe.creator.uid).child("followers").child(currentUser).removeValue()
+                    FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(recipe.creator.uid).removeValue()
+
+                    SVProgressHUD.showSuccess(withStatus: "Unfollowed")
+                    SVProgressHUD.dismiss(withDelay: 1)
+
+                    self.searchResultRecipes[indexPath.item] = recipe
+                    
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+
+                } else {
+                    //ADD
+
+                    FirebaseController.shared.ref.child("users").child(recipe.creator.uid).child("followers").child(currentUser).setValue(true) { (error, _) in
+                        if let error = error {
+                            print("Failed to add current user to tableview cell user:", error)
+                            return
+                        }
+
+                        let timestamp = Date().timeIntervalSince1970
+
+                        FirebaseController.shared.ref.child("users").child(currentUser).child("following").child(recipe.creator.uid).setValue(timestamp) { (error, _) in
+                            if let error = error {
+                                print("Failed to add tableview cell user:", error)
+                                return
+                            }
+                            SVProgressHUD.showSuccess(withStatus: "Followed")
+                            SVProgressHUD.dismiss(withDelay: 1)
+
+                            self.searchResultRecipes[indexPath.item] = recipe
+                            
+                            self.tableView.reloadRows(at: [indexPath], with: .none)
+                        }
+                    }
+                }
+            }
+        }
+    }
     }
 }
 
