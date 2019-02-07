@@ -340,13 +340,13 @@ class ProfileHeaderView: GSKStretchyHeaderView{
         profilePhotoButton.CenterY == profilePhotoImageView.Bottom
         profilePhotoButton.CenterX == profilePhotoImageView.CenterX
         
-        usernameLabel.Top == profilePhotoButton.Bottom + 6
+        usernameLabel.Top == profilePhotoButton.Bottom
         usernameLabel.CenterX == profilePhotoImageView.CenterX
 
-        flagStackView.Top == usernameLabel.Bottom + 8
+        flagStackView.Top == usernameLabel.Bottom + 4
         flagStackView.CenterX == usernameLabel.CenterX
       
-        bioLabel.Top == flagStackView.Bottom + 8
+        bioLabel.Top == flagStackView.Bottom + 4
         bioLabel.CenterX == flagStackView.CenterX
         bioLabel.Left == safeAreaLayoutGuide.Left + 8
     
@@ -738,10 +738,10 @@ class ProfileVC: UICollectionViewController, UICollectionViewDelegateFlowLayout,
         
         if headerView == nil {
             let heightAdded: CGFloat = screenHeight == iPhoneXScreenHeight ? 20 : 0
-            let headerSize = CGSize(width: self.view.frame.size.width, height: (245 + heightAdded))
+            let headerSize = CGSize(width: self.view.frame.size.width, height: (255 + heightAdded))
             headerView = ProfileHeaderView(frame: CGRect(x: 0, y: 0, width: headerSize.width, height: headerSize.height))
             headerView.minimumContentHeight = view.safeAreaInsets.top + 44
-            headerView.maximumContentHeight = 245 + heightAdded
+            headerView.maximumContentHeight = 255 + heightAdded
             headerView.contentExpands = false
             headerView.delegate = self
             collectionView?.addSubview(self.headerView)
