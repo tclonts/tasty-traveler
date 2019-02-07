@@ -20,16 +20,7 @@ import SVProgressHUD
 import CoreLocation
 
 
-class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    
-//    func presentProfileViewController() {
-//        let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
-//        profileVC.isMyProfile = false
-//        profileVC.userID = user?.uid
-//        self.present(profileVC, animated: true, completion: nil)
-//    }
-    
-  
+class FollowTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var user: TTUser?
     var newUser: String?
@@ -160,8 +151,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.view.backgroundColor = .white
         NotificationCenter.default.addObserver(self, selector: #selector(reloadTV), name: Notification.Name("switchedTVs"), object: nil)
         
-        self.followersTableView.reloadData()
-        self.followingTableView.reloadData()
+        
         followersTableView.delegate = self
         followingTableView.delegate = self
         followersTableView.dataSource = self
@@ -208,24 +198,34 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.navigationController?.navigationBar.isTranslucent = false
         self.navigationController?.navigationBar.backgroundColor = .white
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
-
+        self.view.sv(followersStackView, followingStackView)
         
         if fromFollowersButtonNav == true{
             self.view.sv(followersTableView, followersStackView, followingStackView)
-            line2.isHidden = true
             
-            self.followersButton.titleLabel?.textColor = Color.primaryOrange
-            self.followersCountLabel.textColor = UIColor.black
-            //            followingButton.titleLabel?.textColor = Color.gray
-            self.followingButton.setTitleColor(Color.gray, for: .normal)
-            self.followingCountLabel.textColor = Color.gray
+            DispatchQueue.main.async {
+                self.line2.isHidden = true
+                
+//                self.followingTableView.isHidden = true
+                self.followersTableView.isHidden = false
+                
+                self.followersButton.titleLabel?.textColor = Color.primaryOrange
+                self.followersCountLabel.textColor = UIColor.black
+                //            followingButton.titleLabel?.textColor = Color.gray
+                self.followingButton.setTitleColor(Color.gray, for: .normal)
+                self.followingCountLabel.textColor = Color.gray
+            }
             
             followersTableView.isScrollEnabled = true
             
             
         } else if fromFollowingButtonNav == true {
-            self.view.sv(followingTableView, followersStackView, followingStackView)
             line1.isHidden = true
+            DispatchQueue.main.async {
+                self.followingTableView.isHidden = false
+//                self.followersTableView.isHidden = true
+            }
+            
             
             followingButton.titleLabel?.textColor = Color.primaryOrange
             followingCountLabel.textColor = UIColor.black
@@ -234,6 +234,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             followersCountLabel.textColor = Color.gray
             
             followingTableView.isScrollEnabled = true
+            self.view.sv(followingTableView, followersStackView, followingStackView)
             
         }
         
@@ -273,8 +274,9 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     @objc func followersButtonTapped() {
+        
         followersTableView.isHidden = false
-        followingTableView.isHidden = true
+//        followingTableView.isHidden = true
         line2.isHidden = true
         line1.isHidden = false
         followersCountLabel.textColor = UIColor.black
@@ -290,8 +292,9 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     @objc func followingButtonTapped() {
   
-            self.followersTableView.isHidden = true
+//            self.followersTableView.isHidden = true
             self.followingTableView.isHidden = false
+        
             self.line2.isHidden = false
             self.line1.isHidden = true
             self.followersCountLabel.textColor = Color.gray
@@ -324,7 +327,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
             
             for userID in (userDictionary!) {
                 if userID == currentUserID {
-                    EmptyMessage(message: "You do not have any followers yet!")
+                    EmptyMessage(message: "They do not have any followers yet!")
                     return 0
                 } else if (user?.followers?.count) != nil && ((user?.followers?.count)!) > 0 {
                     return (user?.followers?.count)!
@@ -410,7 +413,7 @@ class TestUIViewController: UIViewController, UITableViewDelegate, UITableViewDa
 }
 
 
-extension TestUIViewController {
+extension FollowTableViewController {
     
     func EmptyMessage(message:String) {
         let rect = CGRect(origin: CGPoint(x: 0,y :0), size: CGSize(width: self.view.bounds.size.width, height: self.view.bounds.size.height))

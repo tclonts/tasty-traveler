@@ -1051,10 +1051,10 @@ extension ProfileVC: RSKImageCropViewControllerDelegate {
 
 extension ProfileVC: ProfileHeaderViewDelegate {
     func didTapFollowerInfoButton() {
-        let TestUIViewControllerr = TestUIViewController()
-        TestUIViewControllerr.user = self.user
-        TestUIViewControllerr.fromFollowersButtonNav = true
-        let navController = UINavigationController(rootViewController: TestUIViewControllerr)
+        let FollowsTableViewController = FollowTableViewController()
+        FollowsTableViewController.user = self.user
+        FollowsTableViewController.fromFollowersButtonNav = true
+        let navController = UINavigationController(rootViewController: FollowsTableViewController)
         self.present(navController, animated: true, completion: nil)
         
 
@@ -1062,10 +1062,10 @@ extension ProfileVC: ProfileHeaderViewDelegate {
     }
     
     func didTapFollowingInfoButton() {
-        let TestUIViewControllerr = TestUIViewController()
-        TestUIViewControllerr.user = self.user
-        TestUIViewControllerr.fromFollowingButtonNav = true
-        let navController = UINavigationController(rootViewController: TestUIViewControllerr)
+        let FollowsTableViewController = FollowTableViewController()
+        FollowsTableViewController.user = self.user
+        FollowsTableViewController.fromFollowingButtonNav = true
+        let navController = UINavigationController(rootViewController: FollowsTableViewController)
         self.present(navController, animated: true, completion: nil)
         
         print("Take me to the following info page")
