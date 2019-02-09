@@ -26,6 +26,8 @@ import RSKImageCropper
 
 class FollowersCell: UITableViewCell {
     
+    open var completionHandler: (()->Void)? = nil
+
     
     var userID: String?
     var oldUser: TTUser?
@@ -46,22 +48,6 @@ class FollowersCell: UITableViewCell {
         }
     }
 
-//    let navigationBarBackground: UIView = {
-//        let view = UIView()
-//        view.backgroundColor = .white
-//        return view
-//    }()
-    
-//    let navigationBar: UIView = {
-//        let view = UIView()
-//        view.backgroundColor = .white
-//        let separator = UIView()
-//        separator.backgroundColor = Color.lightGray
-//        
-//        view.sv(separator)
-//        separator.bottom(0).left(0).right(0).height(0.5)
-//        return view
-//    }()
     
     let countryFlagImageView: UIImageView = {
         let imageView = UIImageView()
@@ -85,22 +71,10 @@ class FollowersCell: UITableViewCell {
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 2
         imageView.layer.borderColor = Color.primaryOrange.cgColor
+        imageView.isUserInteractionEnabled = true
         return imageView
     }()
     
-//    lazy var backButton: UIButton = {
-//        let button = UIButton(type: .system)
-//        button.setImage( imageLiteral(resourceName: "backButton"), for: .normal)
-//        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-//        return button
-//    }()
-    
-//    lazy var backButtonNav: UIButton = {
-//        let button = UIButton(type: .system)
-//        button.setImage( imageLiteral(resourceName: "backButtonNav"), for: .normal)
-//        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-//        return button
-//    }()
     lazy var followButton: UIButton = {
         let button = UIButton(type: .system)
         button.layer.cornerRadius = 5
@@ -153,6 +127,9 @@ class FollowersCell: UITableViewCell {
         
         profilePhotoImageView.left(adaptConstant(27)).height(adaptConstant(40)).width(adaptConstant(40)).centerVertically()
         
+        let profileGesture = UITapGestureRecognizer(target: self, action: #selector(showProfileView))
+        profilePhotoImageView.addGestureRecognizer(profileGesture)
+        
         usernameLabel.CenterY == profilePhotoImageView.CenterY - 12
         usernameLabel.Left == profilePhotoImageView.Right + 12
         
@@ -169,6 +146,12 @@ class FollowersCell: UITableViewCell {
     
     @objc func followButtonTapped() {
         followFunction()
+    }
+    
+    @objc func showProfileView() {
+        if let onProfileImagedTapped = self.completionHandler {
+            onProfileImagedTapped()
+        }
     }
     
     func setFollowButton() {

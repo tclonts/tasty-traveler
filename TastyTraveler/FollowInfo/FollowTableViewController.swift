@@ -20,32 +20,12 @@ import SVProgressHUD
 import CoreLocation
 
 
-class FollowTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class FollowTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
     
     var user: TTUser?
     var newUser: String?
     var fromFollowingButtonNav = false
     var fromFollowersButtonNav = false
-    
-
-    
-    
-//    let navigationBarBackground: GradientView = {
-//        let gradientView = GradientView()
-//        gradientView.startPointX = 0.5
-//        gradientView.startPointY = 0
-//        gradientView.endPointX = 0.5
-//        gradientView.endPointY = 1
-//        gradientView.topColor = UIColor.black.withAlphaComponent(0.64)
-//        gradientView.bottomColor = UIColor.black.withAlphaComponent(0)
-//        return gradientView
-//    }()
-//
-//    let navigationBar: UIView = {
-//        let view = UIView()
-//        view.backgroundColor = .clear
-//        return view
-//    }()
 
     lazy var backButton: UIButton = {
         let button = UIButton(type: .custom)
@@ -101,6 +81,7 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.separatorStyle = .none
         tableView.estimatedRowHeight = 75
         tableView.allowsSelection = false
+        tableView.isHidden = true
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.register(FollowersCell.self, forCellReuseIdentifier: "followersCell")
         return tableView
@@ -114,6 +95,7 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.estimatedRowHeight = 75
         tableView.allowsSelection = false
         tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.isHidden = true
         tableView.register(FollowingCell.self, forCellReuseIdentifier: "followingCell")
         return tableView
     }()
@@ -146,17 +128,15 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         return label
     }()
     
+    let newView: UIView = {
+       let view = UIView()
+        view.backgroundColor = UIColor.blue
+        return view
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
-        NotificationCenter.default.addObserver(self, selector: #selector(reloadTV), name: Notification.Name("switchedTVs"), object: nil)
-        
-        
-        followersTableView.delegate = self
-        followingTableView.delegate = self
-        followersTableView.dataSource = self
-        followingTableView.dataSource = self
-
 
         FirebaseController.shared.fetchUserWithUID(uid: (user?.uid)!) { (user) in
             guard let user = user else {return}
@@ -193,57 +173,18 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         flagStackView.axis = .horizontal
         flagStackView.spacing = 8
         
-//        self.tableView.contentInsetAdjustmentBehavior = .never
         self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: Color.blackText, NSAttributedStringKey.font: UIFont(name: "ProximaNova-Bold", size: adaptConstant(20))!]
         self.navigationController?.navigationBar.isTranslucent = false
         self.navigationController?.navigationBar.backgroundColor = .white
         self.navigationController?.navigationBar.setValue(true, forKey: "hidesShadow")
-        self.view.sv(followersStackView, followingStackView)
         
-        if fromFollowersButtonNav == true{
-            self.view.sv(followersTableView, followersStackView, followingStackView)
-            
-            DispatchQueue.main.async {
-                self.line2.isHidden = true
-                
-//                self.followingTableView.isHidden = true
-                self.followersTableView.isHidden = false
-                
-                self.followersButton.titleLabel?.textColor = Color.primaryOrange
-                self.followersCountLabel.textColor = UIColor.black
-                //            followingButton.titleLabel?.textColor = Color.gray
-                self.followingButton.setTitleColor(Color.gray, for: .normal)
-                self.followingCountLabel.textColor = Color.gray
-            }
-            
-            followersTableView.isScrollEnabled = true
-            
-            
-        } else if fromFollowingButtonNav == true {
-            line1.isHidden = true
-            DispatchQueue.main.async {
-                self.followingTableView.isHidden = false
-//                self.followersTableView.isHidden = true
-            }
-            
-            
-            followingButton.titleLabel?.textColor = Color.primaryOrange
-            followingCountLabel.textColor = UIColor.black
-            //            followersButton.titleLabel?.textColor = Color.gray
-            followersButton.setTitleColor(Color.gray, for: .normal)
-            followersCountLabel.textColor = Color.gray
-            
-            followingTableView.isScrollEnabled = true
-            self.view.sv(followingTableView, followersStackView, followingStackView)
-            
-        }
-        
+        self.view.sv(followersStackView, followingStackView, followersTableView, followingTableView)
         
         let width = UIScreen.main.bounds.width / 2
         followersStackView.width(width)
         followersStackView.height(40)
         followersStackView.left(0).top(0)
-
+        
         
         followingStackView.width(width)
         followingStackView.height(40)
@@ -251,9 +192,45 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         
         followersTableView.Top == followersStackView.Bottom + 8
         followersTableView.left(0).right(0).bottom(0)
-
-        followingTableView.Top == followersStackView.Bottom + 8
+        
+        
+        newView.Top == followingStackView.Bottom + 8
+        newView.left(0).right(0).bottom(0)
+        
+        followingTableView.Top == followingStackView.Bottom + 8
         followingTableView.left(0).right(0).bottom(0)
+        
+        followersTableView.isScrollEnabled = true
+        followingTableView.isScrollEnabled = true
+        
+        if fromFollowersButtonNav == true {
+        
+                self.line2.isHidden = true
+
+                self.followersTableView.isHidden = false
+                self.followingTableView.isHidden = true
+
+            
+                self.followersButton.titleLabel?.textColor = Color.primaryOrange
+                self.followersCountLabel.textColor = UIColor.black
+                self.followingButton.setTitleColor(Color.gray, for: .normal)
+                self.followingCountLabel.textColor = Color.gray
+            
+        } else if fromFollowingButtonNav == true {
+
+            
+            line1.isHidden = true
+            
+            self.followingTableView.isHidden = false
+            self.followersTableView.isHidden = true
+            
+            followingButton.titleLabel?.textColor = Color.primaryOrange
+            followingCountLabel.textColor = UIColor.black
+            followersButton.setTitleColor(Color.gray, for: .normal)
+            followersCountLabel.textColor = Color.gray
+        
+        }
+        
         
     }
     
@@ -262,50 +239,44 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
      
             self.followersTableView.reloadData()
             self.followingTableView.reloadData()
-              NotificationCenter.default.addObserver(self, selector: #selector(reloadTV), name: Notification.Name("switchedTVs"), object: nil)
 
     }
     
-    @objc func reloadTV() {
-        DispatchQueue.main.async {
-            self.followingTableView.reloadData()
-            self.followersTableView.reloadData()
-        }
-    }
-    
+
     @objc func followersButtonTapped() {
         
-        followersTableView.isHidden = false
-//        followingTableView.isHidden = true
-        line2.isHidden = true
-        line1.isHidden = false
-        followersCountLabel.textColor = UIColor.black
-        followersButton.setTitleColor(Color.primaryOrange, for: .normal)
-        followingCountLabel.textColor = Color.gray
-        followingButton.titleLabel?.textColor = Color.gray
-        
-        NotificationCenter.default.post(name: Notification.Name("switchedTVs"), object: nil)
+        DispatchQueue.main.async {
+            self.followersTableView.reloadData()
+            self.followersTableView.isHidden = false
+            self.followingTableView.isHidden = true
+        }
 
+            followersTableView.reloadData()
+            line2.isHidden = true
+            line1.isHidden = false
+            followersCountLabel.textColor = UIColor.black
+            followersButton.setTitleColor(Color.primaryOrange, for: .normal)
+            followingCountLabel.textColor = Color.gray
+            followingButton.titleLabel?.textColor = Color.gray
+            followersTableView.isScrollEnabled = true
 
-        followersTableView.isScrollEnabled = true
     }
     
-    @objc func followingButtonTapped() {
-  
-//            self.followersTableView.isHidden = true
-            self.followingTableView.isHidden = false
-        
-            self.line2.isHidden = false
-            self.line1.isHidden = true
-            self.followersCountLabel.textColor = Color.gray
-            self.followersButton.titleLabel?.textColor = Color.gray
-            self.followingCountLabel.textColor =  UIColor.black
-            self.followingButton.setTitleColor(Color.primaryOrange, for: .normal)
+    @objc func followingButtonTapped(sender: UIButton) {
+      
+            followersTableView.isHidden = true
+            followingTableView.isHidden = false
 
-        NotificationCenter.default.post(name: Notification.Name("switchedTVs"), object: nil)
-
-       
-        followingTableView.isScrollEnabled = true
+            
+            followersTableView.reloadData()
+            line2.isHidden = false
+            line1.isHidden = true
+            followingCountLabel.textColor = UIColor.black
+            followingButton.setTitleColor(Color.primaryOrange, for: .normal)
+            followersCountLabel.textColor = Color.gray
+            followersButton.titleLabel?.textColor = Color.gray
+            followingTableView.isScrollEnabled = true
+            
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -320,38 +291,32 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         
         guard let currentUserID = Auth.auth().currentUser?.uid else { return 0 }
         
-        if tableView == followersTableView {
+        if tableView == followersTableView{
         
-        if (self.user?.followers) != nil {
-            let userDictionary = self.user?.followers?.compactMap { $0.key }
-            
-            for userID in (userDictionary!) {
-                if userID == currentUserID {
-                    EmptyMessage(message: "They do not have any followers yet!")
-                    return 0
-                } else if (user?.followers?.count) != nil && ((user?.followers?.count)!) > 0 {
+        if (self.user?.followers) != nil {            
+              if (user?.followers?.count) != nil && ((user?.followers?.count)!) > 0 {
                     return (user?.followers?.count)!
                 }
-            }
         }
-            
-        EmptyMessage(message: "You do not have any followers yet!")
+        
+        EmptyMessage(message: "No followers yet")
         return 0
             
         } else if tableView == followingTableView {
+            
             if (self.user?.following) != nil {
                 let userDictionary = self.user?.following?.compactMap { $0.key }
                 
                 for userID in (userDictionary!) {
                     if userID == currentUserID {
-                        EmptyMessage(message: "You are not following anyone yet")
+                        EmptyMessageTwo(message: "You are not following anyone yet")
                         return 0
                     } else if (user?.following?.count) != nil && ((user?.following?.count)!) > 0 {
                         return (user?.following?.count)!
                     }
                 }
             }
-            EmptyMessage(message: "You are not following anyone yet")
+            EmptyMessageTwo(message: "Not following anyone yet")
             return 0
         } else {
             return 0
@@ -359,6 +324,11 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
      func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if tableView == followersTableView {
+            return 72
+        } else if tableView == followingTableView {
+            return 72
+        }
         return 72
     }
     
@@ -370,18 +340,30 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
         let userDictionary = self.user?.followers?.compactMap { $0.key }
         let userID = userDictionary?[indexPath.row]
         cell.oldUser = self.user
-        
-        FirebaseController.shared.fetchUserWithUID(uid: userID!) { (user) in
+            
+            cell.completionHandler = {
+                let profileVC = ProfileVC(collectionViewLayout: UICollectionViewFlowLayout())
+                profileVC.isMyProfile = false
+                profileVC.userID = userID
+                
+                self.present(profileVC, animated: true, completion: nil)
+                
+            }
+            
+            FirebaseController.shared.fetchUserWithUID(uid: userID!) { (user) in
             guard let user = user else {return}
             
             if userID != currentUserID {
                 cell.user = user
-            }
+            } else {
+                cell.followButton.isHidden = true
+                cell.user = user
+                }
         }
         
         return cell
         
-        } else if tableView == followingTableView {
+        } else if tableView == followingTableView  {
             let cell = tableView.dequeueReusableCell(withIdentifier: "followingCell", for: indexPath) as! FollowingCell
             guard let currentUserID = Auth.auth().currentUser?.uid else { return UITableViewCell() }
             let userDictionary = self.user?.following?.compactMap { $0.key }
@@ -415,7 +397,7 @@ class FollowTableViewController: UIViewController, UITableViewDelegate, UITableV
 
 extension FollowTableViewController {
     
-    func EmptyMessage(message:String) {
+func EmptyMessage(message:String) {
         let rect = CGRect(origin: CGPoint(x: 0,y :0), size: CGSize(width: self.view.bounds.size.width, height: self.view.bounds.size.height))
         let messageLabel = UILabel(frame: rect)
         messageLabel.text = message
@@ -424,13 +406,28 @@ extension FollowTableViewController {
         messageLabel.textAlignment = .center;
         messageLabel.font = UIFont(name: "ProximaNova-Regular", size: 15)
         messageLabel.sizeToFit()
-        
+    
+    
         followersTableView.backgroundView = messageLabel;
         followersTableView.separatorStyle = .none;
-        followingTableView.backgroundView = messageLabel;
-        followingTableView.separatorStyle = .none;
 
     }
+
+func EmptyMessageTwo(message:String) {
+    let rect = CGRect(origin: CGPoint(x: 0,y :0), size: CGSize(width: self.view.bounds.size.width, height: self.view.bounds.size.height))
+    let messageLabel = UILabel(frame: rect)
+    messageLabel.text = message
+    messageLabel.textColor = UIColor.black
+    messageLabel.numberOfLines = 0;
+    messageLabel.textAlignment = .center;
+    messageLabel.font = UIFont(name: "ProximaNova-Regular", size: 15)
+    messageLabel.sizeToFit()
+    
+   
+    followingTableView.backgroundView = messageLabel;
+    followingTableView.separatorStyle = .none;
+    
+}
 }
 
 extension UIView {
